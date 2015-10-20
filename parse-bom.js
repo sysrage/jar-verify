@@ -59,7 +59,7 @@ var systemList = [];
 var adapterList = [];
 
 // Parse remaining worksheet
-for (i in worksheet) {
+for (var i in worksheet) {
   if(i[0] === '!') continue;
 
   // Gather list of supported operating systems
@@ -79,23 +79,42 @@ for (i in worksheet) {
   }
 
   // Gather supported machine types
-  if (worksheet[i].v.toString().toLowerCase() === 'rack' || worksheet[i].v.toString().toLowerCase() == 'flex') {
+  if (worksheet[i].v.toString().toLowerCase() === 'machine types') {
     var systemCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var systemNameCol = systemCell[1];
     var systemMTMCol = String.fromCharCode(systemCell[1].charCodeAt(0) + 1);
     var systemItemCol = String.fromCharCode(systemCell[1].charCodeAt(0) + 2);
-    var y = parseInt(systemCell[2]) + 1;
-    var emptyCell = false;
-    while (! emptyCell) {
-      if (worksheet[systemNameCol + y]) {
-        var mtmList = worksheet[systemMTMCol + y].v.toString().split(',');
-        systemList.push({
-          id: worksheet[systemItemCol + y].v,
-          name: worksheet[systemNameCol + y].v,
-          mtm: mtmList
-        });
+    var y = parseInt(systemCell[2]) + 2;
+
+    var wasBlank = true;
+    var moreRows = true;
+
+    while (moreRows) {
+      if (wasBlank) {
+        // If last row was blank, this row must be a system type header or we're done
+        if (! worksheet[systemNameCol + y]) {
+          moreRows = false;
+          continue;
+        } else {
+          var val = worksheet[systemNameCol + y].v.toString().toLowerCase();
+          if (val === 'rack' || val === 'flex') {
+            wasBlank = false;
+          } else {
+            util.log("[ERROR] Invalid system type header in Machine Types section.");
+            moreRows = false;
+          }
+        }
       } else {
-        emptyCell = true;
+        if (! worksheet[systemNameCol + y]) {
+          wasBlank = true;
+        } else {
+          // Build list of supported machine types
+          var mtmList = worksheet[systemMTMCol + y].v.toString().replace(' ', '').split(',');
+          systemList[worksheet[systemItemCol + y].v] = {
+            name: worksheet[systemNameCol + y].v,
+            mtm: mtmList
+          };
+        }
       }
       y++;
     }
@@ -105,39 +124,96 @@ for (i in worksheet) {
   if (worksheet[i].v.toString().toLowerCase() === 'adapter models') {
     var adapterCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var adapterMTMCol = adapterCell[1];
-    var adapterNameCol = String.fromCharCode(adapterCell[1].charCodeAt(0) + 1);
-    var adapterModelCol = String.fromCharCode(adapterCell[1].charCodeAt(0) + 2);
-    var adapterV2Col = String.fromCharCode(adapterCell[1].charCodeAt(0) + 3);
-    var adapterAgentCol = String.fromCharCode(adapterCell[1].charCodeAt(0) + 4);
-    var y = parseInt(adapterCell[2]) + 2;
-    var emptyCount = 0;
+    var adapterNameCol = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 1);
+    var adapterModelCol = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 2);
+    var adapterV2Col = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 3);
+    var adapterAgentCol = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 4);
 
-    // End adapter search after two blank rows
-    while (emptyCount < 3) {
-      console.log(adapterNameCol + y);
-      if (worksheet[adapterNameCol + y]) {
-        // Check for header matching known ASIC types
-        config.asicTypes.forEach(function (asic) {
-          if (worksheet[adapterMTMCol + y].v.toString().toLowerCase().search(asic.name.toLowerCase()) > -1) {
-            var asicType = asic.name;
-            var cell = adapterMTMCol + y;
-            var asicCell = cell.match(/^([A-Za-z]+)([0-9]+)$/);
-            console.log('asicType: ' + asicType + ' -- cell: ' + cell);
-          }
-        });
-        y++;
-      } else {
-        emptyCount++;
-        y++;
+    var colNum = adapterMTMCol.charCodeAt(0) - 65;
+    var y = parseInt(adapterCell[2]) + 2;
+
+    // Duplicate data in all merged cells
+    worksheet['!merges'].forEach(function(merge) {
+      if (merge.s.c === colNum && merge.e.c === colNum) {
+        var val = worksheet[adapterMTMCol + (merge.s.r + 1)].v;
+        for (var r = (merge.s.r + 2); r <= (merge.e.r + 1); r++) {
+          worksheet[adapterMTMCol + r] = {v: val};
+        }
       }
+    });
+
+    var wasBlank = true;
+    var moreRows = true;
+    var asicType = null;
+
+    while (moreRows) {
+      if (wasBlank) {
+        // If last row was blank, this row must be an ASIC type header or we're done
+        if (! worksheet[adapterMTMCol + y]) {
+          moreRows = false;
+          continue;
+        } else {
+          var validASIC = false;
+          // Check for header matching known ASIC types in config file
+          config.asicTypes.forEach(function (asic) {
+            if (worksheet[adapterMTMCol + y].v.toString().toLowerCase().search(asic.name.toLowerCase()) > -1) {
+              asicType = asic.name;
+              validASIC = true;
+            }
+          });
+          if (validASIC) {
+            wasBlank = false;
+          } else {
+            util.log("[ERROR] Invalid ASIC header in Adapter Models section.");
+            moreRows = false;
+          }
+        }
+      } else {
+        if (! worksheet[adapterMTMCol + y]) {
+          wasBlank = true;
+        } else {
+          // Build list of supported machine types
+          var mtmList = [];
+          var tempList = worksheet[adapterMTMCol + y].v.toString().replace(' ', '').split(',');
+          tempList.forEach(function(entry) {
+            if (entry.search('-') > -1) {
+              var firstID = parseInt(entry.split('-')[0]);
+              var lastID = parseInt(entry.split('-')[1]);
+              for (var m = firstID; m <= lastID; m++) {
+                if (systemList[m]) {
+                  systemList[m].mtm.forEach(function (mtm) {
+                    mtmList.push(mtm);
+                  });
+                } else {
+                  util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + m + ").");
+                }
+              }
+            } else {
+              if (systemList[entry]) {
+                systemList[entry].mtm.forEach(function (mtm) {
+                  mtmList.push(mtm);
+                });
+              } else {
+                util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + entry + ").");
+              }
+            }
+          });
+
+          // Add adapter to list
+          adapterList.push({
+            name: worksheet[adapterNameCol + y].v,
+            model: worksheet[adapterModelCol + y].v,
+            v2: worksheet[adapterV2Col + y].v,
+            agent: worksheet[adapterAgentCol + y].v,
+            asic: asicType,
+            mtm: mtmList
+          });
+        }
+      }
+      y++;
     }
   }
-  // config.asicTypes.forEach(function (asic) {
-  //   if (worksheet[i].v.toString().toLowerCase().search(asic.name.toLowerCase()) > -1 ) {
-  //     var asicCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
-  //     console.log('asic: ' + asic.name + ' -- cell: ' + i);
-  //   }
-  // });
+
 
 }
 
