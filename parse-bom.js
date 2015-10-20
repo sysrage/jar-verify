@@ -6,7 +6,6 @@
  * Requres:
  *  - Node.js
  *  - xlsx
- *  - bluebird (only required when built-in Promise support unavailable)
  *
  */
 
@@ -16,7 +15,21 @@ var fs      = require('fs');
 
 var xlsx    = require('xlsx');
 
-if (typeof Promise === 'undefined') Promise = require('bluebird');
+function readAppDID(type, cell) {
+  var appDIDCell = cell.match(/^([A-Za-z]+)([0-9]+)$/);
+  var x = appDIDCell[1];
+  var y = parseInt(appDIDCell[2]) + 1;
+  var emptyCell = false;
+  while (! emptyCell) {
+    if (worksheet[x + y]) {
+      // **TODO: verify applicable device ID is valid based on a list in config file
+      appDIDList[type].push(worksheet[x + y].v);
+    } else {
+      emptyCell = true;
+    }
+    y++;        
+  }
+}
 
 // Read configuration file
 try {
@@ -57,12 +70,25 @@ var typeName = worksheet['A2'].v.split(' ')[worksheet['A2'].v.split(' ').length 
 var osList = [];
 var systemList = [];
 var adapterList = [];
+var appDIDList = {
+  ddWinNIC: [],
+  ddWinISCSI: [],
+  ddWinFC: [],
+  ddWinFCoE: [],
+  ddLinNIC: [],
+  ddLinISCSI: [],
+  ddLinFC: [],
+  fwSaturn: [],
+  fwLancer: [],
+  fwBE: [],
+  fwSkyhawk: []
+};
 
 // Parse remaining worksheet
 for (var i in worksheet) {
   if(i[0] === '!') continue;
 
-  // Gather list of supported operating systems
+  // Gather supported operating systems
   if (worksheet[i].v.toString().toLowerCase() === 'operating systems') {
     var osCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var x = osCell[1];
@@ -82,8 +108,8 @@ for (var i in worksheet) {
   if (worksheet[i].v.toString().toLowerCase() === 'machine types') {
     var systemCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var systemNameCol = systemCell[1];
-    var systemMTMCol = String.fromCharCode(systemCell[1].charCodeAt(0) + 1);
-    var systemItemCol = String.fromCharCode(systemCell[1].charCodeAt(0) + 2);
+    var systemMTMCol = String.fromCharCode(systemNameCol.charCodeAt(0) + 1);
+    var systemItemCol = String.fromCharCode(systemNameCol.charCodeAt(0) + 2);
     var y = parseInt(systemCell[2]) + 2;
 
     var wasBlank = true;
@@ -154,7 +180,7 @@ for (var i in worksheet) {
           continue;
         } else {
           var validASIC = false;
-          // Check for header matching known ASIC types in config file
+          // Check header for matching known ASIC types in config file
           config.asicTypes.forEach(function (asic) {
             if (worksheet[adapterMTMCol + y].v.toString().toLowerCase().search(asic.name.toLowerCase()) > -1) {
               asicType = asic.name;
@@ -199,12 +225,47 @@ for (var i in worksheet) {
             }
           });
 
+          // Verify Code Name exists
+          if (! worksheet[adapterNameCol + y]) {
+            util.log("[ERROR] Code Name entry missing in cell " + adapterNameCol + y + ".");
+          }
+
+          // Verify Model Name exists
+          if (! worksheet[adapterModelCol + y]) {
+            util.log("[ERROR] Model Name entry missing in cell " + adapterModelCol + y + ".");
+          }
+
+          // Build list of DriverFiles entries
+          var v2List = [];
+          if (! worksheet[adapterV2Col + y]) {
+            util.log("[ERROR] DriverFiles entry (V2) missing in cell " + adapterV2Col + y + ".");
+          } else {
+            v2List = worksheet[adapterV2Col + y].v.toString().match(/\S+/g);
+          }
+
+          // Build list of Agentless entries
+          var agentList = [];
+          if (! worksheet[adapterAgentCol + y]) {
+            util.log("[ERROR] Agentless entry missing in cell " + adapterAgentCol + y + ".");
+          } else {
+            var tempList = worksheet[adapterAgentCol + y].v.toString().match(/Entry:[\ ]*([A-F0-9]+)[^]*Type 1:[\ ]*([0-9]+)(?:[^]*Type 2:[\ ]*([0-9]+))?/m);
+            if (! tempList) {
+              util.log("[ERROR] Missing or invalid Agentless entry in cell " + adapterAgentCol + y + ".");
+            } else {
+              var entryID = tempList[1];
+              var typeOne = tempList[2];
+              var typeTwo = tempList[3];
+              agentList.push({id: entryID, type: typeOne});
+              if (typeTwo) agentList.push({id: entryID, type: typeTwo});
+            }
+          }
+
           // Add adapter to list
           adapterList.push({
             name: worksheet[adapterNameCol + y].v,
             model: worksheet[adapterModelCol + y].v,
-            v2: worksheet[adapterV2Col + y].v,
-            agent: worksheet[adapterAgentCol + y].v,
+            v2: v2List,
+            agent: agentList,
             asic: asicType,
             mtm: mtmList
           });
@@ -214,7 +275,28 @@ for (var i in worksheet) {
     }
   }
 
+  // Gather Applicable Device ID Entries
+  if (worksheet[i].v.toString().toLowerCase() === 'win nic dd') readAppDID('ddWinNIC', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'win iscsi dd') readAppDID('ddWinISCSI', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'win fc dd') readAppDID('ddWinFC', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'win fcoe dd') readAppDID('ddWinFCoE', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'linux nic dd') readAppDID('ddLinNIC', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'linux iscsi dd') readAppDID('ddLinISCSI', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'linux fc/fcoe dd') readAppDID('ddLinFC', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'saturn fw') readAppDID('fwSaturn', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'lancer fw') readAppDID('fwLancer', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'be fw') readAppDID('fwBE', i);
+  if (worksheet[i].v.toString().toLowerCase() === 'skyhawk fw') readAppDID('fwSkyhawk', i);
+}
 
+// Add all data to a single object and write it to disk
+var bomDump = {
+  release: releaseName,
+  type: typeName,
+  osList: osList,
+  systemList: systemList.filter(Boolean),
+  adapterList: adapterList,
+  appDIDList: appDIDList
 }
 
 // console.log('Release: ' + releaseName);
@@ -222,3 +304,5 @@ for (var i in worksheet) {
 // console.dir(osList);
 // console.dir(systemList);
 // console.dir(adapterList);
+// console.dir(appDIDList);
+console.log(JSON.stringify(bomDump, null, 2));
