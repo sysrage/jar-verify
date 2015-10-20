@@ -1,0 +1,34 @@
+bom-parse <BOM file>                        = parse BOM XLS and store as JSON
+jar-verify -r <release> -b <build number>   = verify JARs
+jar-verify -s                               = save last run data as an official release
+
+BOM Parsing (xlsx):
+ - Pull release from BOM
+ - Pull supported operating systems
+ - 
+
+Config File (separate sections for each release where applicable):
+ - Linux distributions
+ - Linux point releases
+ - Linux kernel versions
+ - Windows versions
+ - VMware versions
+
+Data Files:
+ - store last released build number
+ - store last released version/subversion for each component (only list packages that have changed)
+ - JSON representation of BOM file
+
+Linux Driver Packages:
+  - Verify FixID format
+  - Verify driver version
+  - Verify FixID subversion
+  - Verify all 5 files exist and are non-empty
+  - Verify XML matches BOM
+  - Verify tgz file can be extracted successfully
+
+
+
+Windows Driver Packages:
+
+Firmware Packages:
