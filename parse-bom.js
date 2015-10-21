@@ -1,8 +1,8 @@
 /* Parse Lenovo UX Package BOM file and generate JSON object using Node.js
  * Written by Brian Bothwell (brian.bothwell@avagotech.com)
- * 
+ *
  * To use, run: `node parse-bom.js <BOM file>` where <BOM file> is an XLSX BOM
- * 
+ *
  * Requres:
  *  - Node.js
  *  - xlsx
@@ -54,7 +54,7 @@ try {
 
 // Verify XLSX BOM file has been passed as an argument
 if (! process.argv[2]) {
-  console.log("Usage: node parse-bom.js <BOM File>" + 
+  console.log("Usage: node parse-bom.js <BOM File>" +
     "\nWhere <BOM File> is the name of an XLSX BOFM file.\n");
   return 1;
 }
@@ -119,12 +119,24 @@ for (var i in worksheet) {
     var emptyCell = false;
     while (! emptyCell) {
       if (worksheet[x + y]) {
-        // **TODO: Verify OS names
-        osList.push(worksheet[x + y].v);
+        // Verify OS matches a valid name from the configuration file
+        var osName = worksheet[x + y].v.toString();
+        var validOS = false;
+        for (var os = 0; os < config.osMappings.length; os++) {
+          if (osName.search(config.osMappings[os].name) > -1) {
+            validOS = true;
+            break;
+          }
+        }
+        if (! validOS) {
+          util.log("[ERROR] Invalid Operating System Name specified in cell " + x + y + ".");
+        } else {
+          osList.push(osName);
+        }
       } else {
         emptyCell = true;
       }
-      y++;        
+      y++;
     }
   }
 
