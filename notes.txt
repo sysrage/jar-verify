@@ -2,11 +2,6 @@ bom-parse <BOM file>                        = parse BOM XLS and store as JSON
 jar-verify -r <release> -b <build number>   = verify JARs
 jar-verify -s                               = save last run data as an official release
 
-BOM Parsing (xlsx):
- - Pull release from BOM
- - Pull supported operating systems
- - 
-
 Config File (separate sections for each release where applicable):
  - Linux distributions
  - Linux point releases

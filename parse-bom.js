@@ -22,8 +22,20 @@ function readAppDID(type, cell) {
   var emptyCell = false;
   while (! emptyCell) {
     if (worksheet[x + y]) {
-      // **TODO: verify applicable device ID is valid based on a list in config file
-      appDIDList[type].push(worksheet[x + y].v);
+      var appDID = worksheet[x + y].v;
+      var valid = false;
+      // Verify AppDID matches a valid name from the configuration file
+      for (var i = 0; i < config.appDIDNames.length; i++) {
+        if (config.appDIDNames[i] === appDID) {
+          valid = true;
+          break;
+        }
+      }
+      if (valid) {
+        appDIDList[type].push(appDID);
+      } else {
+        util.log("[ERROR] Invalid Applicable Device ID in cell " + cell + ".");
+      }
     } else {
       emptyCell = true;
     }
@@ -48,8 +60,9 @@ if (! process.argv[2]) {
 }
 
 // Read in the specified XLSX BOM file
+var bomFileXLS = process.argv[2];
 try {
-  var workbook = xlsx.readFile(process.argv[2]);
+  var workbook = xlsx.readFile(bomFileXLS);
   var worksheet = workbook.Sheets[workbook.SheetNames[0]];
 } catch (err) {
   if (err.code === 'ENOENT') {
@@ -62,11 +75,9 @@ try {
   return 1;
 }
 
-// Obtain release name and type name
-var releaseName = worksheet['A1'].v.split(' ')[worksheet['A1'].v.split(' ').length - 1];
-var typeName = worksheet['A2'].v.split(' ')[worksheet['A2'].v.split(' ').length - 1];
-
 // Initialization
+var releaseName = null;
+var releaseType = null;
 var osList = [];
 var systemList = [];
 var adapterList = [];
@@ -88,14 +99,26 @@ var appDIDList = {
 for (var i in worksheet) {
   if(i[0] === '!') continue;
 
+  // Gather release name
+  if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.relNameString)) > -1) {
+    releaseName = worksheet[i].v.toString().toUpperCase().split(':')[1].replace(/\s+/g, '');
+    if (releaseName.search(/^[A-Z0-9]+$/) < 0) util.log("[ERROR] Invalid release name specified in cell " + i);
+  }
+
+  // Gather release type
+  if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.relTypeString)) > -1) {
+    releaseType = worksheet[i].v.toString().split(':')[1].replace(/\s+/g, '');
+  }
+
   // Gather supported operating systems
-  if (worksheet[i].v.toString().toLowerCase() === 'operating systems') {
+  if (worksheet[i].v.toString().toLowerCase() === config.osString) {
     var osCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var x = osCell[1];
     var y = parseInt(osCell[2]) + 1;
     var emptyCell = false;
     while (! emptyCell) {
       if (worksheet[x + y]) {
+        // **TODO: Verify OS names
         osList.push(worksheet[x + y].v);
       } else {
         emptyCell = true;
@@ -105,7 +128,7 @@ for (var i in worksheet) {
   }
 
   // Gather supported machine types
-  if (worksheet[i].v.toString().toLowerCase() === 'machine types') {
+  if (worksheet[i].v.toString().toLowerCase() === config.systemString) {
     var systemCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var systemNameCol = systemCell[1];
     var systemMTMCol = String.fromCharCode(systemNameCol.charCodeAt(0) + 1);
@@ -123,7 +146,7 @@ for (var i in worksheet) {
           continue;
         } else {
           var val = worksheet[systemNameCol + y].v.toString().toLowerCase();
-          if (val === 'rack' || val === 'flex') {
+          if (config.mtmHeaders.indexOf(val) > -1) {
             wasBlank = false;
           } else {
             util.log("[ERROR] Invalid system type header in Machine Types section.");
@@ -147,7 +170,7 @@ for (var i in worksheet) {
   }
 
   // Gather supported adapter types
-  if (worksheet[i].v.toString().toLowerCase() === 'adapter models') {
+  if (worksheet[i].v.toString().toLowerCase() === config.adapterString) {
     var adapterCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var adapterMTMCol = adapterCell[1];
     var adapterNameCol = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 1);
@@ -276,33 +299,59 @@ for (var i in worksheet) {
   }
 
   // Gather Applicable Device ID Entries
-  if (worksheet[i].v.toString().toLowerCase() === 'win nic dd') readAppDID('ddWinNIC', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'win iscsi dd') readAppDID('ddWinISCSI', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'win fc dd') readAppDID('ddWinFC', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'win fcoe dd') readAppDID('ddWinFCoE', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'linux nic dd') readAppDID('ddLinNIC', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'linux iscsi dd') readAppDID('ddLinISCSI', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'linux fc/fcoe dd') readAppDID('ddLinFC', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'saturn fw') readAppDID('fwSaturn', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'lancer fw') readAppDID('fwLancer', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'be fw') readAppDID('fwBE', i);
-  if (worksheet[i].v.toString().toLowerCase() === 'skyhawk fw') readAppDID('fwSkyhawk', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.ddWinNICString) readAppDID('ddWinNIC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.ddWinISCSIString) readAppDID('ddWinISCSI', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.ddWinFCString) readAppDID('ddWinFC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.ddWinFCoEString) readAppDID('ddWinFCoE', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.ddLinNICString) readAppDID('ddLinNIC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.ddLinISCSIString) readAppDID('ddLinISCSI', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.ddLinFCString) readAppDID('ddLinFC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.fwSaturnString) readAppDID('fwSaturn', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.fwLancerString) readAppDID('fwLancer', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.fwBEString) readAppDID('fwBE', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.fwSkyhawkString) readAppDID('fwSkyhawk', i);
 }
+
+// Display an error if any expected data was not found.
+if (! releaseName) util.log("[ERROR] Release name was not specified.");
+if (! releaseType) util.log("[ERROR] Release type was not specified.");
+if (osList.length < 1) util.log("[ERROR] No supported operating systems were specified.");
+if (systemList.length < 1) util.log("[ERROR] No supported system types were specified.");
+if (adapterList.length < 1) util.log("[ERROR] No supported adapters were specified.");
+if (appDIDList.ddWinNIC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows NIC driver.");
+if (appDIDList.ddWinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows iSCSI driver.");
+if (appDIDList.ddWinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows FC driver.");
+if (appDIDList.ddWinFCoE.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows FCoE driver.");
+if (appDIDList.ddLinNIC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux NIC driver.");
+if (appDIDList.ddLinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux iSCSI driver.");
+if (appDIDList.ddLinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux FC/FCoE driver.");
+if (appDIDList.fwSaturn.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Saturn firmware.");
+if (appDIDList.fwLancer.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Lancer firmware.");
+if (appDIDList.fwBE.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for BE firmware.");
+if (appDIDList.fwSkyhawk.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Skyhawk firmware.");
 
 // Add all data to a single object and write it to disk
 var bomDump = {
   release: releaseName,
-  type: typeName,
+  type: releaseType,
   osList: osList,
   systemList: systemList.filter(Boolean),
   adapterList: adapterList,
   appDIDList: appDIDList
-}
+};
+var bomFileJSON = bomFileXLS.replace(/\.xls(?:x)?$/, '.json');
+fs.writeFile(bomFileJSON, JSON.stringify(bomDump, null, 2), function(err) {
+  if (err) {
+    return util.log("[ERROR] Unable to write JSON file to disk.");
+  }
+});
 
+// ***DEBUG***
 // console.log('Release: ' + releaseName);
-// console.log('Type: ' + typeName);
+// console.log('Type: ' + releaseType);
 // console.dir(osList);
 // console.dir(systemList);
 // console.dir(adapterList);
 // console.dir(appDIDList);
-console.log(JSON.stringify(bomDump, null, 2));
+// console.log(JSON.stringify(bomDump, null, 2));
+// console.log(bomFileJSON);
