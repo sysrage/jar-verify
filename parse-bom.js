@@ -39,7 +39,7 @@ function readAppDID(type, cell) {
     } else {
       emptyCell = true;
     }
-    y++;        
+    y++;
   }
 }
 
@@ -95,7 +95,7 @@ var appDIDList = {
   fwSkyhawk: []
 };
 
-// Parse remaining worksheet
+// Parse worksheet
 for (var i in worksheet) {
   if(i[0] === '!') continue;
 
@@ -108,6 +108,7 @@ for (var i in worksheet) {
   // Gather release type
   if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.relTypeString)) > -1) {
     releaseType = worksheet[i].v.toString().split(':')[1].replace(/\s+/g, '');
+    if (['Red', 'Blue'].indexOf(releaseType) < 0) util.log("[ERROR] Invalid release type specified in cell " + i);
   }
 
   // Gather supported operating systems
@@ -157,12 +158,19 @@ for (var i in worksheet) {
         if (! worksheet[systemNameCol + y]) {
           wasBlank = true;
         } else {
-          // Build list of supported machine types
-          var mtmList = worksheet[systemMTMCol + y].v.toString().replace(' ', '').split(',');
-          systemList[worksheet[systemItemCol + y].v] = {
-            name: worksheet[systemNameCol + y].v,
-            mtm: mtmList
-          };
+          // Verify all expected columns are present
+          if (! worksheet[systemMTMCol + y]) {
+            util.log("[ERROR] Missing MTM value in cell " + systemMTMCol + y + ".");
+          } else if (! worksheet[systemItemCol + y] || worksheet[systemItemCol + y].v.toString().search(/[0-9]+/) < 0) {
+            util.log("[ERROR] Missing or invalid item ID in cell " + systemItemCol + y + ".");
+          } else {
+            // Build list of supported machine types
+            var mtmList = worksheet[systemMTMCol + y].v.toString().replace(' ', '').split(',');
+            systemList[worksheet[systemItemCol + y].v] = {
+              name: worksheet[systemNameCol + y].v,
+              mtm: mtmList
+            };
+          }
         }
       }
       y++;
@@ -221,56 +229,49 @@ for (var i in worksheet) {
         if (! worksheet[adapterMTMCol + y]) {
           wasBlank = true;
         } else {
-          // Build list of supported machine types
-          var mtmList = [];
-          var tempList = worksheet[adapterMTMCol + y].v.toString().replace(' ', '').split(',');
-          tempList.forEach(function(entry) {
-            if (entry.search('-') > -1) {
-              var firstID = parseInt(entry.split('-')[0]);
-              var lastID = parseInt(entry.split('-')[1]);
-              for (var m = firstID; m <= lastID; m++) {
-                if (systemList[m]) {
-                  systemList[m].mtm.forEach(function (mtm) {
+          // Verify all expected columns are present
+          if (! worksheet[adapterNameCol + y]) {
+            util.log("[ERROR] Missing code name in cell " + adapterNameCol + y + ".");
+          } else if (! worksheet[adapterModelCol + y]) {
+            util.log("[ERROR] Missing model name in cell " + adapterModelCol + y + ".");
+          } else if (! worksheet[adapterV2Col + y]) {
+            util.log("[ERROR] Missing DriverFiles entry (V2) in cell " + adapterV2Col + y + ".");
+          } else if (! worksheet[adapterAgentCol + y]) {
+            util.log("[ERROR] Missing Agentless entry in cell " + adapterAgentCol + y + ".");
+          } else {
+            // Build list of supported machine types
+            var mtmList = [];
+            var tempList = worksheet[adapterMTMCol + y].v.toString().replace(' ', '').split(',');
+            tempList.forEach(function(entry) {
+              if (entry.search('-') > -1) {
+                var firstID = parseInt(entry.split('-')[0]);
+                var lastID = parseInt(entry.split('-')[1]);
+                for (var m = firstID; m <= lastID; m++) {
+                  if (systemList[m]) {
+                    systemList[m].mtm.forEach(function (mtm) {
+                      mtmList.push(mtm);
+                    });
+                  } else {
+                    util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + m + ").");
+                  }
+                }
+              } else {
+                if (systemList[entry]) {
+                  systemList[entry].mtm.forEach(function (mtm) {
                     mtmList.push(mtm);
                   });
                 } else {
-                  util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + m + ").");
+                  util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + entry + ").");
                 }
               }
-            } else {
-              if (systemList[entry]) {
-                systemList[entry].mtm.forEach(function (mtm) {
-                  mtmList.push(mtm);
-                });
-              } else {
-                util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + entry + ").");
-              }
-            }
-          });
+            });
 
-          // Verify Code Name exists
-          if (! worksheet[adapterNameCol + y]) {
-            util.log("[ERROR] Code Name entry missing in cell " + adapterNameCol + y + ".");
-          }
-
-          // Verify Model Name exists
-          if (! worksheet[adapterModelCol + y]) {
-            util.log("[ERROR] Model Name entry missing in cell " + adapterModelCol + y + ".");
-          }
-
-          // Build list of DriverFiles entries
-          var v2List = [];
-          if (! worksheet[adapterV2Col + y]) {
-            util.log("[ERROR] DriverFiles entry (V2) missing in cell " + adapterV2Col + y + ".");
-          } else {
+            // Build list of DriverFiles entries
+            var v2List = [];
             v2List = worksheet[adapterV2Col + y].v.toString().match(/\S+/g);
-          }
 
-          // Build list of Agentless entries
-          var agentList = [];
-          if (! worksheet[adapterAgentCol + y]) {
-            util.log("[ERROR] Agentless entry missing in cell " + adapterAgentCol + y + ".");
-          } else {
+            // Build list of Agentless entries
+            var agentList = [];
             var tempList = worksheet[adapterAgentCol + y].v.toString().match(/Entry:[\ ]*([A-F0-9]+)[^]*Type 1:[\ ]*([0-9]+)(?:[^]*Type 2:[\ ]*([0-9]+))?/m);
             if (! tempList) {
               util.log("[ERROR] Missing or invalid Agentless entry in cell " + adapterAgentCol + y + ".");
@@ -281,17 +282,17 @@ for (var i in worksheet) {
               agentList.push({id: entryID, type: typeOne});
               if (typeTwo) agentList.push({id: entryID, type: typeTwo});
             }
-          }
 
-          // Add adapter to list
-          adapterList.push({
-            name: worksheet[adapterNameCol + y].v,
-            model: worksheet[adapterModelCol + y].v,
-            v2: v2List,
-            agent: agentList,
-            asic: asicType,
-            mtm: mtmList
-          });
+            // Add adapter to list
+            adapterList.push({
+              name: worksheet[adapterNameCol + y].v,
+              model: worksheet[adapterModelCol + y].v,
+              v2: v2List,
+              agent: agentList,
+              asic: asicType,
+              mtm: mtmList
+            });
+          }
         }
       }
       y++;
