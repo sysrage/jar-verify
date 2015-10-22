@@ -26,7 +26,7 @@ function readAppDID(type, cell) {
       var valid = false;
       // Verify AppDID matches a valid name from the configuration file
       for (var i = 0; i < config.appDIDNames.length; i++) {
-        if (config.appDIDNames[i] === appDID) {
+        if (config.appDIDNames[i].name === appDID) {
           valid = true;
           break;
         }
@@ -100,19 +100,19 @@ for (var i in worksheet) {
   if(i[0] === '!') continue;
 
   // Gather release name
-  if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.relNameString)) > -1) {
+  if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.headerStr.relName)) > -1) {
     releaseName = worksheet[i].v.toString().toUpperCase().split(':')[1].replace(/\s+/g, '');
     if (releaseName.search(/^[A-Z0-9]+$/) < 0) util.log("[ERROR] Invalid release name specified in cell " + i);
   }
 
   // Gather release type
-  if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.relTypeString)) > -1) {
+  if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.headerStr.relType)) > -1) {
     releaseType = worksheet[i].v.toString().split(':')[1].replace(/\s+/g, '');
     if (['Red', 'Blue'].indexOf(releaseType) < 0) util.log("[ERROR] Invalid release type specified in cell " + i);
   }
 
   // Gather supported operating systems
-  if (worksheet[i].v.toString().toLowerCase() === config.osString) {
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.osList) {
     var osCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var x = osCell[1];
     var y = parseInt(osCell[2]) + 1;
@@ -141,7 +141,7 @@ for (var i in worksheet) {
   }
 
   // Gather supported machine types
-  if (worksheet[i].v.toString().toLowerCase() === config.systemString) {
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.systemList) {
     var systemCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var systemNameCol = systemCell[1];
     var systemMTMCol = String.fromCharCode(systemNameCol.charCodeAt(0) + 1);
@@ -159,7 +159,7 @@ for (var i in worksheet) {
           continue;
         } else {
           var val = worksheet[systemNameCol + y].v.toString().toLowerCase();
-          if (config.mtmHeaders.indexOf(val) > -1) {
+          if (config.headerStr.systemType.indexOf(val) > -1) {
             wasBlank = false;
           } else {
             util.log("[ERROR] Invalid system type header in Machine Types section.");
@@ -190,7 +190,7 @@ for (var i in worksheet) {
   }
 
   // Gather supported adapter types
-  if (worksheet[i].v.toString().toLowerCase() === config.adapterString) {
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.adapterList) {
     var adapterCell = i.match(/^([A-Za-z]+)([0-9]+)$/);
     var adapterMTMCol = adapterCell[1];
     var adapterNameCol = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 1);
@@ -312,17 +312,17 @@ for (var i in worksheet) {
   }
 
   // Gather Applicable Device ID Entries
-  if (worksheet[i].v.toString().toLowerCase() === config.ddWinNICString) readAppDID('ddWinNIC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.ddWinISCSIString) readAppDID('ddWinISCSI', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.ddWinFCString) readAppDID('ddWinFC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.ddWinFCoEString) readAppDID('ddWinFCoE', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.ddLinNICString) readAppDID('ddLinNIC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.ddLinISCSIString) readAppDID('ddLinISCSI', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.ddLinFCString) readAppDID('ddLinFC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.fwSaturnString) readAppDID('fwSaturn', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.fwLancerString) readAppDID('fwLancer', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.fwBEString) readAppDID('fwBE', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.fwSkyhawkString) readAppDID('fwSkyhawk', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinNIC) readAppDID('ddWinNIC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinISCSI) readAppDID('ddWinISCSI', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFC) readAppDID('ddWinFC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFCoE) readAppDID('ddWinFCoE', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinNIC) readAppDID('ddLinNIC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinISCSI) readAppDID('ddLinISCSI', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinFC) readAppDID('ddLinFC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSaturn) readAppDID('fwSaturn', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwLancer) readAppDID('fwLancer', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwBE) readAppDID('fwBE', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSkyhawk) readAppDID('fwSkyhawk', i);
 }
 
 // Display an error if any expected data was not found.
