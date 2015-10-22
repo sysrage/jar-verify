@@ -5,7 +5,7 @@ module.exports = {
   // Temporary directory for file extraction/comparison
   tempDir: '/tmp/jar-verify/',
 
-
+  //
 
   // Definition of all available ASIC types
   asicTypes: [
@@ -102,6 +102,9 @@ module.exports = {
 
   // List of valid Applicable Device ID names
   appDIDNames: [
+    // 4Gb FC
+    {name: 'elx_Zeppelin_1p_2p_FC', value: 'PCI\VEN_10DF&DEV_FE00&SUBSYS_FE0010DF'},
+
     // Saturn
     {name: 'elx_Tetra_FC',          value: 'PCI\VEN_10DF&DEV_F100&SUBSYS_F12410DF'},
     {name: 'elx_Rhea_FC',           value: 'PCI\VEN_10DF&DEV_F100&SUBSYS_F13010DF'},
@@ -193,7 +196,6 @@ module.exports = {
     {name: 'elx_Silver_N',          value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81010DF'},
     {name: 'elx_Silver_P2_N',       value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81F10DF'},
     {name: 'elx_Skyeagle_N',        value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81110DF'},
-    {name: 'elx_Skyeagle_P2_N',     value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81910DF'},
     {name: 'elx_Newport_N',         value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81210DF'},
     {name: 'elx_Braddock_N',        value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81310DF'},
     {name: 'elx_Skybird_N',         value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81510DF'},
@@ -209,7 +211,6 @@ module.exports = {
     {name: 'elx_Silver_I',          value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81010DF'},
     {name: 'elx_Silver_P2_I',       value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81F10DF'},
     {name: 'elx_Skyeagle_I',        value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81110DF'},
-    {name: 'elx_Skyeagle_P2_I',     value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81910DF'},
     {name: 'elx_Newport_I',         value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81210DF'},
     {name: 'elx_Braddock_I',        value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81310DF'},
     {name: 'elx_Skybird_I',         value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81510DF'},
@@ -225,7 +226,6 @@ module.exports = {
     {name: 'elx_Silver_F',          value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81010DF'},
     {name: 'elx_Silver_P2_F',       value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81F10DF'},
     {name: 'elx_Skyeagle_F',        value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81110DF'},
-    {name: 'elx_Skyeagle_P2_F',     value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81910DF'},
     {name: 'elx_Newport_F',         value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81210DF'},
     {name: 'elx_Braddock_F',        value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81310DF'},
     {name: 'elx_Skybird_F',         value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81510DF'},
