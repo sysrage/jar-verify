@@ -5,7 +5,8 @@ module.exports = {
   // Temporary directory for file extraction/comparison
   tempDir: '/tmp/jar-verify/',
 
-  //
+  // Base directory where JAR files should be located
+  jarDir: '/Users/sysrage/Downloads/jars',
 
   // Definition of all available ASIC types
   asicTypes: [
@@ -237,6 +238,146 @@ module.exports = {
     {name: 'elx_Gold_Plus_P2_F',    value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81E10DF'},
     {name: 'elx_Gold_P2_F',         value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81C10DF'},
   ],
+
+  // Package types and their expected FixIDs
+  pkgTypes: {
+    ddWinNIC: {
+      name: 'Windows NIC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_windows'
+    },
+    ddWinISCSI: {
+      name: 'Windows iSCSI Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_windows'
+    },
+    ddWinFC: {
+      name: 'Windows FC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_windows'
+    },
+    ddWinFCoE: {
+      name: 'Windows FCoE Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_cna_([^_]+)_windows'
+    },
+    ddRHEL5NIC: {
+      name: 'RHEL 5.x NIC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_rhel5'
+    },
+    ddRHEL5ISCSI: {
+      name: 'RHEL 5.x iSCSI Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_rhel5'
+    },
+    ddRHEL5FC: {
+      name: 'RHEL 5.x FC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel5'
+    },
+    ddRHEL6NIC: {
+      name: 'RHEL 6.x NIC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_rhel6'
+    },
+    ddRHEL6ISCSI: {
+      name: 'RHEL 6.x iSCSI Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_rhel6'
+    },
+    ddRHEL6FC: {
+      name: 'RHEL 6.x FC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel6'
+    },
+    ddRHEL7NIC: {
+      name: 'RHEL 7.x NIC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_rhel7'
+    },
+    ddRHEL7ISCSI: {
+      name: 'RHEL 7.x iSCSI Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_rhel7'
+    },
+    ddRHEL7FC: {
+      name: 'RHEL 7.x FC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel7'
+    },
+    ddSLES10NIC: {
+      name: 'SLES 10.x NIC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_sles10'
+    },
+    ddSLES10ISCSI: {
+      name: 'SLES 10.x iSCSI Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_sles10'
+    },
+    ddSLES10FC: {
+      name: 'SLES 10.x FC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles10'
+    },
+    ddSLES11NIC: {
+      name: 'SLES 11.x NIC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_sles11'
+    },
+    ddSLES11ISCSI: {
+      name: 'SLES 11.x iSCSI Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_sles11'
+    },
+    ddSLES11FC: {
+      name: 'SLES 11.x FC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles11'
+    },
+    ddSLES12NIC: {
+      name: 'SLES 12.x NIC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_sles12'
+    },
+    ddSLES12ISCSI: {
+      name: 'SLES 12.x iSCSI Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_sles12'
+    },
+    ddSLES12FC: {
+      name: 'SLES 12.x FC Driver',
+      regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles12'
+    },
+    fwBELinux: {
+      name: 'Linux BE Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_linux'
+    },
+    fwBEVMware: {
+      name: 'VMware BE Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_vmware'
+    },
+    fwBEWindows: {
+      name: 'Windows BE Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_windows'
+    },
+    fwLancerLinux: {
+      name: 'Linux Lancer Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_linux'
+    },
+    fwLancerVMware: {
+      name: 'VMware Lancer Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_vmware'
+    },
+    fwLancerWindows: {
+      name: 'Windows Lancer Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_windows'
+    },
+    fwSaturnLinux: {
+      name: 'Linux Saturn Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+[xa][0-9]+\-[0-9]+)_linux'
+    },
+    fwSaturnVMware: {
+      name: 'VMware Saturn Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+[xa][0-9]+\-[0-9]+)_vmware'
+    },
+    fwSaturnWindows: {
+      name: 'Windows Saturn Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+[xa][0-9]+\-[0-9]+)_windows'
+    },
+    fwSkyhawkLinux: {
+      name: 'Linux Skyhawk Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_linux'
+    },
+    fwSkyhawkVMware: {
+      name: 'VMware Skyhawk Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_vmware'
+    },
+    fwSkyhawkWindows: {
+      name: 'Windows Skyhawk Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_windows'
+    },
+  },
 
   // All header search strings used to find relevant sections
   headerStr: {
