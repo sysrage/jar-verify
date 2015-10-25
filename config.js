@@ -5,8 +5,11 @@ module.exports = {
   // Temporary directory for file extraction/comparison
   tempDir: '/tmp/jar-verify/',
 
+  // Base directory where data files should be saved
+  dataDir: __dirname + '/data/',
+
   // Base directory where JAR files should be located
-  jarDir: '/Users/sysrage/Downloads/jars',
+  jarDir: '/Users/sysrage/Downloads/jars/',
 
   // Definition of all available ASIC types
   asicTypes: [

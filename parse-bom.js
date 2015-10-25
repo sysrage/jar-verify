@@ -52,6 +52,17 @@ try {
   return 1;
 }
 
+// Create data directory if it doesn't exist
+if (! fs.existsSync(config.dataDir)){
+  try {
+    fs.mkdirSync(config.dataDir);
+  } catch (err) {
+    util.log("[ERROR] Unable to create data directory.\n" + err + "\n");
+    return 1;
+  }
+  util.log("[INFO] Data directory did not exist. Empty directory created.");
+}
+
 // Verify XLSX BOM file has been passed as an argument
 if (! process.argv[2]) {
   console.log("Usage: node parse-bom.js <BOM File>" +
@@ -297,7 +308,7 @@ for (var i in worksheet) {
 
             // Add adapter to list
             adapterList.push({
-              name: worksheet[adapterNameCol + y].v,
+              name: worksheet[adapterNameCol + y].v.replace('\r\n', ' '),
               model: worksheet[adapterModelCol + y].v,
               v2: v2List,
               agent: agentList,
@@ -352,11 +363,20 @@ var bomDump = {
   adapterList: adapterList,
   appDIDList: appDIDList
 };
-var bomFileJSON = bomFileXLS.replace(/\.xls(?:x)?$/, '.json');
-fs.writeFile(bomFileJSON, JSON.stringify(bomDump, null, 2), function(err) {
-  if (err) {
-    return util.log("[ERROR] Unable to write JSON file to disk.");
-  }
+var bomFileJSON = releaseName + '-bom.json';
+
+// Back up old BOM for this release then save new BOM
+try {
+  var oldBOM = fs.readFileSync(config.dataDir + bomFileJSON);
+  var curDate = new Date();
+  var buName = bomFileJSON + '-' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
+  fs.writeFileSync(config.dataDir + buName, oldBOM);
+} catch (err) {
+  if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old BOM data. New data will not be saved.\n" + err);
+}
+
+fs.writeFile(config.dataDir + bomFileJSON, JSON.stringify(bomDump, null, 2), function(err) {
+  if (err) return util.log("[ERROR] Unable to write BOM data to disk.\n" + err);
 });
 
 // ***DEBUG***
@@ -368,3 +388,4 @@ fs.writeFile(bomFileJSON, JSON.stringify(bomDump, null, 2), function(err) {
 // console.dir(appDIDList);
 // console.log(JSON.stringify(bomDump, null, 2));
 // console.log(bomFileJSON);
+// console.dir(bomDump);
