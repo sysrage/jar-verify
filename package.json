@@ -1,0 +1,24 @@
+{
+  "name": "jar-verify",
+  "version": "1.0.0",
+  "description": "Lenovo UX Package JAR verification scripts",
+  "main": "jar-verify.js",
+  "dependencies": {
+    "xlsx": "^0.8.0",
+    "yauzl": "^2.3.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sysrage/jar-verify.git"
+  },
+  "author": "Brian Bothwell",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sysrage/jar-verify/issues"
+  },
+  "homepage": "https://github.com/sysrage/jar-verify#readme"
+}
