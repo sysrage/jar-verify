@@ -26,7 +26,7 @@ var helpText = "Usage: node jar-verify.js <parameters> \n" +
   "\nAvailable Parameters:\n" +
   " -b | --build    - (Required) Specifies the build number to verify.\n" +
   " -r | --release  - (Required) Specifies the release name to verify.\n" +
-  " -s | --save     - Save the specified release/build as the previously delivered build.";
+  " -s | --save     - Save the specified release/build as a delivered build.";
 
 var runParams = getParams();
 var paramNames = Object.getOwnPropertyNames(runParams);
