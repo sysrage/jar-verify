@@ -28,79 +28,118 @@ module.exports = {
       name: 'RHEL 5',
       id: 203,
       pkgsdkName: ['RHEL 5'],
-      arch: ['x86', 'x64']
+      version: '5',
+      arch: ['x86', 'x64'],
+      type: 'linux',
+      ddName: 'rhel5'
     },
     {
       name: 'RHEL 6',
       id: 208,
       pkgsdkName: ['RHEL 6'],
-      arch: ['x86', 'x64']
+      version: '6',
+      arch: ['x86', 'x64'],
+      type: 'linux',
+      ddName: 'rhel6'
     },
     {
       name: 'RHEL 7',
       id: 209,
       pkgsdkName: ['RHEL 7'],
-      arch: ['x64']
+      version: '7',
+      arch: ['x64'],
+      type: 'linux',
+      ddName: 'rhel7'
     },
     {
       name: 'SLES 10',
       id: 206,
       pkgsdkName: ['SLES 10'],
-      arch: ['x86',
-       'x64']},
+      version: '10',
+      arch: ['x86', 'x64'],
+      type: 'linux',
+      ddName: 'sles10'
+    },
     {
       name: 'SLES 11',
       id: 207,
       pkgsdkName: ['SLES 11'],
-      arch: ['x86',
-       'x64']},
+      version: '11',
+      arch: ['x86', 'x64'],
+      type: 'linux',
+      ddName: 'sles11'
+    },
     {
       name: 'SLES 12',
       id: 210,
       pkgsdkName: ['SLES 12'],
-      arch: ['x64']
+      version: '12',
+      arch: ['x64'],
+      type: 'linux',
+      ddName: 'sles12'
     },
     {
       name: 'Windows 2008',
       id: 109,
       pkgsdkName: ['Windows 2008'],
-      arch: ['x86',
-       'x64']},
+      version: '2008',
+      arch: ['x86', 'x64'],
+      type: 'windows',
+      ddName: 'windows'
+    },
     {
       name: 'Windows 2012 R2',
       id: 113,
       pkgsdkName: ['Windows 2012 R2'],
-      arch: ['x64']
+      version: '2012 R2',
+      arch: ['x64'],
+      type: 'windows',
+      ddName: 'windows'
     },
     {
       name: 'Windows 2012',
       id: 112,
       pkgsdkName: ['Windows 2012'],
-      arch: ['x64']
+      version: '2012',
+      arch: ['x64'],
+      type: 'windows',
+      ddName: 'windows'
     },
     {
       name: 'VMware ESXi 5.0',
       id: 311,
       pkgsdkName: ['VMware vSphere 5.0'],
-      arch: ['x64']
+      version: '5.0',
+      arch: ['x64'],
+      type: 'vmware',
+      ddName: 'none'
     },
     {
       name: 'VMware ESXi 5.1',
       id: 311,
       pkgsdkName: ['VMware vSphere 5.0'],
-      arch: ['x64']
+      version: '5.0',
+      arch: ['x64'],
+      type: 'vmware',
+      ddName: 'none'
     },
     {
       name: 'VMware ESXi 5.5',
       id: 312,
       pkgsdkName: ['VMware vSphere 2013', 'VMware ESXi 5.5'],
-      arch: ['x64']
+      version: '5.5',
+      arch: ['x64'],
+      type: 'vmware',
+      ddName: 'none'
     },
     {
       name: 'VMware ESXi 6.0',
       id: 313,
       pkgsdkName: ['VMware ESXi 6'],
-      arch: ['x64']
+      version: '6.0',
+      arch: ['x64'],
+      type: 'vmware',
+      ddName: 'none'
     },
   ],
 

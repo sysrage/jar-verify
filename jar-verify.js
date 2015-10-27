@@ -117,6 +117,9 @@ allJarFiles.forEach(function (jar) {
   if (! matched) util.log("[WARNING] The JAR file '" + jar + "' did not match any expected names.");
 });
 
+// Build list of expected JAR files based on BOM
+
+// Show error if expected JAR file is missing (as compared to BOM)
 
 
   // yauzl.open(jarDir + jar, function(err, zipfile) {

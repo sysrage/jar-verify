@@ -43,6 +43,80 @@ function readAppDID(type, cell) {
   }
 }
 
+function validateOS(osName, cell) {
+  var validOS = false;
+  for (var os = 0; os < config.osMappings.length; os++) {
+    if (osName.search(new RegExp('^' + config.osMappings[os].name)) > -1) {
+      validOS = true;
+      var osMapName = config.osMappings[os].name;
+      var osMapID = config.osMappings[os].id;
+      var osMapSDKName = config.osMappings[os].pkgsdkName;
+      var osMapVersion = config.osMappings[os].version;
+      var osMapArch = config.osMappings[os].arch;
+      var osMapType = config.osMappings[os].type;
+      var osMapDDName = config.osMappings[os].ddName;
+      break;
+    }
+  }
+
+  if (! validOS) {
+    util.log("[ERROR] Invalid Operating System Name specified in cell " + cell + ".");
+  } else {
+    // Determine architecture of OS
+    if (osName.toLowerCase().search(/32(?:[\-\ ])?bit/) > -1 || osName.toLowerCase().search(/x86/) > -1) {
+      if (osMapArch.indexOf('x86') < 0) {
+        util.log("[ERROR] Invalid architecture specified for OS in cell " + cell + ".");
+      } else {
+        var osArch = 'x86';
+      }
+    } else if (osName.toLowerCase().search(/64(?:[\-\ ])?bit/) > -1 || osName.toLowerCase().search(/x64/) > -1) {
+      if (osMapArch.indexOf('x64') < 0) {
+        util.log("[ERROR] Invalid architecture specified for OS in cell " + cell + ".");
+      } else {
+        var osArch = 'x64';
+      }
+    } else if (osMapArch.length === 1) {
+      var osArch = osMapArch[0];
+    }
+
+    if (! osArch) {
+      util.log("[ERROR] Unable to determine architecture for OS in cell " + cell + ".");
+    } else {
+      // Determine subversion (update/service pack/etc.) of OS
+      var re = new RegExp('^' + osMapName + '[\.\ ](?:[Uu]|SP)?([0-9]+)');
+      if (osName.match(re)) {
+        var osSubVersion = osName.match(re)[1];
+      } else {
+        if (osMapType === 'windows') {
+          var osSubVersion = '0';
+        }
+      }
+
+      if (! osSubVersion) {
+        util.log("[ERROR] Unable to determine point release for OS in cell " + cell + ".");
+      } else {
+        // Determine any extras (KVM, Xen, etc.)
+        var extras = osName.toLowerCase().match(/((?:kvm)|(?:xen))/);
+        if (extras) var osExtras = extras[1];
+
+        osItem = {
+          fullName: osName,
+          id: osMapID,
+          name: osMapName,
+          pkgsdkName: osMapSDKName,
+          version: osMapVersion,
+          subVersion: osSubVersion,
+          extras: osExtras,
+          arch: osArch,
+          type: osMapType,
+          ddName: osMapDDName
+        }
+        return osItem;
+      }
+    }
+  }
+}
+
 // Read configuration file
 try {
   var config = require('./config.js');
@@ -131,19 +205,9 @@ for (var i in worksheet) {
     while (! emptyCell) {
       if (worksheet[x + y]) {
         // Verify OS matches a valid name from the configuration file
-        var osName = worksheet[x + y].v.toString();
-        var validOS = false;
-        for (var os = 0; os < config.osMappings.length; os++) {
-          if (osName.search(config.osMappings[os].name) > -1) {
-            validOS = true;
-            break;
-          }
-        }
-        if (! validOS) {
-          util.log("[ERROR] Invalid Operating System Name specified in cell " + x + y + ".");
-        } else {
-          osList.push(osName);
-        }
+        var osName = worksheet[x + y].v.toString().trim().replace('\r\n', ' ');
+        var validOS = validateOS(osName, x + y);
+        if (validOS) osList.push(validOS);
       } else {
         emptyCell = true;
       }
@@ -190,7 +254,7 @@ for (var i in worksheet) {
             // Build list of supported machine types
             var mtmList = worksheet[systemMTMCol + y].v.toString().replace(' ', '').split(',');
             systemList[worksheet[systemItemCol + y].v] = {
-              name: worksheet[systemNameCol + y].v,
+              name: worksheet[systemNameCol + y].v.trim(),
               mtm: mtmList
             };
           }
@@ -308,8 +372,8 @@ for (var i in worksheet) {
 
             // Add adapter to list
             adapterList.push({
-              name: worksheet[adapterNameCol + y].v.replace('\r\n', ' '),
-              model: worksheet[adapterModelCol + y].v,
+              name: worksheet[adapterNameCol + y].v.toString().replace('\r\n', ' ').trim(),
+              model: worksheet[adapterModelCol + y].v.toString().trim(),
               v2: v2List,
               agent: agentList,
               asic: asicType,
@@ -371,12 +435,14 @@ try {
   var curDate = new Date();
   var buName = bomFileJSON + '-' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
   fs.writeFileSync(config.dataDir + buName, oldBOM);
+  util.log("[INFO] An existing BOM file for this release has been backed up.");
 } catch (err) {
   if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old BOM data. New data will not be saved.\n" + err);
 }
 
 fs.writeFile(config.dataDir + bomFileJSON, JSON.stringify(bomDump, null, 2), function(err) {
   if (err) return util.log("[ERROR] Unable to write BOM data to disk.\n" + err);
+  util.log("[INFO] All BOM file data has been written to '" + config.dataDir + bomFileJSON + "'.");
 });
 
 // ***DEBUG***
