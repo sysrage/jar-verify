@@ -108,7 +108,13 @@ allJarFiles.forEach(function (jar) {
     if (matchResult) {
       matched = true;
       if (! jarFiles[i]) {
-        jarFiles[i] = { fileName: jar, jarVersion: matchResult[1] };
+        jarFiles[i] = {
+          fileName: jar,
+          jarVersion: matchResult[1],
+          type: config.pkgTypes[i].type,
+          os: config.pkgTypes[i].os,
+          proto: config.pkgTypes[i].proto
+        };
       } else {
         util.log("[WARNING] The " + config.pkgTypes[i].name + " package was matched to multiple JAR files. Ignored: " + jar + ".");
       }
@@ -118,8 +124,94 @@ allJarFiles.forEach(function (jar) {
 });
 
 // Build list of expected JAR files based on BOM
+var expJARs = [];
+for (var pkgType in workingBOM.appDIDList) {
+  switch (pkgType) {
+    case 'ddWinNIC':
+      expJARs.push('ddWinNIC');
+      break;
+    case 'ddWinISCSI':
+      expJARs.push('ddWinISCSI');
+      break;
+    case 'ddWinFC':
+      expJARs.push('ddWinFC');
+      break;
+    case 'ddWinFCoE':
+      expJARs.push('ddWinFCoE');
+      break;
+    case 'ddLinNIC':
+      workingBOM.osList.forEach(function(os) {
+        if (os.type === 'linux') {
+          if (expJARs.indexOf('dd' + os.ddName.toUpperCase() + 'NIC') < 0) expJARs.push('dd' + os.ddName.toUpperCase() + 'NIC');
+        }
+      });
+      break;
+    case 'ddLinISCSI':
+      workingBOM.osList.forEach(function(os) {
+        if (os.type === 'linux') {
+          if (expJARs.indexOf('dd' + os.ddName.toUpperCase() + 'ISCSI') < 0) expJARs.push('dd' + os.ddName.toUpperCase() + 'ISCSI');
+        }
+      });
+      break;
+    case 'ddLinFC':
+      workingBOM.osList.forEach(function(os) {
+        if (os.type === 'linux') {
+          if (expJARs.indexOf('dd' + os.ddName.toUpperCase() + 'FC') < 0) expJARs.push('dd' + os.ddName.toUpperCase() + 'FC');
+        }
+      });
+      break;
+    case 'fwSaturn':
+      workingBOM.osList.forEach(function(os) {
+        if (os.type === 'linux') {
+          if (expJARs.indexOf('fwSaturnLinux') < 0) expJARs.push('fwSaturnLinux');
+        } else if (os.type === 'windows') {
+          if (expJARs.indexOf('fwSaturnWindows') < 0) expJARs.push('fwSaturnWindows');
+        } else if (os.type === 'vmware') {
+          if (expJARs.indexOf('fwSaturnVMware') < 0) expJARs.push('fwSaturnVMware');
+        }
+      });
+      break;
+    case 'fwLancer':
+      workingBOM.osList.forEach(function(os) {
+        if (os.type === 'linux') {
+          if (expJARs.indexOf('fwLancerLinux') < 0) expJARs.push('fwLancerLinux');
+        } else if (os.type === 'windows') {
+          if (expJARs.indexOf('fwLancerWindows') < 0) expJARs.push('fwLancerWindows');
+        } else if (os.type === 'vmware') {
+          if (expJARs.indexOf('fwLancerVMware') < 0) expJARs.push('fwLancerVMware');
+        }
+      });
+      break;
+    case 'fwBE':
+      workingBOM.osList.forEach(function(os) {
+        if (os.type === 'linux') {
+          if (expJARs.indexOf('fwBELinux') < 0) expJARs.push('fwBELinux');
+        } else if (os.type === 'windows') {
+          if (expJARs.indexOf('fwBEWindows') < 0) expJARs.push('fwBEWindows');
+        } else if (os.type === 'vmware') {
+          if (expJARs.indexOf('fwBEVMware') < 0) expJARs.push('fwBEVMware');
+        }
+      });
+      break;
+    case 'fwSkyhawk':
+      workingBOM.osList.forEach(function(os) {
+        if (os.type === 'linux') {
+          if (expJARs.indexOf('fwSkyhawkLinux') < 0) expJARs.push('fwSkyhawkLinux');
+        } else if (os.type === 'windows') {
+          if (expJARs.indexOf('fwSkyhawkWindows') < 0) expJARs.push('fwSkyhawkWindows');
+        } else if (os.type === 'vmware') {
+          if (expJARs.indexOf('fwSkyhawkVMware') < 0) expJARs.push('fwSkyhawkVMware');
+        }
+      });
+      break;
+  }
+}
 
 // Show error if expected JAR file is missing (as compared to BOM)
+expJARs.forEach(function (jarType) {
+  if (! jarFiles[jarType]) util.log("[ERROR] Missing JAR file of the type " + jarType + ".");
+});
+
 
 
   // yauzl.open(jarDir + jar, function(err, zipfile) {
