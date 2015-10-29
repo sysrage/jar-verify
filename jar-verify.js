@@ -6,7 +6,10 @@
  * Requres:
  *  - Node.js
  *  - yauzl
+ *  - bluebird*
  *
+ *  * The bluebird module is only required when using older versions of Node.js
+ *    which don't contain Promise support.
  */
 
 var util    = require('util');
@@ -14,6 +17,8 @@ var path    = require('path');
 var fs      = require('fs');
 
 var yauzl   = require('yauzl');
+
+if (typeof Promise === 'undefined') Promise = require('bluebird');
 
 // Read configuration file
 try {
@@ -77,7 +82,7 @@ try {
 
 // Gather list of JAR files in jarDir
 try {
-  var allJarFiles = fs.readdirSync(jarDir);
+  var jarDirFiles = fs.readdirSync(jarDir);
 } catch (err) {
   if (err.code === 'ENOENT') {
     return util.log("[ERROR] The JAR file directory (" + jarDir + ") does not exist.\n");
@@ -89,19 +94,19 @@ try {
 }
 
 // Remove all files/directories from jarFiles array which don't end in .jar
-for (var i = 0; i < allJarFiles.length; i++) {
-  if (allJarFiles[i].search(/\.jar$/i) < 0) {
-    allJarFiles.splice(i, 1);
+for (var i = 0; i < jarDirFiles.length; i++) {
+  if (jarDirFiles[i].search(/\.jar$/i) < 0) {
+    jarDirFiles.splice(i, 1);
     i--;
   }
 }
 
 // Quit if no JAR files are found for the specified release/build
-if (allJarFiles.length < 1) return util.log("[ERROR] No JAR files found in '" + jarDir + "'.\n");
+if (jarDirFiles.length < 1) return util.log("[ERROR] No JAR files found in '" + jarDir + "'.\n");
 
 // Match each JAR file to the expected package types
 var jarFiles = {};
-allJarFiles.forEach(function (jar) {
+jarDirFiles.forEach(function (jar) {
   var matched = false;
   for (i in config.pkgTypes) {
     var matchResult = jar.match(config.pkgTypes[i].regex);
@@ -120,87 +125,87 @@ allJarFiles.forEach(function (jar) {
       }
     }
   }
-  if (! matched) util.log("[WARNING] The JAR file '" + jar + "' did not match any expected names.");
+  if (! matched) util.log("[WARNING] The JAR file '" + jar + "' did not match any expected names and will be ignored.");
 });
 
 // Build list of expected JAR files based on BOM
-var expJARs = [];
+var bomJarTypes = [];
 for (var pkgType in workingBOM.appDIDList) {
   switch (pkgType) {
     case 'ddWinNIC':
-      expJARs.push('ddWinNIC');
+      bomJarTypes.push('ddWinNIC');
       break;
     case 'ddWinISCSI':
-      expJARs.push('ddWinISCSI');
+      bomJarTypes.push('ddWinISCSI');
       break;
     case 'ddWinFC':
-      expJARs.push('ddWinFC');
+      bomJarTypes.push('ddWinFC');
       break;
     case 'ddWinFCoE':
-      expJARs.push('ddWinFCoE');
+      bomJarTypes.push('ddWinFCoE');
       break;
     case 'ddLinNIC':
       workingBOM.osList.forEach(function(os) {
         if (os.type === 'linux') {
-          if (expJARs.indexOf('dd' + os.ddName.toUpperCase() + 'NIC') < 0) expJARs.push('dd' + os.ddName.toUpperCase() + 'NIC');
+          if (bomJarTypes.indexOf('dd' + os.ddName.toUpperCase() + 'NIC') < 0) bomJarTypes.push('dd' + os.ddName.toUpperCase() + 'NIC');
         }
       });
       break;
     case 'ddLinISCSI':
       workingBOM.osList.forEach(function(os) {
         if (os.type === 'linux') {
-          if (expJARs.indexOf('dd' + os.ddName.toUpperCase() + 'ISCSI') < 0) expJARs.push('dd' + os.ddName.toUpperCase() + 'ISCSI');
+          if (bomJarTypes.indexOf('dd' + os.ddName.toUpperCase() + 'ISCSI') < 0) bomJarTypes.push('dd' + os.ddName.toUpperCase() + 'ISCSI');
         }
       });
       break;
     case 'ddLinFC':
       workingBOM.osList.forEach(function(os) {
         if (os.type === 'linux') {
-          if (expJARs.indexOf('dd' + os.ddName.toUpperCase() + 'FC') < 0) expJARs.push('dd' + os.ddName.toUpperCase() + 'FC');
+          if (bomJarTypes.indexOf('dd' + os.ddName.toUpperCase() + 'FC') < 0) bomJarTypes.push('dd' + os.ddName.toUpperCase() + 'FC');
         }
       });
       break;
     case 'fwSaturn':
       workingBOM.osList.forEach(function(os) {
         if (os.type === 'linux') {
-          if (expJARs.indexOf('fwSaturnLinux') < 0) expJARs.push('fwSaturnLinux');
+          if (bomJarTypes.indexOf('fwSaturnLinux') < 0) bomJarTypes.push('fwSaturnLinux');
         } else if (os.type === 'windows') {
-          if (expJARs.indexOf('fwSaturnWindows') < 0) expJARs.push('fwSaturnWindows');
+          if (bomJarTypes.indexOf('fwSaturnWindows') < 0) bomJarTypes.push('fwSaturnWindows');
         } else if (os.type === 'vmware') {
-          if (expJARs.indexOf('fwSaturnVMware') < 0) expJARs.push('fwSaturnVMware');
+          if (bomJarTypes.indexOf('fwSaturnVMware') < 0) bomJarTypes.push('fwSaturnVMware');
         }
       });
       break;
     case 'fwLancer':
       workingBOM.osList.forEach(function(os) {
         if (os.type === 'linux') {
-          if (expJARs.indexOf('fwLancerLinux') < 0) expJARs.push('fwLancerLinux');
+          if (bomJarTypes.indexOf('fwLancerLinux') < 0) bomJarTypes.push('fwLancerLinux');
         } else if (os.type === 'windows') {
-          if (expJARs.indexOf('fwLancerWindows') < 0) expJARs.push('fwLancerWindows');
+          if (bomJarTypes.indexOf('fwLancerWindows') < 0) bomJarTypes.push('fwLancerWindows');
         } else if (os.type === 'vmware') {
-          if (expJARs.indexOf('fwLancerVMware') < 0) expJARs.push('fwLancerVMware');
+          if (bomJarTypes.indexOf('fwLancerVMware') < 0) bomJarTypes.push('fwLancerVMware');
         }
       });
       break;
     case 'fwBE':
       workingBOM.osList.forEach(function(os) {
         if (os.type === 'linux') {
-          if (expJARs.indexOf('fwBELinux') < 0) expJARs.push('fwBELinux');
+          if (bomJarTypes.indexOf('fwBELinux') < 0) bomJarTypes.push('fwBELinux');
         } else if (os.type === 'windows') {
-          if (expJARs.indexOf('fwBEWindows') < 0) expJARs.push('fwBEWindows');
+          if (bomJarTypes.indexOf('fwBEWindows') < 0) bomJarTypes.push('fwBEWindows');
         } else if (os.type === 'vmware') {
-          if (expJARs.indexOf('fwBEVMware') < 0) expJARs.push('fwBEVMware');
+          if (bomJarTypes.indexOf('fwBEVMware') < 0) bomJarTypes.push('fwBEVMware');
         }
       });
       break;
     case 'fwSkyhawk':
       workingBOM.osList.forEach(function(os) {
         if (os.type === 'linux') {
-          if (expJARs.indexOf('fwSkyhawkLinux') < 0) expJARs.push('fwSkyhawkLinux');
+          if (bomJarTypes.indexOf('fwSkyhawkLinux') < 0) bomJarTypes.push('fwSkyhawkLinux');
         } else if (os.type === 'windows') {
-          if (expJARs.indexOf('fwSkyhawkWindows') < 0) expJARs.push('fwSkyhawkWindows');
+          if (bomJarTypes.indexOf('fwSkyhawkWindows') < 0) bomJarTypes.push('fwSkyhawkWindows');
         } else if (os.type === 'vmware') {
-          if (expJARs.indexOf('fwSkyhawkVMware') < 0) expJARs.push('fwSkyhawkVMware');
+          if (bomJarTypes.indexOf('fwSkyhawkVMware') < 0) bomJarTypes.push('fwSkyhawkVMware');
         }
       });
       break;
@@ -208,35 +213,41 @@ for (var pkgType in workingBOM.appDIDList) {
 }
 
 // Show error if expected JAR file is missing (as compared to BOM)
-expJARs.forEach(function (jarType) {
-  if (! jarFiles[jarType]) util.log("[ERROR] Missing JAR file of the type " + jarType + ".");
+bomJarTypes.forEach(function (jarType) {
+  if (! jarFiles[jarType]) util.log("[ERROR] The " + config.pkgTypes[jarType].name + " JAR file cannot be found.");
 });
 
 // Show warning if unexpected JAR file exists (as compared to BOM)
 for (jarType in jarFiles) {
-  if (expJARs.indexOf(jarType) < 0) {
+  if (bomJarTypes.indexOf(jarType) < 0) {
     util.log("[WARNING] Unexpected JAR file will be ignored: " + jarFiles[jarType].fileName);
     delete jarFiles[jarType];
   }
 }
 
+// All items in jarFiles should now be valid - begin verification
+for (jarType in jarFiles) {
+  getZipEntries(jarType).then(function(entries) {
+    // Verify JAR file contains all necessary components (input XML, XML, readme, change history, and payload)
+    if (verifyJarEntries(entries)) {
+      console.log('continuing with: ' + entries.jarType);
+      // Verify input XML
 
-  // yauzl.open(jarDir + jar, function(err, zipfile) {
-  //   if (err) throw err;
-  //   zipfile.on("entry", function(entry) {
-  //     console.dir(zipfile);
-  //     console.dir(entry);
-  //     if (/\/$/.test(entry.fileName)) {
-  //       // directory file names end with '/'
-  //       return;
-  //     }
-  //     zipfile.openReadStream(entry, function(err, readStream) {
-  //       if (err) throw err;
-  //       // ensure parent directory exists, and then:
-  //       readStream.pipe(fs.createWriteStream(entry.fileName));
-  //     });
-  //   });
-  // });
+      // Verify XML
+
+      // Verify readme
+
+      // Verify change history
+
+    }
+  }, function(err) {
+    if (err.code === 'EACCES') {
+      util.log("[ERROR] Permission denied trying to open JAR file: " + err.path);
+    } else {
+      util.log("[ERROR] Unexpected error: " + err);
+    }
+  });
+}
 
 function getParams() {
   var paramList = {}
@@ -275,4 +286,71 @@ function getParams() {
     }
   }
   return paramList;
+}
+
+function getZipEntries(jarType) {
+  return new Promise(function (fulfill, reject) {
+    var entries = [];
+    yauzl.open(jarDir + jarFiles[jarType].fileName, function(err, zipfile) {
+      if (err) {
+        reject(err);
+      } else {
+        zipfile.on("entry", function(entry) {
+          entries.push(entry);
+        });
+        zipfile.on("close", function() {
+          fulfill({jarType: jarType, data: entries});
+        });
+      }
+    });
+  });
+}
+
+function verifyJarEntries(entries) {
+  var inputFileExists = false;
+  var changeFileExists = false;
+  var readmeFileExists = false;
+  var xmlFileExists = false;
+  var binFileExists = false;
+  for (var i = 0; i < entries.data.length; i++) {
+    if (entries.data[i].fileName.search(/input\/.+\.xml$/) > -1) {
+      inputFileExists = true;
+      var inputFileEntry = i;
+    } else if (entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.chg$')) > -1) {
+      changeFileExists = true;
+      var changeFileEntry = i;
+    } else if (entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.txt$')) > -1) {
+      readmeFileExists = true;
+      var readmeFileEntry = i;
+    } else if (entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.xml$')) > -1) {
+      xmlFileExists = true;
+      var xmlFileEntry = i;
+    } else if (config.pkgTypes[entries.jarType].os === 'windows' && entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.exe$')) > -1) {
+      binFileExists = true;
+      var binFileEntry = i;
+    } else if (config.pkgTypes[entries.jarType].os === 'linux' && config.pkgTypes[entries.jarType].type === 'dd' && entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.tgz$')) > -1) {
+      binFileExists = true;
+      var binFileEntry = i;
+    } else if (config.pkgTypes[entries.jarType].os === 'linux' && config.pkgTypes[entries.jarType].type === 'fw' && entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.bin$')) > -1) {
+      binFileExists = true;
+      var binFileEntry = i;
+    } else if (config.pkgTypes[entries.jarType].os === 'vmware' && config.pkgTypes[entries.jarType].type === 'fw' && entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.bin$')) > -1) {
+      binFileExists = true;
+      var binFileEntry = i;
+    }
+  }
+  if (! inputFileExists) {
+    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain an input XML file. No further verification will be performed with this JAR file.");
+  } else if (! changeFileExists) {
+    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain a change history file. No further verification will be performed with this JAR file.");
+  } else if (! readmeFileExists) {
+    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain a readme file. No further verification will be performed with this JAR file.");
+  } else if (! xmlFileExists) {
+    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain an XML file. No further verification will be performed with this JAR file.");
+  } else if (! binFileExists) {
+    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain a payload file. No further verification will be performed with this JAR file.");
+  } else {
+    return true;
+  }
+  return false;
 }
