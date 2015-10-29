@@ -212,6 +212,13 @@ expJARs.forEach(function (jarType) {
   if (! jarFiles[jarType]) util.log("[ERROR] Missing JAR file of the type " + jarType + ".");
 });
 
+// Show warning if unexpected JAR file exists (as compared to BOM)
+for (jarType in jarFiles) {
+  if (expJARs.indexOf(jarType) < 0) {
+    util.log("[WARNING] Unexpected JAR file will be ignored: " + jarFiles[jarType].fileName);
+    delete jarFiles[jarType];
+  }
+}
 
 
   // yauzl.open(jarDir + jar, function(err, zipfile) {
