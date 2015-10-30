@@ -15,6 +15,11 @@ var fs      = require('fs');
 
 var xlsx    = require('xlsx');
 
+/**************************************************************/
+/* Function/Class Definitions                                 */
+/**************************************************************/
+
+// Function to parse Applicable Device ID entries
 function readAppDID(type, cell) {
   var appDIDCell = cell.match(/^([A-Za-z]+)([0-9]+)$/);
   var x = appDIDCell[1];
@@ -43,6 +48,7 @@ function readAppDID(type, cell) {
   }
 }
 
+// Function to validate the supplied operating system
 function validateOS(osName, cell) {
   var validOS = false;
   for (var os = 0; os < config.osMappings.length; os++) {
@@ -116,6 +122,10 @@ function validateOS(osName, cell) {
     }
   }
 }
+
+/**************************************************************/
+/* Start Program                                              */
+/**************************************************************/
 
 // Read configuration file
 try {

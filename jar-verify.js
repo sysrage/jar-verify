@@ -20,6 +20,152 @@ var yauzl   = require('yauzl');
 
 if (typeof Promise === 'undefined') Promise = require('bluebird');
 
+/**************************************************************/
+/* Function/Class Definitions                                 */
+/**************************************************************/
+
+// Function to parse command line parameters
+function getParams() {
+  var paramList = {}
+  for (var i = 2; i < process.argv.length; i++) {
+    var shortMatch = process.argv[i].match(/^\-([A-Za-z0-9\?])/);
+    var longMatch = process.argv[i].match(/^\-\-([A-Za-z0-9\?]+)/);
+    if (shortMatch) {
+      if (process.argv[i + 1]) {
+        if (process.argv[i + 1].search(/^\-/) > -1) {
+          paramList[shortMatch[1]] = null;
+        } else {
+          paramList[shortMatch[1]] = process.argv[i + 1];
+          i++;
+        }
+      } else {
+        paramList[shortMatch[1]] = null;
+      }
+    } else if (longMatch) {
+      if (process.argv[i].indexOf('=') > -1) {
+        var paramSplit = process.argv[i].split('=');
+        paramList[longMatch[1]] = paramSplit[1];
+      } else {
+        if (process.argv[i + 1]) {
+          if (process.argv[i + 1].search(/^\-/) > -1) {
+            paramList[longMatch[1]] = null;
+          } else {
+            paramList[longMatch[1]] = process.argv[i + 1];
+            i++;
+          }
+        } else {
+          paramList[longMatch[1]] = null;
+        }
+      }
+    } else {
+      paramList[process.argv[i]] = null;
+    }
+  }
+  return paramList;
+}
+
+// Function to gather all expected data from a JAR file
+function getJarContent(jarType) {
+  return new Promise(function (fulfill, reject) {
+    yauzl.open(jarDir + jarFiles[jarType].fileName, function(err, zipfile) {
+      if (err) {
+        reject(err);
+      } else {
+        var errorMsg = null;
+        var inputFileName = null;
+        var inputFile = null;
+        var changeFileName = null;
+        var changeFile = null;
+        var readmeFileName = null;
+        var readmeFile = null;
+        var xmlFileName = null;
+        var xmlFile = null;
+        var binFile = null;
+        zipfile.on("error", function(error) {
+          reject(error);
+        });
+        zipfile.on("entry", function(entry) {
+          if (entry.fileName.search(/input\/.+\.xml$/) > -1) {
+            // Read input XML file data
+            inputFileName = entry.fileName;
+            zipfile.openReadStream(entry, function(err, readStream) {
+              if (err) reject(err);
+              readStream.on("data", function(data) {
+                inputFile += data;
+              });
+            });
+          } else if (entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.chg$')) > -1) {
+            // Read change history file data
+            changeFileName = entry.fileName;
+            zipfile.openReadStream(entry, function(err, readStream) {
+              if (err) reject(err);
+              readStream.on("data", function(data) {
+                changeFile += data;
+              });
+            });
+          } else if (entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.txt$')) > -1) {
+            // Read readme file data
+            readmeFileName = entry.fileName;
+            zipfile.openReadStream(entry, function(err, readStream) {
+              if (err) reject(err);
+              readStream.on("data", function(data) {
+                readmeFile += data;
+              });
+            });
+          } else if (entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.xml$')) > -1) {
+            // Read XML file data
+            xmlFileName = entry.fileName;
+            zipfile.openReadStream(entry, function(err, readStream) {
+              if (err) reject(err);
+              readStream.on("data", function(data) {
+                xmlFile += data;
+              });
+            });
+          } else if (config.pkgTypes[jarType].os === 'windows' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.exe$')) > -1) {
+            binFileName = entry.fileName;
+          } else if (config.pkgTypes[jarType].os === 'linux' && config.pkgTypes[jarType].type === 'dd' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.tgz$')) > -1) {
+            binFileName = entry.fileName;
+          } else if (config.pkgTypes[jarType].os === 'linux' && config.pkgTypes[jarType].type === 'fw' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.bin$')) > -1) {
+            binFileName = entry.fileName;
+          } else if (config.pkgTypes[jarType].os === 'vmware' && config.pkgTypes[jarType].type === 'fw' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.bin$')) > -1) {
+            binFileName = entry.fileName;
+          }
+        });
+        zipfile.on("close", function() {
+          if (! inputFileName) {
+            reject({jarType: jarType, code: 'NOINPUTFILE'});
+          } else if (! changeFileName) {
+            reject({jarType: jarType, code: 'NOCHANGEFILE'});
+          } else if (! readmeFileName) {
+            reject({jarType: jarType, code: 'NOREADMEFILE'});
+          } else if (! xmlFileName) {
+            reject({jarType: jarType, code: 'NOXMLFILE'});
+          } else if (! binFileName) {
+            reject({jarType: jarType, code: 'NOBINFILE'});
+          } else {
+            fulfill({
+              jarType: jarType,
+              inputFileName: inputFileName,
+              inputFile: inputFile,
+              changeFileName: changeFileName,
+              changeFile: changeFile,
+              readmeFileName: readmeFileName,
+              readmeFile: readmeFile,
+              xmlFileName: xmlFileName,
+              xmlFile: xmlFile,
+              binFileName: binFile
+            });
+          }
+        });
+      }
+    });
+  });
+}
+
+/**************************************************************/
+/* Start Program                                              */
+/**************************************************************/
+
 // Read configuration file
 try {
   var config = require('./config.js');
@@ -227,130 +373,33 @@ for (jarType in jarFiles) {
 
 // All items in jarFiles should now be valid - begin verification
 for (jarType in jarFiles) {
-  getZipEntries(jarType).then(function(entries) {
-    // Verify JAR file contains all necessary components (input XML, XML, readme, change history, and payload)
-    if (verifyJarEntries(entries)) {
-      console.log('continuing with: ' + entries.jarType);
-      // Verify input XML
+  getJarContent(jarType).then(function(jarContent) {
+    console.dir(jarContent);
+    // Verify input XML
 
-      // Verify XML
+    // Verify XML
 
-      // Verify readme
+    // Verify readme
 
-      // Verify change history
+    // Verify change history
 
-    }
+    // Verify payload
+
   }, function(err) {
     if (err.code === 'EACCES') {
       util.log("[ERROR] Permission denied trying to open JAR file: " + err.path);
+    } else if (err.code === 'NOINPUTFILE') {
+      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain an input XML file. No further verification will be performed with this JAR file.");
+    } else if (err.code === 'NOCHANGEFILE') {
+      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a change history file. No further verification will be performed with this JAR file.");
+    } else if (err.code === 'NOREADMEFILE') {
+      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a readme file. No further verification will be performed with this JAR file.");
+    } else if (err.code === 'NOXMLFILE') {
+      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain an XML file. No further verification will be performed with this JAR file.");
+    } else if (err.code === 'NOBINFILE') {
+      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a payload file. No further verification will be performed with this JAR file.");
     } else {
       util.log("[ERROR] Unexpected error: " + err);
     }
   });
-}
-
-function getParams() {
-  var paramList = {}
-  for (var i = 2; i < process.argv.length; i++) {
-    var shortMatch = process.argv[i].match(/^\-([A-Za-z0-9\?])/);
-    var longMatch = process.argv[i].match(/^\-\-([A-Za-z0-9\?]+)/);
-    if (shortMatch) {
-      if (process.argv[i + 1]) {
-        if (process.argv[i + 1].search(/^\-/) > -1) {
-          paramList[shortMatch[1]] = null;
-        } else {
-          paramList[shortMatch[1]] = process.argv[i + 1];
-          i++;
-        }
-      } else {
-        paramList[shortMatch[1]] = null;
-      }
-    } else if (longMatch) {
-      if (process.argv[i].indexOf('=') > -1) {
-        var paramSplit = process.argv[i].split('=');
-        paramList[longMatch[1]] = paramSplit[1];
-      } else {
-        if (process.argv[i + 1]) {
-          if (process.argv[i + 1].search(/^\-/) > -1) {
-            paramList[longMatch[1]] = null;
-          } else {
-            paramList[longMatch[1]] = process.argv[i + 1];
-            i++;
-          }
-        } else {
-          paramList[longMatch[1]] = null;
-        }
-      }
-    } else {
-      paramList[process.argv[i]] = null;
-    }
-  }
-  return paramList;
-}
-
-function getZipEntries(jarType) {
-  return new Promise(function (fulfill, reject) {
-    var entries = [];
-    yauzl.open(jarDir + jarFiles[jarType].fileName, function(err, zipfile) {
-      if (err) {
-        reject(err);
-      } else {
-        zipfile.on("entry", function(entry) {
-          entries.push(entry);
-        });
-        zipfile.on("close", function() {
-          fulfill({jarType: jarType, data: entries});
-        });
-      }
-    });
-  });
-}
-
-function verifyJarEntries(entries) {
-  var inputFileExists = false;
-  var changeFileExists = false;
-  var readmeFileExists = false;
-  var xmlFileExists = false;
-  var binFileExists = false;
-  for (var i = 0; i < entries.data.length; i++) {
-    if (entries.data[i].fileName.search(/input\/.+\.xml$/) > -1) {
-      inputFileExists = true;
-      var inputFileEntry = i;
-    } else if (entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.chg$')) > -1) {
-      changeFileExists = true;
-      var changeFileEntry = i;
-    } else if (entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.txt$')) > -1) {
-      readmeFileExists = true;
-      var readmeFileEntry = i;
-    } else if (entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.xml$')) > -1) {
-      xmlFileExists = true;
-      var xmlFileEntry = i;
-    } else if (config.pkgTypes[entries.jarType].os === 'windows' && entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.exe$')) > -1) {
-      binFileExists = true;
-      var binFileEntry = i;
-    } else if (config.pkgTypes[entries.jarType].os === 'linux' && config.pkgTypes[entries.jarType].type === 'dd' && entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.tgz$')) > -1) {
-      binFileExists = true;
-      var binFileEntry = i;
-    } else if (config.pkgTypes[entries.jarType].os === 'linux' && config.pkgTypes[entries.jarType].type === 'fw' && entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.bin$')) > -1) {
-      binFileExists = true;
-      var binFileEntry = i;
-    } else if (config.pkgTypes[entries.jarType].os === 'vmware' && config.pkgTypes[entries.jarType].type === 'fw' && entries.data[i].fileName.search(RegExp(config.pkgTypes[entries.jarType] + '.+\.bin$')) > -1) {
-      binFileExists = true;
-      var binFileEntry = i;
-    }
-  }
-  if (! inputFileExists) {
-    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain an input XML file. No further verification will be performed with this JAR file.");
-  } else if (! changeFileExists) {
-    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain a change history file. No further verification will be performed with this JAR file.");
-  } else if (! readmeFileExists) {
-    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain a readme file. No further verification will be performed with this JAR file.");
-  } else if (! xmlFileExists) {
-    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain an XML file. No further verification will be performed with this JAR file.");
-  } else if (! binFileExists) {
-    util.log("[ERROR] The " + config.pkgTypes[entries.jarType].name + " JAR file does not contain a payload file. No further verification will be performed with this JAR file.");
-  } else {
-    return true;
-  }
-  return false;
 }
