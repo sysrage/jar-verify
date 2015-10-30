@@ -4,7 +4,10 @@
   "description": "Lenovo UX Package JAR verification scripts",
   "main": "jar-verify.js",
   "dependencies": {
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.4.3",
     "xlsx": "^0.8.0",
+    "xml2object": "^0.1.2",
     "yauzl": "^2.3.1"
   },
   "devDependencies": {},

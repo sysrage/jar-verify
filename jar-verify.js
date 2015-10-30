@@ -5,6 +5,9 @@
  *
  * Requres:
  *  - Node.js
+ *  - mkdirp
+ *  - rimraf
+ *  - xml2object
  *  - yauzl
  *  - bluebird*
  *
@@ -12,11 +15,14 @@
  *    which don't contain Promise support.
  */
 
-var util    = require('util');
-var path    = require('path');
-var fs      = require('fs');
+var util        = require('util');
+var path        = require('path');
+var fs          = require('fs');
 
-var yauzl   = require('yauzl');
+var mkdirp      = require('mkdirp');
+var rmdir       = require('rimraf');
+var xml2object  = require('xml2object');
+var yauzl       = require('yauzl');
 
 if (typeof Promise === 'undefined') Promise = require('bluebird');
 
@@ -75,12 +81,12 @@ function getJarContent(jarType) {
         var inputFileName = null;
         var inputFile = null;
         var changeFileName = null;
-        var changeFile = null;
+        var changeFile = '';
         var readmeFileName = null;
-        var readmeFile = null;
+        var readmeFile = '';
         var xmlFileName = null;
         var xmlFile = null;
-        var binFile = null;
+        var binFileName = null;
         zipfile.on("error", function(error) {
           reject(error);
         });
@@ -90,9 +96,11 @@ function getJarContent(jarType) {
             inputFileName = entry.fileName;
             zipfile.openReadStream(entry, function(err, readStream) {
               if (err) reject(err);
-              readStream.on("data", function(data) {
-                inputFile += data;
+              var parser = new xml2object(['ibmUpdateData'], readStream);
+              parser.on('object', function(name, obj) {
+                  inputFile = obj;
               });
+              parser.start();
             });
           } else if (entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.chg$')) > -1) {
             // Read change history file data
@@ -117,9 +125,11 @@ function getJarContent(jarType) {
             xmlFileName = entry.fileName;
             zipfile.openReadStream(entry, function(err, readStream) {
               if (err) reject(err);
-              readStream.on("data", function(data) {
-                xmlFile += data;
+              var parser = new xml2object(['INSTANCE'], readStream);
+              parser.on('object', function(name, obj) {
+                  xmlFile = obj;
               });
+              parser.start();
             });
           } else if (config.pkgTypes[jarType].os === 'windows' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.exe$')) > -1) {
             binFileName = entry.fileName;
@@ -129,6 +139,16 @@ function getJarContent(jarType) {
             binFileName = entry.fileName;
           } else if (config.pkgTypes[jarType].os === 'vmware' && config.pkgTypes[jarType].type === 'fw' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.bin$')) > -1) {
             binFileName = entry.fileName;
+          }
+
+          if (binFileName && entry.fileName === binFileName) {
+            mkdirp(config.tempDir + startTime + '/' + jarType + '/', function(err) {
+              if (err) reject(err);
+              zipfile.openReadStream(entry, function(err, readStream) {
+                if (err) reject(err);
+                readStream.pipe(fs.createWriteStream(config.tempDir + startTime + '/' + jarType + '/' + entry.fileName));
+              });
+            });
           }
         });
         zipfile.on("close", function() {
@@ -153,7 +173,7 @@ function getJarContent(jarType) {
               readmeFile: readmeFile,
               xmlFileName: xmlFileName,
               xmlFile: xmlFile,
-              binFileName: binFile
+              binFileName: binFileName
             });
           }
         });
@@ -165,6 +185,10 @@ function getJarContent(jarType) {
 /**************************************************************/
 /* Start Program                                              */
 /**************************************************************/
+
+// Build current date/time string for later use
+var curDate = new Date();
+var startTime = '' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
 
 // Read configuration file
 try {
@@ -374,14 +398,21 @@ for (jarType in jarFiles) {
 // All items in jarFiles should now be valid - begin verification
 for (jarType in jarFiles) {
   getJarContent(jarType).then(function(jarContent) {
-    console.dir(jarContent);
     // Verify input XML
+    // console.log(jarContent.inputFileName);
+    // console.log(JSON.stringify(jarContent.inputFile, null, 2));
 
     // Verify XML
+    // console.log(jarContent.xmlFileName);
+    // console.log(JSON.stringify(jarContent.xmlFile, null, 2));
 
     // Verify readme
+    // console.log(jarContent.readmeFileName);
+    // console.log(jarContent.readmeFile);
 
     // Verify change history
+    // console.log(jarContent.changeFileName);
+    // console.log(jarContent.changeFile);
 
     // Verify payload
 
@@ -403,3 +434,13 @@ for (jarType in jarFiles) {
     }
   });
 }
+
+process.on('exit', function() {
+  console.log('deleting: ' + config.tempDir + startTime);
+  rmdir(config.tempDir + startTime, function(err) {
+    if (err) {
+      util.log("[ERROR] Unable to delete temporary files: " + err);
+    }
+    console.log('deleted!');
+  });
+});
