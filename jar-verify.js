@@ -142,11 +142,11 @@ function getJarContent(jarType) {
           }
 
           if (binFileName && entry.fileName === binFileName) {
-            mkdirp(config.tempDir + startTime + '/' + jarType + '/', function(err) {
+            mkdirp(tempPath + jarType + '/', function(err) {
               if (err) reject(err);
               zipfile.openReadStream(entry, function(err, readStream) {
                 if (err) reject(err);
-                readStream.pipe(fs.createWriteStream(config.tempDir + startTime + '/' + jarType + '/' + entry.fileName));
+                readStream.pipe(fs.createWriteStream(tempPath + jarType + '/' + entry.fileName));
               });
             });
           }
@@ -186,10 +186,6 @@ function getJarContent(jarType) {
 /* Start Program                                              */
 /**************************************************************/
 
-// Build current date/time string for later use
-var curDate = new Date();
-var startTime = '' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
-
 // Read configuration file
 try {
   var config = require('./config.js');
@@ -197,6 +193,12 @@ try {
   return util.log("[ERROR] Unable to open configuration file.\n" + err);
 }
 
+// Initialization
+var curDate = new Date();
+var startTime = '' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
+var tempPath = config.tempDir + '/jar-verify-' + startTime + '/';
+
+// Parse command-line parameters
 var helpText = "Usage: node jar-verify.js <parameters> \n" +
   "\nAvailable Parameters:\n" +
   " -b | --build    - (Required) Specifies the build number to verify.\n" +
@@ -398,6 +400,8 @@ for (jarType in jarFiles) {
 // All items in jarFiles should now be valid - begin verification
 for (jarType in jarFiles) {
   getJarContent(jarType).then(function(jarContent) {
+    var tempFiles = fs.readdirSync(tempPath);
+    console.dir(tempFiles);
     // Verify input XML
     // console.log(jarContent.inputFileName);
     // console.log(JSON.stringify(jarContent.inputFile, null, 2));
@@ -436,11 +440,8 @@ for (jarType in jarFiles) {
 }
 
 process.on('exit', function() {
-  console.log('deleting: ' + config.tempDir + startTime);
-  rmdir(config.tempDir + startTime, function(err) {
-    if (err) {
-      util.log("[ERROR] Unable to delete temporary files: " + err);
-    }
-    console.log('deleted!');
+  // Clean up temporary files
+  rmdir.sync(tempPath, {gently: tempPath}, function(err) {
+    if (err) util.log("[ERROR] Unable to delete temporary files: " + err);
   });
 });

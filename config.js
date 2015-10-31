@@ -3,7 +3,7 @@
 module.exports = {
 
   // Temporary directory for file extraction/comparison
-  tempDir: '/tmp/jar-verify/',
+  tempDir: '/tmp/',
 
   // Base directory where data files should be saved
   dataDir: __dirname + '/data/',
