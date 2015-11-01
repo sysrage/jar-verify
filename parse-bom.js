@@ -136,6 +136,8 @@ try {
   return 1;
 }
 
+if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
+
 // Create data directory if it doesn't exist
 if (! fs.existsSync(config.dataDir)){
   try {

@@ -196,7 +196,10 @@ try {
 // Initialization
 var curDate = new Date();
 var startTime = '' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
-var tempPath = config.tempDir + '/jar-verify-' + startTime + '/';
+if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
+if (config.tempDir[config.tempDir.length - 1] !== '/') config.tempDir += '/';
+if (config.jarDir[config.jarDir.length - 1] !== '/') config.jarDir += '/';
+var tempPath = config.tempDir + 'jar-verify-' + startTime + '/';
 
 // Parse command-line parameters
 var helpText = "Usage: node jar-verify.js <parameters> \n" +
@@ -237,7 +240,7 @@ if (runParams['r'] || runParams['release']) {
 
 // Set jarDir to correct location based on release name and build number
 if (! workingBuild || ! workingRelease) return util.log("[ERROR] Release name and build number must be specified.\n" + helpText);
-var jarDir = config.jarDir + '/' + workingRelease + '/' + workingBuild + '/';
+var jarDir = config.jarDir + workingRelease + '/' + workingBuild + '/';
 
 // Read BOM file for specified release
 try {
@@ -400,8 +403,6 @@ for (jarType in jarFiles) {
 // All items in jarFiles should now be valid - begin verification
 for (jarType in jarFiles) {
   getJarContent(jarType).then(function(jarContent) {
-    var tempFiles = fs.readdirSync(tempPath);
-    console.dir(tempFiles);
     // Verify input XML
     // console.log(jarContent.inputFileName);
     // console.log(JSON.stringify(jarContent.inputFile, null, 2));
@@ -419,6 +420,7 @@ for (jarType in jarFiles) {
     // console.log(jarContent.changeFile);
 
     // Verify payload
+    var payloadFile = tempPath + jarContent.jarType + '/' + jarContent.binFileName;
 
   }, function(err) {
     if (err.code === 'EACCES') {
