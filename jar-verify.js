@@ -182,6 +182,122 @@ function getJarContent(jarType) {
   });
 }
 
+function verifyInputXML(jarContent) {
+  console.log(jarContent.inputFileName);
+  // console.log(JSON.stringify(jarContent.inputFile, null, 2));
+  if (! jarContent.inputFile || ! jarContent.inputFile.version) {
+    util.log("[ERROR] Parameter 'version' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+  } else {
+    var verMatch = jarContent.inputFile.version.match(/(.+)\-([0-9]+)$/);
+    var pkgVersion = verMatch[1];
+    var pkgSubversion = verMatch[2];
+    var pkgAltVersion = null;
+
+    if (config.pkgTypes[jarContent.jarType].type === 'fw' && config.pkgTypes[jarContent.jarType].preVersion) {
+      var verSubMatch = pkgVersion.match(new RegExp('^' + config.pkgTypes[jarContent.jarType].preVersion + '(.+)$'));
+      if (! verSubMatch) {
+        util.log("[ERROR] Pre-version missing in 'version' parameter from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      } else {
+        pkgVersion = verSubMatch[1];
+      }
+    }
+
+    if (! jarContent.inputFile.category || ! jarContent.inputFile.category.type) {
+      util.log("[ERROR] Paramater 'category.type' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      if (jarContent.inputFile.category.type !== workingBOM.release) {
+        util.log("[ERROR] Invalid value for 'category.type' found in input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      }
+    }
+    if (! jarContent.inputFile.category || ! jarContent.inputFile.category.$t) {
+      util.log("[ERROR] Paramater 'category' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      if (config.pkgTypes[jarContent.jarType].type === 'dd') {
+        var categoryMatch = config.pkgTypes[jarContent.jarType].proto;
+      } else {
+        var categoryMatch = null;
+        config.asicTypes.forEach( function(asic) {
+          if (asic.name === config.pkgTypes[jarContent.jarType].asic) categoryMatch = asic.type;
+        });
+      }
+      if (jarContent.inputFile.category.$t !== categoryMatch) {
+        util.log("[ERROR] Invalid value for 'category' found in input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      }
+    }
+
+    if (! jarContent.inputFile.vendor) {
+      util.log("[ERROR] Paramater 'vendor' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      if (! jarContent.inputFile.vendor.match(new RegExp('^' + config.vendor + '$'))) {
+        util.log("[ERROR] Invalid value for 'vendor' found in input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      }
+    }
+
+    if (! jarContent.inputFile.rebootRequired) {
+      util.log("[ERROR] Paramater 'rebootRequired' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      if (jarContent.inputFile.rebootRequired.toLowerCase() !== 'yes') {
+        util.log("[ERROR] Invalid value for 'rebootRequired' found in input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      }
+    }
+
+    if (! jarContent.inputFile.updateType) {
+      util.log("[ERROR] Paramater 'updateType' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      if ((config.pkgTypes[jarContent.jarType].type === 'fw' && jarContent.inputFile.updateType.toLowerCase() !== 'firmware') ||
+          (config.pkgTypes[jarContent.jarType].type === 'dd' && jarContent.inputFile.updateType.toLowerCase() !== 'driver')) {
+        util.log("[ERROR] Invalid value for 'updateType' found in input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      }
+    }
+
+    if (! jarContent.inputFile.updateSelection) {
+      util.log("[ERROR] Paramater 'updateSelection' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      if (jarContent.inputFile.updateSelection.toLowerCase() !== 'auto') {
+        util.log("[ERROR] Invalid value for 'updateSelection' found in input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      }
+    }
+
+    if (! jarContent.inputFile.applicableDeviceIdLabel) {
+      util.log("[ERROR] Paramater 'applicableDeviceIdLabel' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      var jarDidList = jarContent.inputFile.applicableDeviceIdLabel;
+
+      if (config.pkgTypes[jarContent.jarType].type === 'fw') {
+        var bomDidList = workingBOM.appDIDList['fw' + config.pkgTypes[jarContent.jarType].asic];
+      } else {
+        var didOS = null;
+        var didProto = null;
+        if (config.pkgTypes[jarContent.jarType].os === 'linux') didOS = 'Lin';
+        if (config.pkgTypes[jarContent.jarType].os === 'windows') didOS = 'Win';
+        if (config.pkgTypes[jarContent.jarType].proto === 'cna') didProto = 'FCoE';
+        if (config.pkgTypes[jarContent.jarType].proto === 'fc') didProto = 'FC';
+        if (config.pkgTypes[jarContent.jarType].proto === 'iscsi') didProto = 'ISCSI';
+        if (config.pkgTypes[jarContent.jarType].proto === 'nic') didProto = 'NIC';
+        var bomDidList = workingBOM.appDIDList['dd' + didOS + didProto];
+      }
+      bomDidList.forEach(function(did) {
+        if ()
+      });
+      // if (jarContent.inputFile.applicableDeviceIdLabel !== 'auto') {
+      //   util.log("[ERROR] Invalid value for 'applicableDeviceIdLabel' found in input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      // }
+    }
+
+    // Verification of description must be last, due to pieces of the string being pulled from above checks
+    if (! jarContent.inputFile.description) {
+      util.log("[ERROR] Parameter 'description' missing from input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      var inputDesc = config.pkgTypes[jarContent.jarType].inputDesc.replace('##VERSION##', pkgVersion).replace('##RELEASE##', workingBOM.release);
+      if (jarContent.inputFile.description !== inputDesc) {
+        util.log("[ERROR] Invalid value for 'description' found in input XML file for " + config.pkgTypes[jarContent.jarType].name + " package.");
+      }
+    }
+
+
+  }
+}
+
 /**************************************************************/
 /* Start Program                                              */
 /**************************************************************/
@@ -290,10 +406,7 @@ jarDirFiles.forEach(function (jar) {
       if (! jarFiles[i]) {
         jarFiles[i] = {
           fileName: jar,
-          jarVersion: matchResult[1],
-          type: config.pkgTypes[i].type,
-          os: config.pkgTypes[i].os,
-          proto: config.pkgTypes[i].proto
+          jarVersion: matchResult[1]
         };
       } else {
         util.log("[WARNING] The " + config.pkgTypes[i].name + " package was matched to multiple JAR files. Ignored: " + jar + ".");
@@ -403,19 +516,18 @@ for (jarType in jarFiles) {
 // All items in jarFiles should now be valid - begin verification
 for (jarType in jarFiles) {
   getJarContent(jarType).then(function(jarContent) {
-    // Verify input XML
-    // console.log(jarContent.inputFileName);
-    // console.log(JSON.stringify(jarContent.inputFile, null, 2));
+    // Verify input XML data
+    verifyInputXML(jarContent);
 
-    // Verify XML
+    // Verify package XML data
     // console.log(jarContent.xmlFileName);
     // console.log(JSON.stringify(jarContent.xmlFile, null, 2));
 
-    // Verify readme
+    // Verify readme data
     // console.log(jarContent.readmeFileName);
     // console.log(jarContent.readmeFile);
 
-    // Verify change history
+    // Verify change history data
     // console.log(jarContent.changeFileName);
     // console.log(jarContent.changeFile);
 
@@ -438,6 +550,8 @@ for (jarType in jarFiles) {
     } else {
       util.log("[ERROR] Unexpected error: " + err);
     }
+  }).catch(function(err) {
+    console.dir(err);
   });
 }
 

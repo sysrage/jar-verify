@@ -11,12 +11,15 @@ module.exports = {
   // Base directory where JAR files should be located
   jarDir: '/Users/sysrage/Downloads/jars/',
 
+  // Regular Expression to match vendor string (matches elx or elx-lnvgy)
+  vendor: 'elx(?:\-lnvgy)?',
+
   // Definition of all available ASIC types
   asicTypes: [
-    {name: 'BE3', type: 'CNA'},
-    {name: 'Lancer', type: 'FC'},
-    {name: 'Saturn', type: 'FC'},
-    {name: 'Skyhawk', type: 'CNA'},
+    {name: 'BE3', type: 'cna'},
+    {name: 'Lancer', type: 'fc'},
+    {name: 'Saturn', type: 'fc'},
+    {name: 'Skyhawk', type: 'cna'},
   ],
 
   // Definition of all Operating System mappings
@@ -288,226 +291,305 @@ module.exports = {
       regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_windows',
       type: 'dd',
       os: 'windows',
-      proto: 'nic'
+      proto: 'nic',
+      inputDesc: 'Emulex NIC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['ocnd63.sys', 'ocnd64.sys']
     },
     ddWinISCSI: {
       name: 'Windows iSCSI Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_windows',
       type: 'dd',
       os: 'windows',
-      proto: 'iscsi'
+      proto: 'iscsi',
+      inputDesc: 'Emulex iSCSI Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2iscsi.sys']
     },
     ddWinFC: {
       name: 'Windows FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_windows',
       type: 'dd',
       os: 'windows',
-      proto: 'fc'
+      proto: 'fc',
+      inputDesc: 'Emulex FC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['elxfc.sys']
     },
     ddWinFCoE: {
       name: 'Windows FCoE Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_cna_([^_]+)_windows',
       type: 'dd',
       os: 'windows',
-      proto: 'fcoe'
+      proto: 'cna',
+      inputDesc: 'Emulex FCoE Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['elxcna.sys']
     },
     ddRHEL5NIC: {
       name: 'RHEL 5.x NIC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_rhel5',
       type: 'dd',
       os: 'linux',
-      proto: 'nic'
+      proto: 'nic',
+      inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2net.ko']
     },
     ddRHEL5ISCSI: {
       name: 'RHEL 5.x iSCSI Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_rhel5',
       type: 'dd',
       os: 'linux',
-      proto: 'iscsi'
+      proto: 'iscsi',
+      inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2iscsi.ko']
     },
     ddRHEL5FC: {
       name: 'RHEL 5.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel5',
       type: 'dd',
       os: 'linux',
-      proto: 'fc'
+      proto: 'fc',
+      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['lpfc.ko']
     },
     ddRHEL6NIC: {
       name: 'RHEL 6.x NIC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_rhel6',
       type: 'dd',
       os: 'linux',
-      proto: 'nic'
+      proto: 'nic',
+      inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2net.ko']
     },
     ddRHEL6ISCSI: {
       name: 'RHEL 6.x iSCSI Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_rhel6',
       type: 'dd',
       os: 'linux',
-      proto: 'iscsi'
+      proto: 'iscsi',
+      inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2iscsi.ko']
     },
     ddRHEL6FC: {
       name: 'RHEL 6.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel6',
       type: 'dd',
       os: 'linux',
-      proto: 'fc'
+      proto: 'fc',
+      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['lpfc.ko']
     },
     ddRHEL7NIC: {
       name: 'RHEL 7.x NIC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_rhel7',
       type: 'dd',
       os: 'linux',
-      proto: 'nic'
+      proto: 'nic',
+      inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2net.ko']
     },
     ddRHEL7ISCSI: {
       name: 'RHEL 7.x iSCSI Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_rhel7',
       type: 'dd',
       os: 'linux',
-      proto: 'iscsi'
+      proto: 'iscsi',
+      inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2iscsi.ko']
     },
     ddRHEL7FC: {
       name: 'RHEL 7.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel7',
       type: 'dd',
       os: 'linux',
-      proto: 'fc'
+      proto: 'fc',
+      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['lpfc.ko']
     },
     ddSLES10NIC: {
       name: 'SLES 10.x NIC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_sles10',
       type: 'dd',
       os: 'linux',
-      proto: 'nic'
+      proto: 'nic',
+      inputDesc: 'Emulex NIC (be2net) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2net.ko']
     },
     ddSLES10ISCSI: {
       name: 'SLES 10.x iSCSI Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_sles10',
       type: 'dd',
       os: 'linux',
-      proto: 'iscsi'
+      proto: 'iscsi',
+      inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2iscsi.ko']
     },
     ddSLES10FC: {
       name: 'SLES 10.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles10',
       type: 'dd',
       os: 'linux',
-      proto: 'fc'
+      proto: 'fc',
+      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['lpfc.ko']
     },
     ddSLES11NIC: {
       name: 'SLES 11.x NIC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_sles11',
       type: 'dd',
       os: 'linux',
-      proto: 'nic'
+      proto: 'nic',
+      inputDesc: 'Emulex NIC (be2net) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2net.ko']
     },
     ddSLES11ISCSI: {
       name: 'SLES 11.x iSCSI Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_sles11',
       type: 'dd',
       os: 'linux',
-      proto: 'iscsi'
+      proto: 'iscsi',
+      inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2iscsi.ko']
     },
     ddSLES11FC: {
       name: 'SLES 11.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles11',
       type: 'dd',
       os: 'linux',
-      proto: 'fc'
+      proto: 'fc',
+      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['lpfc.ko']
     },
     ddSLES12NIC: {
       name: 'SLES 12.x NIC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_nic_([^_]+)_sles12',
       type: 'dd',
       os: 'linux',
-      proto: 'nic'
+      proto: 'nic',
+      inputDesc: 'Emulex NIC (be2net) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2net.ko']
     },
     ddSLES12ISCSI: {
       name: 'SLES 12.x iSCSI Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_iscsi_([^_]+)_sles12',
       type: 'dd',
       os: 'linux',
-      proto: 'iscsi'
+      proto: 'iscsi',
+      inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['be2iscsi.ko']
     },
     ddSLES12FC: {
       name: 'SLES 12.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles12',
       type: 'dd',
       os: 'linux',
-      proto: 'fc'
+      proto: 'fc',
+      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
+      ddFileName: ['lpfc.ko']
     },
     fwBELinux: {
       name: 'Linux BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_linux',
       type: 'fw',
-      os: 'linux'
+      os: 'linux',
+      asic: 'BE3',
+      preVersion: 'oc11-',
+      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
     },
     fwBEVMware: {
       name: 'VMware BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_vmware',
       type: 'fw',
-      os: 'vmware'
+      os: 'vmware',
+      asic: 'BE3',
+      preVersion: 'oc11-',
+      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
     },
     fwBEWindows: {
       name: 'Windows BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_windows',
       type: 'fw',
-      os: 'windows'
+      os: 'windows',
+      asic: 'BE3',
+      preVersion: 'oc11-',
+      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
     },
     fwLancerLinux: {
       name: 'Linux Lancer Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_linux',
       type: 'fw',
-      os: 'linux'
+      os: 'linux',
+      asic: 'Lancer',
+      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
     },
     fwLancerVMware: {
       name: 'VMware Lancer Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_vmware',
       type: 'fw',
-      os: 'vmware'
+      os: 'vmware',
+      asic: 'Lancer',
+      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
     },
     fwLancerWindows: {
       name: 'Windows Lancer Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_windows',
       type: 'fw',
-      os: 'windows'
+      os: 'windows',
+      asic: 'Lancer',
+      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
     },
     fwSaturnLinux: {
       name: 'Linux Saturn Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+[xa][0-9]+\-[0-9]+)_linux',
       type: 'fw',
-      os: 'linux'
+      os: 'linux',
+      asic: 'Saturn',
+      postVersion: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
+      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
     },
     fwSaturnVMware: {
       name: 'VMware Saturn Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+[xa][0-9]+\-[0-9]+)_vmware',
+      fwRegex: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
       type: 'fw',
-      os: 'vmware'
+      os: 'vmware',
+      asic: 'Saturn',
+      postVersion: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
+      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
     },
     fwSaturnWindows: {
       name: 'Windows Saturn Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+[xa][0-9]+\-[0-9]+)_windows',
+      fwRegex: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
       type: 'fw',
-      os: 'windows'
+      os: 'windows',
+      asic: 'Saturn',
+      postVersion: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
+      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
     },
     fwSkyhawkLinux: {
       name: 'Linux Skyhawk Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_linux',
       type: 'fw',
-      os: 'linux'
+      os: 'linux',
+      asic: 'Skyhawk',
+      preVersion: 'oc14-',
+      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
     },
     fwSkyhawkVMware: {
       name: 'VMware Skyhawk Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_vmware',
       type: 'fw',
-      os: 'vmware'
+      os: 'vmware',
+      asic: 'Skyhawk',
+      preVersion: 'oc14-',
+      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
     },
     fwSkyhawkWindows: {
       name: 'Windows Skyhawk Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_windows',
       type: 'fw',
-      os: 'windows'
+      os: 'windows',
+      asic: 'Skyhawk',
+      preVersion: 'oc14-',
+      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
     },
   },
 
