@@ -178,19 +178,19 @@ var releaseType = null;
 var osList = [];
 var systemList = [];
 var adapterList = [];
-var appDIDList = {
-  ddWinNIC: [],
-  ddWinISCSI: [],
-  ddWinFC: [],
-  ddWinFCoE: [],
-  ddLinNIC: [],
-  ddLinISCSI: [],
-  ddLinFC: [],
-  fwSaturn: [],
-  fwLancer: [],
-  fwBE: [],
-  fwSkyhawk: []
-};
+// var appDIDList = {
+//   ddWinNIC: [],
+//   ddWinISCSI: [],
+//   ddWinFC: [],
+//   ddWinFCoE: [],
+//   ddLinNIC: [],
+//   ddLinISCSI: [],
+//   ddLinFC: [],
+//   fwSaturn: [],
+//   fwLancer: [],
+//   fwBE3: [],
+//   fwSkyhawk: []
+// };
 
 // Parse worksheet
 for (var i in worksheet) {
@@ -399,18 +399,39 @@ for (var i in worksheet) {
   }
 
   // Gather Applicable Device ID Entries
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinNIC) readAppDID('ddWinNIC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinISCSI) readAppDID('ddWinISCSI', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFC) readAppDID('ddWinFC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFCoE) readAppDID('ddWinFCoE', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinNIC) readAppDID('ddLinNIC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinISCSI) readAppDID('ddLinISCSI', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinFC) readAppDID('ddLinFC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSaturn) readAppDID('fwSaturn', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwLancer) readAppDID('fwLancer', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwBE) readAppDID('fwBE', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSkyhawk) readAppDID('fwSkyhawk', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinNIC) readAppDID('ddWinNIC', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinISCSI) readAppDID('ddWinISCSI', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFC) readAppDID('ddWinFC', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFCoE) readAppDID('ddWinFCoE', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinNIC) readAppDID('ddLinNIC', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinISCSI) readAppDID('ddLinISCSI', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinFC) readAppDID('ddLinFC', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSaturn) readAppDID('fwSaturn', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwLancer) readAppDID('fwLancer', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwBE3) readAppDID('fwBE3', i);
+  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSkyhawk) readAppDID('fwSkyhawk', i);
 }
+
+// Generate Applicable Device ID Entries
+var appDIDList = {
+  fw: {},
+  dd: {}
+};
+var uniqueASIC = [];
+adapterList.forEach(function(adapter) {
+  if (uniqueASIC.indexOf(adapter.asic) < 0) uniqueASIC.push(adapter.asic);
+});
+uniqueASIC.forEach(function(asic) {
+  appDIDList['fw'][asic] = [];
+  // need to parse config.appDIDNames to determine which name to add to list
+});
+// config.asicTypes.forEach(function(asic) {
+//   appDIDList['fw'][asic] = [];
+// });
+// config.osMappings.forEach(function(os) {
+//   appDIDList['dd'][os.ddName] = [];
+// });
+
 
 // Display an error if any expected data was not found.
 if (! releaseName) util.log("[ERROR] Release name was not specified.");
@@ -427,7 +448,7 @@ if (appDIDList.ddLinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID 
 if (appDIDList.ddLinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux FC/FCoE driver.");
 if (appDIDList.fwSaturn.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Saturn firmware.");
 if (appDIDList.fwLancer.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Lancer firmware.");
-if (appDIDList.fwBE.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for BE firmware.");
+if (appDIDList.fwBE3.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for BE firmware.");
 if (appDIDList.fwSkyhawk.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Skyhawk firmware.");
 
 // Add all data to a single object and write it to disk

@@ -484,7 +484,7 @@ module.exports = {
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko']
     },
-    fwBELinux: {
+    fwBE3Linux: {
       name: 'Linux BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_linux',
       type: 'fw',
@@ -493,7 +493,7 @@ module.exports = {
       preVersion: 'oc11-',
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
     },
-    fwBEVMware: {
+    fwBE3VMware: {
       name: 'VMware BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_vmware',
       type: 'fw',
@@ -502,7 +502,7 @@ module.exports = {
       preVersion: 'oc11-',
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
     },
-    fwBEWindows: {
+    fwBE3Windows: {
       name: 'Windows BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_windows',
       type: 'fw',
@@ -609,7 +609,7 @@ module.exports = {
     ddLinFC: 'linux fc/fcoe dd',
     fwSaturn: 'saturn fw',
     fwLancer: 'lancer fw',
-    fwBE: 'be fw',
+    fwBE3: 'be fw',
     fwSkyhawk: 'skyhawk fw',
     systemType: ['rack', 'flex'], // System type headers (ignored but need to be tracked)
   }
