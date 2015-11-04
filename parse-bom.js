@@ -286,6 +286,7 @@ for (var i in worksheet) {
     var adapterModelCol = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 2);
     var adapterV2Col = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 3);
     var adapterAgentCol = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 4);
+    var adapterPLDMCol = String.fromCharCode(adapterMTMCol.charCodeAt(0) + 5);
 
     var colNum = adapterMTMCol.charCodeAt(0) - 65;
     var y = parseInt(adapterCell[2]) + 2;
@@ -339,6 +340,8 @@ for (var i in worksheet) {
             util.log("[ERROR] Missing DriverFiles entry (V2) in cell " + adapterV2Col + y + ".");
           } else if (! worksheet[adapterAgentCol + y]) {
             util.log("[ERROR] Missing Agentless entry in cell " + adapterAgentCol + y + ".");
+          } else if (! worksheet[adapterPLDMCol + y]) {
+            util.log("[ERROR] Missing PLDM FW DL Data in cell " + adapterAgentCol + y + ".");
           } else {
             // Build list of supported machine types
             var mtmList = [];
@@ -369,11 +372,11 @@ for (var i in worksheet) {
 
             // Build list of DriverFiles entries
             var v2List = [];
-            v2List = worksheet[adapterV2Col + y].v.toString().match(/\S+/g);
+            v2List = worksheet[adapterV2Col + y].v.toString().toUpperCase().match(/\S+/g);
 
             // Build list of Agentless entries
             var agentList = [];
-            var tempList = worksheet[adapterAgentCol + y].v.toString().match(/Entry:[\ ]*([A-F0-9]+)[^]*Type 1:[\ ]*([0-9]+)(?:[^]*Type 2:[\ ]*([0-9]+))?/m);
+            var tempList = worksheet[adapterAgentCol + y].v.toString().toUpperCase().match(/ENTRY:[\ ]*([A-F0-9]+)[^]*TYPE 1:[\ ]*([0-9]+)(?:[^]*TYPE 2:[\ ]*([0-9]+))?/m);
             if (! tempList) {
               util.log("[ERROR] Missing or invalid Agentless entry in cell " + adapterAgentCol + y + ".");
             } else {
@@ -384,12 +387,21 @@ for (var i in worksheet) {
               if (typeTwo) agentList.push({id: entryID, type: typeTwo});
             }
 
+            // Gather PLDM FW DL data
+            var tempData = worksheet[adapterPLDMCol + y].v.toString().toUpperCase().match(/VENDOR ID:[\ ]*([A-F0-9]{4})[^]*DEVICE ID:[\ ]*([A-F0-9]{4})/m);
+            if (! tempData) {
+              var pldmData = {};
+            } else {
+              var pldmData = { vendor: tempData[1], device: tempData[2] };
+            }
+
             // Add adapter to list
             adapterList.push({
               name: worksheet[adapterNameCol + y].v.toString().replace('\r\n', ' ').trim(),
               model: worksheet[adapterModelCol + y].v.toString().trim(),
               v2: v2List,
               agent: agentList,
+              pldm: pldmData,
               asic: asicType,
               mtm: mtmList
             });
