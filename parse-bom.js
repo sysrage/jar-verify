@@ -412,19 +412,69 @@ for (var i in worksheet) {
   // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSkyhawk) readAppDID('fwSkyhawk', i);
 }
 
-// Generate Applicable Device ID Entries
-var appDIDList = {
-  fw: {},
-  dd: {}
-};
-var uniqueASIC = [];
+// Generate list of Applicable Device ID Entries
+var appDIDList = { fw: {}, dd: {} };
 adapterList.forEach(function(adapter) {
-  if (uniqueASIC.indexOf(adapter.asic) < 0) uniqueASIC.push(adapter.asic);
+  var agentID = adapter.agent[0].id.match(/([0-9A-Z]{4})([0-9A-Z]{4})/);
+  var ssDID = '' + agentID[2] + agentID[1];
+  osList.forEach(function(os) {
+    // Build firmware entries
+    if (! appDIDList['fw'][os.type]) appDIDList['fw'][os.type] = {};
+    if (! appDIDList['fw'][os.type][adapter.asic]) appDIDList['fw'][os.type][adapter.asic] = [];
+    config.appDIDNames.forEach(function(appDID) {
+      if (appDID.value.search(new RegExp('SUBSYS_' + ssDID + '$')) > -1) {
+        if (appDIDList['fw'][os.type][adapter.asic].indexOf(appDID.name) < 0) appDIDList['fw'][os.type][adapter.asic].push(appDID.name);
+      }
+    });
+
+    if (os.ddName !== 'none') {
+      if (! appDIDList['dd'][os.ddName]) appDIDList['dd'][os.ddName] = {};
+      config.asicTypes.forEach(function(cASIC) {
+        if (adapter.asic === cASIC.name) {
+          config.appDIDNames.forEach(function(appDID) {
+            if (appDID.value.search(new RegExp('SUBSYS_' + ssDID + '$')) > -1) {
+              if (cASIC.type === 'fc') {
+                if (! appDIDList['dd'][os.ddName]['fc']) appDIDList['dd'][os.ddName]['fc'] = [];
+                if (appDIDList['dd'][os.ddName]['fc'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['fc'].push(appDID.name);
+              }
+              if (cASIC.type === 'cna' || cASIC.type === 'nic') {
+                if (! appDIDList['dd'][os.ddName]['nic']) appDIDList['dd'][os.ddName]['nic'] = [];
+                if (appDIDList['dd'][os.ddName]['nic'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['nic'].push(appDID.name);
+              }
+              if (cASIC.type === 'cna' || cASIC.type === 'iscsi') {
+                if (! appDIDList['dd'][os.ddName]['iscsi']) appDIDList['dd'][os.ddName]['iscsi'] = [];
+                if (appDIDList['dd'][os.ddName]['iscsi'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['iscsi'].push(appDID.name);
+              }
+              if (cASIC.type === 'cna' || cASIC.type === 'fcoe') {
+                if (os.type === 'windows') {
+                  if (! appDIDList['dd'][os.ddName]['cna']) appDIDList['dd'][os.ddName]['cna'] = [];
+                  if (appDIDList['dd'][os.ddName]['cna'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['cna'].push(appDID.name);
+                } else {
+                  if (! appDIDList['dd'][os.ddName]['fc']) appDIDList['dd'][os.ddName]['fc'] = [];
+                  if (appDIDList['dd'][os.ddName]['fc'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['fc'].push(appDID.name);
+                }
+              }
+            }
+          });
+        }
+      });
+    }
+  });
 });
-uniqueASIC.forEach(function(asic) {
-  appDIDList['fw'][asic] = [];
-  // need to parse config.appDIDNames to determine which name to add to list
-});
+
+// adapterList.forEach(function(adapter) {
+//   osList.forEach(function(os) {
+//     if (os.ddName !== 'none') {
+//       if (! appDIDList['fw'][os.ddName]) appDIDList['fw'][os.ddName] = {};
+//       if (! appDIDList['fw'][os.ddName][adapter.asic]) appDIDList['fw'][os.ddName][adapter.asic] = [];
+//       appDIDList['fw'][os.ddName][adapter.asic].push(adapter.name);
+//     }
+//   });
+// });
+
+console.log(JSON.stringify(appDIDList, null, 2));
+// console.log(JSON.stringify(osList, null, 2));
+// console.log(JSON.stringify(adapterList, null, 2));
 // config.asicTypes.forEach(function(asic) {
 //   appDIDList['fw'][asic] = [];
 // });
@@ -439,17 +489,17 @@ if (! releaseType) util.log("[ERROR] Release type was not specified.");
 if (osList.length < 1) util.log("[ERROR] No supported operating systems were specified.");
 if (systemList.length < 1) util.log("[ERROR] No supported system types were specified.");
 if (adapterList.length < 1) util.log("[ERROR] No supported adapters were specified.");
-if (appDIDList.ddWinNIC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows NIC driver.");
-if (appDIDList.ddWinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows iSCSI driver.");
-if (appDIDList.ddWinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows FC driver.");
-if (appDIDList.ddWinFCoE.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows FCoE driver.");
-if (appDIDList.ddLinNIC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux NIC driver.");
-if (appDIDList.ddLinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux iSCSI driver.");
-if (appDIDList.ddLinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux FC/FCoE driver.");
-if (appDIDList.fwSaturn.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Saturn firmware.");
-if (appDIDList.fwLancer.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Lancer firmware.");
-if (appDIDList.fwBE3.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for BE firmware.");
-if (appDIDList.fwSkyhawk.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Skyhawk firmware.");
+// if (appDIDList.ddWinNIC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows NIC driver.");
+// if (appDIDList.ddWinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows iSCSI driver.");
+// if (appDIDList.ddWinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows FC driver.");
+// if (appDIDList.ddWinFCoE.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows FCoE driver.");
+// if (appDIDList.ddLinNIC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux NIC driver.");
+// if (appDIDList.ddLinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux iSCSI driver.");
+// if (appDIDList.ddLinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux FC/FCoE driver.");
+// if (appDIDList.fwSaturn.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Saturn firmware.");
+// if (appDIDList.fwLancer.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Lancer firmware.");
+// if (appDIDList.fwBE3.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for BE firmware.");
+// if (appDIDList.fwSkyhawk.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Skyhawk firmware.");
 
 // Add all data to a single object and write it to disk
 var bomDump = {
