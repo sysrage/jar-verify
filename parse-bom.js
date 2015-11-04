@@ -37,7 +37,7 @@ function readAppDID(type, cell) {
         }
       }
       if (valid) {
-        appDIDList[type].push(appDID);
+        bomAppDIDList[type].push(appDID);
       } else {
         util.log("[ERROR] Invalid Applicable Device ID in cell " + cell + ".");
       }
@@ -178,19 +178,21 @@ var releaseType = null;
 var osList = [];
 var systemList = [];
 var adapterList = [];
-// var appDIDList = {
-//   ddWinNIC: [],
-//   ddWinISCSI: [],
-//   ddWinFC: [],
-//   ddWinFCoE: [],
-//   ddLinNIC: [],
-//   ddLinISCSI: [],
-//   ddLinFC: [],
-//   fwSaturn: [],
-//   fwLancer: [],
-//   fwBE3: [],
-//   fwSkyhawk: []
-// };
+
+// BOM Applicable Device ID entries -- This will be removed
+var bomAppDIDList = {
+  ddWinNIC: [],
+  ddWinISCSI: [],
+  ddWinFC: [],
+  ddWinFCoE: [],
+  ddLinNIC: [],
+  ddLinISCSI: [],
+  ddLinFC: [],
+  fwSaturn: [],
+  fwLancer: [],
+  fwBE3: [],
+  fwSkyhawk: []
+};
 
 // Parse worksheet
 for (var i in worksheet) {
@@ -398,21 +400,21 @@ for (var i in worksheet) {
     }
   }
 
-  // Gather Applicable Device ID Entries
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinNIC) readAppDID('ddWinNIC', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinISCSI) readAppDID('ddWinISCSI', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFC) readAppDID('ddWinFC', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFCoE) readAppDID('ddWinFCoE', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinNIC) readAppDID('ddLinNIC', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinISCSI) readAppDID('ddLinISCSI', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinFC) readAppDID('ddLinFC', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSaturn) readAppDID('fwSaturn', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwLancer) readAppDID('fwLancer', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwBE3) readAppDID('fwBE3', i);
-  // if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSkyhawk) readAppDID('fwSkyhawk', i);
+  // Gather Applicable Device ID entries from BOM -- This will be removed
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinNIC) readAppDID('ddWinNIC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinISCSI) readAppDID('ddWinISCSI', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFC) readAppDID('ddWinFC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFCoE) readAppDID('ddWinFCoE', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinNIC) readAppDID('ddLinNIC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinISCSI) readAppDID('ddLinISCSI', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinFC) readAppDID('ddLinFC', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSaturn) readAppDID('fwSaturn', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwLancer) readAppDID('fwLancer', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwBE3) readAppDID('fwBE3', i);
+  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSkyhawk) readAppDID('fwSkyhawk', i);
 }
 
-// Generate list of Applicable Device ID Entries
+// Generate list of Applicable Device ID entries
 var appDIDList = { fw: {}, dd: {} };
 adapterList.forEach(function(adapter) {
   var agentID = adapter.agent[0].id.match(/([0-9A-Z]{4})([0-9A-Z]{4})/);
@@ -427,6 +429,7 @@ adapterList.forEach(function(adapter) {
       }
     });
 
+    // Build driver entries
     if (os.ddName !== 'none') {
       if (! appDIDList['dd'][os.ddName]) appDIDList['dd'][os.ddName] = {};
       config.asicTypes.forEach(function(cASIC) {
@@ -442,16 +445,20 @@ adapterList.forEach(function(adapter) {
                 if (appDIDList['dd'][os.ddName]['nic'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['nic'].push(appDID.name);
               }
               if (cASIC.type === 'cna' || cASIC.type === 'iscsi') {
-                if (! appDIDList['dd'][os.ddName]['iscsi']) appDIDList['dd'][os.ddName]['iscsi'] = [];
-                if (appDIDList['dd'][os.ddName]['iscsi'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['iscsi'].push(appDID.name);
+                if (appDID.type === 'iscsi') {
+                  if (! appDIDList['dd'][os.ddName]['iscsi']) appDIDList['dd'][os.ddName]['iscsi'] = [];
+                  if (appDIDList['dd'][os.ddName]['iscsi'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['iscsi'].push(appDID.name);
+                }
               }
               if (cASIC.type === 'cna' || cASIC.type === 'fcoe') {
-                if (os.type === 'windows') {
-                  if (! appDIDList['dd'][os.ddName]['cna']) appDIDList['dd'][os.ddName]['cna'] = [];
-                  if (appDIDList['dd'][os.ddName]['cna'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['cna'].push(appDID.name);
-                } else {
-                  if (! appDIDList['dd'][os.ddName]['fc']) appDIDList['dd'][os.ddName]['fc'] = [];
-                  if (appDIDList['dd'][os.ddName]['fc'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['fc'].push(appDID.name);
+                if (appDID.type === 'fcoe') {
+                  if (os.type === 'windows') {
+                    if (! appDIDList['dd'][os.ddName]['cna']) appDIDList['dd'][os.ddName]['cna'] = [];
+                    if (appDIDList['dd'][os.ddName]['cna'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['cna'].push(appDID.name);
+                  } else {
+                    if (! appDIDList['dd'][os.ddName]['fc']) appDIDList['dd'][os.ddName]['fc'] = [];
+                    if (appDIDList['dd'][os.ddName]['fc'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['fc'].push(appDID.name);
+                  }
                 }
               }
             }
@@ -462,26 +469,73 @@ adapterList.forEach(function(adapter) {
   });
 });
 
-// adapterList.forEach(function(adapter) {
-//   osList.forEach(function(os) {
-//     if (os.ddName !== 'none') {
-//       if (! appDIDList['fw'][os.ddName]) appDIDList['fw'][os.ddName] = {};
-//       if (! appDIDList['fw'][os.ddName][adapter.asic]) appDIDList['fw'][os.ddName][adapter.asic] = [];
-//       appDIDList['fw'][os.ddName][adapter.asic].push(adapter.name);
-//     }
-//   });
-// });
-
-console.log(JSON.stringify(appDIDList, null, 2));
-// console.log(JSON.stringify(osList, null, 2));
-// console.log(JSON.stringify(adapterList, null, 2));
-// config.asicTypes.forEach(function(asic) {
-//   appDIDList['fw'][asic] = [];
-// });
-// config.osMappings.forEach(function(os) {
-//   appDIDList['dd'][os.ddName] = [];
-// });
-
+// Compare BOM Applicable Device ID entries with auto-generated entries -- This will be removed
+bomAppDIDList.ddWinNIC.forEach(function(DID) {
+  if (appDIDList['dd']['windows']['nic'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Windows NIC driver AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['dd']['windows']['nic'].forEach(function(DID) {
+  if (bomAppDIDList.ddWinNIC.indexOf(DID) < 0) util.log("[WARNING] Expected Windows NIC driver AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.ddWinISCSI.forEach(function(DID) {
+  if (appDIDList['dd']['windows']['iscsi'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Windows ISCSI driver AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['dd']['windows']['iscsi'].forEach(function(DID) {
+  if (bomAppDIDList.ddWinISCSI.indexOf(DID) < 0) util.log("[WARNING] Expected Windows ISCSI driver AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.ddWinFC.forEach(function(DID) {
+  if (appDIDList['dd']['windows']['fc'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Windows FC driver AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['dd']['windows']['fc'].forEach(function(DID) {
+  if (bomAppDIDList.ddWinFC.indexOf(DID) < 0) util.log("[WARNING] Expected Windows FC driver AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.ddWinFCoE.forEach(function(DID) {
+  if (appDIDList['dd']['windows']['cna'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Windows FCoE driver AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['dd']['windows']['cna'].forEach(function(DID) {
+  if (bomAppDIDList.ddWinFCoE.indexOf(DID) < 0) util.log("[WARNING] Expected Windows FCoE driver AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.ddLinNIC.forEach(function(DID) {
+  if (appDIDList['dd']['rhel6']['nic'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Linux NIC driver AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['dd']['rhel6']['nic'].forEach(function(DID) {
+  if (bomAppDIDList.ddLinNIC.indexOf(DID) < 0) util.log("[WARNING] Expected Linux NIC driver AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.ddLinISCSI.forEach(function(DID) {
+  if (appDIDList['dd']['rhel6']['iscsi'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Linux ISCSI driver AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['dd']['rhel6']['iscsi'].forEach(function(DID) {
+  if (bomAppDIDList.ddLinISCSI.indexOf(DID) < 0) util.log("[WARNING] Expected Linux ISCSI driver AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.ddLinFC.forEach(function(DID) {
+  if (appDIDList['dd']['rhel6']['fc'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Linux FC driver AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['dd']['rhel6']['fc'].forEach(function(DID) {
+  if (bomAppDIDList.ddLinFC.indexOf(DID) < 0) util.log("[WARNING] Expected Linux FC driver AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.fwSaturn.forEach(function(DID) {
+  if (appDIDList['fw']['linux']['Saturn'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Saturn firmware AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['fw']['linux']['Saturn'].forEach(function(DID) {
+  if (bomAppDIDList.fwSaturn.indexOf(DID) < 0) util.log("[WARNING] Expected Saturn firmware AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.fwLancer.forEach(function(DID) {
+  if (appDIDList['fw']['linux']['Lancer'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Lancer firmware AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['fw']['linux']['Lancer'].forEach(function(DID) {
+  if (bomAppDIDList.fwLancer.indexOf(DID) < 0) util.log("[WARNING] Expected Lancer firmware AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.fwBE3.forEach(function(DID) {
+  if (appDIDList['fw']['linux']['BE3'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains BE3 firmware AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['fw']['linux']['BE3'].forEach(function(DID) {
+  if (bomAppDIDList.fwBE3.indexOf(DID) < 0) util.log("[WARNING] Expected BE3 firmware AppDID not found in BOM file (" + DID + ").");
+});
+bomAppDIDList.fwSkyhawk.forEach(function(DID) {
+  if (appDIDList['fw']['linux']['Skyhawk'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Skyhawk firmware AppDID which isn't expected (" + DID + ").");
+});
+appDIDList['fw']['linux']['Skyhawk'].forEach(function(DID) {
+  if (bomAppDIDList.fwSkyhawk.indexOf(DID) < 0) util.log("[WARNING] Expected Skyhawk firmware AppDID not found in BOM file (" + DID + ").");
+});
 
 // Display an error if any expected data was not found.
 if (! releaseName) util.log("[ERROR] Release name was not specified.");
@@ -489,17 +543,24 @@ if (! releaseType) util.log("[ERROR] Release type was not specified.");
 if (osList.length < 1) util.log("[ERROR] No supported operating systems were specified.");
 if (systemList.length < 1) util.log("[ERROR] No supported system types were specified.");
 if (adapterList.length < 1) util.log("[ERROR] No supported adapters were specified.");
-// if (appDIDList.ddWinNIC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows NIC driver.");
-// if (appDIDList.ddWinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows iSCSI driver.");
-// if (appDIDList.ddWinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows FC driver.");
-// if (appDIDList.ddWinFCoE.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Windows FCoE driver.");
-// if (appDIDList.ddLinNIC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux NIC driver.");
-// if (appDIDList.ddLinISCSI.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux iSCSI driver.");
-// if (appDIDList.ddLinFC.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for the Linux FC/FCoE driver.");
-// if (appDIDList.fwSaturn.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Saturn firmware.");
-// if (appDIDList.fwLancer.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Lancer firmware.");
-// if (appDIDList.fwBE3.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for BE firmware.");
-// if (appDIDList.fwSkyhawk.length < 1) util.log("[ERROR] No Applicable Device ID entries specified for Skyhawk firmware.");
+osList.forEach(function(os) {
+  if (Object.keys(appDIDList['fw'][os.type]).length < 1) {
+    util.log("[ERROR] No Applicable Device ID entries for any " + os.type + " firmware packages.");
+  } else {
+    for (asic in appDIDList['fw'][os.type]) {
+      if (appDIDList['fw'][os.type][asic].length < 1) util.log("[ERROR] No Applicable Device ID entries for the " + os.type + " " + asic + " firmware package.");
+    }
+  }
+  if (os.ddName !== 'none') {
+    if (Object.keys(appDIDList['dd'][os.ddName]).length < 1) {
+      util.log("[ERROR] No Applicable Device ID entries for any " + os.ddName + " driver packages.");
+    } else {
+      for (proto in appDIDList['dd'][os.ddName]) {
+        if (appDIDList['dd'][os.ddName][proto].length < 1) util.log("[ERROR] No Applicable Device ID entries for the " + os.ddName + " " + proto + " driver package.");
+      }
+    }
+  }
+});
 
 // Add all data to a single object and write it to disk
 var bomDump = {
