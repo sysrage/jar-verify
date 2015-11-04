@@ -131,13 +131,13 @@ function getJarContent(jarType) {
               });
               parser.start();
             });
-          } else if (config.pkgTypes[jarType].os === 'windows' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.exe$')) > -1) {
+          } else if (config.pkgTypes[jarType].osType === 'windows' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.exe$')) > -1) {
             binFileName = entry.fileName;
-          } else if (config.pkgTypes[jarType].os === 'linux' && config.pkgTypes[jarType].type === 'dd' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.tgz$')) > -1) {
+          } else if (config.pkgTypes[jarType].osType === 'linux' && config.pkgTypes[jarType].type === 'dd' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.tgz$')) > -1) {
             binFileName = entry.fileName;
-          } else if (config.pkgTypes[jarType].os === 'linux' && config.pkgTypes[jarType].type === 'fw' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.bin$')) > -1) {
+          } else if (config.pkgTypes[jarType].osType === 'linux' && config.pkgTypes[jarType].type === 'fw' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.bin$')) > -1) {
             binFileName = entry.fileName;
-          } else if (config.pkgTypes[jarType].os === 'vmware' && config.pkgTypes[jarType].type === 'fw' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.bin$')) > -1) {
+          } else if (config.pkgTypes[jarType].osType === 'vmware' && config.pkgTypes[jarType].type === 'fw' && entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.bin$')) > -1) {
             binFileName = entry.fileName;
           }
 
@@ -185,9 +185,11 @@ function getJarContent(jarType) {
 function verifyInputXML(jarContent) {
   // console.log(jarContent.inputFileName);
   // console.log(JSON.stringify(jarContent.inputFile, null, 2));
+
   if (! jarContent.inputFile || ! jarContent.inputFile.version) {
     util.log("[ERROR] Parameter 'version' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   } else {
+    // Verify version
     var verMatch = jarContent.inputFile.version.match(/(.+)\-([0-9]+)$/);
     var pkgVersion = verMatch[1];
     var pkgSubversion = verMatch[2];
@@ -202,6 +204,7 @@ function verifyInputXML(jarContent) {
       }
     }
 
+    // Verify category.type
     if (! jarContent.inputFile.category || ! jarContent.inputFile.category.type) {
       util.log("[ERROR] Paramater 'category.type' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
@@ -209,6 +212,8 @@ function verifyInputXML(jarContent) {
         util.log("[ERROR] Invalid value for 'category.type' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
+
+    // Verify category
     if (! jarContent.inputFile.category || ! jarContent.inputFile.category.$t) {
       util.log("[ERROR] Paramater 'category' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
@@ -216,7 +221,7 @@ function verifyInputXML(jarContent) {
         var categoryMatch = config.pkgTypes[jarContent.jarType].proto;
       } else {
         var categoryMatch = null;
-        config.asicTypes.forEach( function(asic) {
+        config.asicTypes.forEach(function(asic) {
           if (asic.name === config.pkgTypes[jarContent.jarType].asic) categoryMatch = asic.type;
         });
       }
@@ -225,6 +230,7 @@ function verifyInputXML(jarContent) {
       }
     }
 
+    // Verify vendor
     if (! jarContent.inputFile.vendor) {
       util.log("[ERROR] Paramater 'vendor' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
@@ -233,6 +239,7 @@ function verifyInputXML(jarContent) {
       }
     }
 
+    // Verify rebootRequired
     if (! jarContent.inputFile.rebootRequired) {
       util.log("[ERROR] Paramater 'rebootRequired' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
@@ -241,6 +248,7 @@ function verifyInputXML(jarContent) {
       }
     }
 
+    // Verify updateType
     if (! jarContent.inputFile.updateType) {
       util.log("[ERROR] Paramater 'updateType' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
@@ -250,6 +258,7 @@ function verifyInputXML(jarContent) {
       }
     }
 
+    // Verify updateSelection
     if (! jarContent.inputFile.updateSelection) {
       util.log("[ERROR] Paramater 'updateSelection' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
@@ -258,45 +267,28 @@ function verifyInputXML(jarContent) {
       }
     }
 
+    // Verify applicableDeviceID entries
     if (! jarContent.inputFile.applicableDeviceIdLabel) {
       util.log("[ERROR] Paramater 'applicableDeviceIdLabel' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       var jarDidList = jarContent.inputFile.applicableDeviceIdLabel;
-
       if (config.pkgTypes[jarContent.jarType].type === 'fw') {
-        var bomDidList = workingBOM.appDIDList['fw' + config.pkgTypes[jarContent.jarType].asic];
+        var bomDidList = workingBOM.appDIDList['fw'][config.pkgTypes[jarContent.jarType].os][config.pkgTypes[jarContent.jarType].asic];
       } else {
-        var didOS = null;
-        var didProto = null;
-        if (config.pkgTypes[jarContent.jarType].os === 'linux') didOS = 'Lin';
-        if (config.pkgTypes[jarContent.jarType].os === 'windows') didOS = 'Win';
-        if (config.pkgTypes[jarContent.jarType].proto === 'cna') didProto = 'FCoE';
-        if (config.pkgTypes[jarContent.jarType].proto === 'fc') didProto = 'FC';
-        if (config.pkgTypes[jarContent.jarType].proto === 'iscsi') didProto = 'ISCSI';
-        if (config.pkgTypes[jarContent.jarType].proto === 'nic') didProto = 'NIC';
-        var bomDidList = workingBOM.appDIDList['dd' + didOS + didProto];
+        var bomDidList = workingBOM.appDIDList['dd'][config.pkgTypes[jarContent.jarType].os][config.pkgTypes[jarContent.jarType].proto];
       }
-      var missingDid = [];
       bomDidList.forEach(function(did) {
-        if (jarDidList.indexOf(did) < 0) missingDid.push(did);
+        if (jarDidList.indexOf(did) < 0) util.log("[ERROR] The ApplicableDeviceID '" + did + "' is missing from the input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       });
-      if (missingDid.length > 0) {
-        missingDid.forEach(function(did) {
-          util.log("[ERROR] The ApplicableDeviceID '" + did + "' is missing from the input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-        });
-      }
-      var missingDid = [];
       jarDidList.forEach(function(did) {
-        if (bomDidList.indexOf(did) < 0) missingDid.push(did);
+        if (bomDidList.indexOf(did) < 0) util.log("[ERROR] The ApplicableDeviceID '" + did + "' is incorrectly included in the input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       });
-      if (missingDid.length > 0) {
-        missingDid.forEach(function(did) {
-          util.log("[ERROR] The ApplicableDeviceID '" + did + "' is incorrectly included in the input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-        });
-      }
     }
 
-    // Verification of description must be last, due to pieces of the string being pulled from above checks
+    // Verify osUpdateData
+
+    // Verify description
+    // Note: verification of description must be last, due to pieces of the string being pulled from above checks
     if (! jarContent.inputFile.description) {
       util.log("[ERROR] Parameter 'description' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
@@ -305,8 +297,6 @@ function verifyInputXML(jarContent) {
         util.log("[ERROR] Invalid value for 'description' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
-
-
   }
 }
 
@@ -430,85 +420,18 @@ jarDirFiles.forEach(function (jar) {
 
 // Build list of expected JAR files based on BOM
 var bomJarTypes = [];
-for (var pkgType in workingBOM.appDIDList) {
-  switch (pkgType) {
-    case 'ddWinNIC':
-      bomJarTypes.push('ddWinNIC');
-      break;
-    case 'ddWinISCSI':
-      bomJarTypes.push('ddWinISCSI');
-      break;
-    case 'ddWinFC':
-      bomJarTypes.push('ddWinFC');
-      break;
-    case 'ddWinFCoE':
-      bomJarTypes.push('ddWinFCoE');
-      break;
-    case 'ddLinNIC':
-      workingBOM.osList.forEach(function(os) {
-        if (os.type === 'linux') {
-          if (bomJarTypes.indexOf('dd' + os.ddName.toUpperCase() + 'NIC') < 0) bomJarTypes.push('dd' + os.ddName.toUpperCase() + 'NIC');
-        }
-      });
-      break;
-    case 'ddLinISCSI':
-      workingBOM.osList.forEach(function(os) {
-        if (os.type === 'linux') {
-          if (bomJarTypes.indexOf('dd' + os.ddName.toUpperCase() + 'ISCSI') < 0) bomJarTypes.push('dd' + os.ddName.toUpperCase() + 'ISCSI');
-        }
-      });
-      break;
-    case 'ddLinFC':
-      workingBOM.osList.forEach(function(os) {
-        if (os.type === 'linux') {
-          if (bomJarTypes.indexOf('dd' + os.ddName.toUpperCase() + 'FC') < 0) bomJarTypes.push('dd' + os.ddName.toUpperCase() + 'FC');
-        }
-      });
-      break;
-    case 'fwSaturn':
-      workingBOM.osList.forEach(function(os) {
-        if (os.type === 'linux') {
-          if (bomJarTypes.indexOf('fwSaturnLinux') < 0) bomJarTypes.push('fwSaturnLinux');
-        } else if (os.type === 'windows') {
-          if (bomJarTypes.indexOf('fwSaturnWindows') < 0) bomJarTypes.push('fwSaturnWindows');
-        } else if (os.type === 'vmware') {
-          if (bomJarTypes.indexOf('fwSaturnVMware') < 0) bomJarTypes.push('fwSaturnVMware');
-        }
-      });
-      break;
-    case 'fwLancer':
-      workingBOM.osList.forEach(function(os) {
-        if (os.type === 'linux') {
-          if (bomJarTypes.indexOf('fwLancerLinux') < 0) bomJarTypes.push('fwLancerLinux');
-        } else if (os.type === 'windows') {
-          if (bomJarTypes.indexOf('fwLancerWindows') < 0) bomJarTypes.push('fwLancerWindows');
-        } else if (os.type === 'vmware') {
-          if (bomJarTypes.indexOf('fwLancerVMware') < 0) bomJarTypes.push('fwLancerVMware');
-        }
-      });
-      break;
-    case 'fwBE3':
-      workingBOM.osList.forEach(function(os) {
-        if (os.type === 'linux') {
-          if (bomJarTypes.indexOf('fwBE3Linux') < 0) bomJarTypes.push('fwBE3Linux');
-        } else if (os.type === 'windows') {
-          if (bomJarTypes.indexOf('fwBE3Windows') < 0) bomJarTypes.push('fwBE3Windows');
-        } else if (os.type === 'vmware') {
-          if (bomJarTypes.indexOf('fwBE3VMware') < 0) bomJarTypes.push('fwBE3VMware');
-        }
-      });
-      break;
-    case 'fwSkyhawk':
-      workingBOM.osList.forEach(function(os) {
-        if (os.type === 'linux') {
-          if (bomJarTypes.indexOf('fwSkyhawkLinux') < 0) bomJarTypes.push('fwSkyhawkLinux');
-        } else if (os.type === 'windows') {
-          if (bomJarTypes.indexOf('fwSkyhawkWindows') < 0) bomJarTypes.push('fwSkyhawkWindows');
-        } else if (os.type === 'vmware') {
-          if (bomJarTypes.indexOf('fwSkyhawkVMware') < 0) bomJarTypes.push('fwSkyhawkVMware');
-        }
-      });
-      break;
+for (var bomOS in workingBOM.appDIDList['fw']) {
+  for (var bomASIC in workingBOM.appDIDList['fw'][bomOS]) {
+    for (var pkg in config.pkgTypes) {
+      if (config.pkgTypes[pkg].type === 'fw' && config.pkgTypes[pkg].os === bomOS && config.pkgTypes[pkg].asic === bomASIC) bomJarTypes.push(pkg);
+    }
+  }
+}
+for (var bomOS in workingBOM.appDIDList['dd']) {
+  for (var bomProto in workingBOM.appDIDList['dd'][bomOS]) {
+    for (var pkg in config.pkgTypes) {
+      if (config.pkgTypes[pkg].type === 'dd' && config.pkgTypes[pkg].os === bomOS && config.pkgTypes[pkg].proto === bomProto) bomJarTypes.push(pkg);
+    }
   }
 }
 

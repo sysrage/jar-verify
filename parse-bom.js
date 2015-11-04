@@ -19,7 +19,7 @@ var xlsx    = require('xlsx');
 /* Function/Class Definitions                                 */
 /**************************************************************/
 
-// Function to parse Applicable Device ID entries
+// Function to parse Applicable Device ID entries -- This will be removed
 function readAppDID(type, cell) {
   var appDIDCell = cell.match(/^([A-Za-z]+)([0-9]+)$/);
   var x = appDIDCell[1];
@@ -449,12 +449,16 @@ adapterList.forEach(function(adapter) {
           config.appDIDNames.forEach(function(appDID) {
             if (appDID.value.search(new RegExp('SUBSYS_' + ssDID + '$')) > -1) {
               if (cASIC.type === 'fc') {
-                if (! appDIDList['dd'][os.ddName]['fc']) appDIDList['dd'][os.ddName]['fc'] = [];
-                if (appDIDList['dd'][os.ddName]['fc'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['fc'].push(appDID.name);
+                if (appDID.type === 'fc') {
+                  if (! appDIDList['dd'][os.ddName]['fc']) appDIDList['dd'][os.ddName]['fc'] = [];
+                  if (appDIDList['dd'][os.ddName]['fc'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['fc'].push(appDID.name);
+                }
               }
               if (cASIC.type === 'cna' || cASIC.type === 'nic') {
-                if (! appDIDList['dd'][os.ddName]['nic']) appDIDList['dd'][os.ddName]['nic'] = [];
-                if (appDIDList['dd'][os.ddName]['nic'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['nic'].push(appDID.name);
+                // if (appDID.type === 'nic') { // uncomment this when parsing of BOM appDID is removed
+                  if (! appDIDList['dd'][os.ddName]['nic']) appDIDList['dd'][os.ddName]['nic'] = [];
+                  if (appDIDList['dd'][os.ddName]['nic'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['nic'].push(appDID.name);
+                // }
               }
               if (cASIC.type === 'cna' || cASIC.type === 'iscsi') {
                 if (appDID.type === 'iscsi') {
