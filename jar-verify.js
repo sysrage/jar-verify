@@ -286,6 +286,173 @@ function verifyInputXML(jarContent) {
     }
 
     // Verify osUpdateData
+    if (! jarContent.inputFile.osUpdateData || typeof jarContent.inputFile.osUpdateData !== 'object') {
+      util.log("[ERROR] Parameter 'osUpdateData' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      var osUpdateList = Object.keys(jarContent.inputFile.osUpdateData);
+      if (! osUpdateList || osUpdateList.length > 1) {
+        util.log("[ERROR] Incorrect number of operating systems in parameter 'osUpdateData' from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+      } else if (osUpdateList[0] !== config.pkgTypes[jarContent.jarType].osType) {
+        util.log("[ERROR] Incorrect OS in parameter 'osUpdateData' from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+      } else if (! jarContent.inputFile.osUpdateData[osUpdateList[0]].driverFiles || typeof jarContent.inputFile.osUpdateData[osUpdateList[0]].driverFiles !== 'object') {
+        util.log("[ERROR] Missing 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+      } else if (! jarContent.inputFile.osUpdateData[osUpdateList[0]].driverFiles.driverFile) {
+        util.log("[ERROR] Incorrect format of 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+      } else {
+        var inputDriverFile = jarContent.inputFile.osUpdateData[osUpdateList[0]].driverFiles.driverFile;
+        if (! Array.isArray(inputDriverFile)) var driverFileList = [inputDriverFile];
+        else var driverFileList = inputDriverFile;
+
+        // Gather some expected info from BOM data
+        var pkgOSList = [];
+        workingBOM.osList.forEach(function(bomOS) {
+          if (config.pkgTypes[jarContent.jarType].type === 'dd' && bomOS.ddName === config.pkgTypes[jarContent.jarType].os) {
+            pkgOSList.push(bomOS);
+          } else if (config.pkgTypes[jarContent.jarType].type === 'fw' && bomOS.type === config.pkgTypes[jarContent.jarType].osType) {
+            pkgOSList.push(bomOS);
+          }
+        });
+        var pkgOSListUnique = {};
+        pkgOSList.forEach(function(pkgOS) {
+          pkgOS.pkgsdkName.forEach(function(os) {
+            if (! pkgOSListUnique[os]) {
+              pkgOSListUnique[os] = [pkgOS.arch];
+            } else if (pkgOSListUnique[os].indexOf(pkgOS.arch) < 0) {
+              pkgOSListUnique[os].push(pkgOS.arch);
+            }
+          });
+        });
+
+        if (config.pkgTypes[jarContent.jarType].type === 'dd') {
+          // Handle driver package
+          if (driverFileList.length > 1) {
+            // There are multiple driverFile entries -- Verify that they're all correct
+            var uniqueOS = {};
+            driverFileList.forEach(function(driverFileEntry) {
+              if (! driverFileEntry.os) {
+                util.log("[ERROR] Unspecified OS with multiple 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              } else {
+                // Verify driverFile entry is not a duplicate
+                if (! uniqueOS[driverFileEntry.os]) {
+                  if (! driverFileEntry.arch) {
+                    uniqueOS[driverFileEntry.os] = [];
+                  } else {
+                    uniqueOS[driverFileEntry.os] = [driverFileEntry.arch];
+                  }
+                } else {
+                  if (uniqueOS[driverFileEntry.os].length === 0) {
+                    util.log("[ERROR] Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  } else {
+                    if (! driverFileEntry.arch || uniqueOS[driverFileEntry.os].indexOf(driverFileEntry.arch) > -1) {
+                      util.log("[ERROR] Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    } else {
+                      uniqueOS[driverFileEntry.os].push(driverFileEntry.arch);
+                    }
+                  }
+                }
+
+                // Verify OS is expected
+                if (! pkgOSListUnique[driverFileEntry.os]) {
+                  util.log("[ERROR] Unexpected OS (" + driverFileEntry.os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                }
+
+                // Verify architecture is expected
+                if (driverFileEntry.arch) {
+                  if (pkgOSListUnique[driverFileEntry.os].indexOf(driverFileEntry.arch.replace('x32', 'x86')) < 0) {
+                    util.log("[ERROR] Unexpected architecture (" + driverFileEntry.arch + ") for " + driverFileEntry.os + " in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  }
+                }
+
+                // Verify driver file name
+                if (! driverFileEntry.name) {
+                  util.log("[ERROR] Missing driver name in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                } else if (config.pkgTypes[jarContent.jarType].ddFileName.indexOf(driverFileEntry.name) < 0) {
+                  util.log("[ERROR] Unexpected driver name (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                }
+
+                // Verify driver version
+                if (! driverFileEntry.version) {
+                  util.log("[ERROR] Missing driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                } else {
+                  if (driverFileEntry.version !== config.pkgTypes[jarContent.jarType].ddVerFormat.replace('##VERSION##', pkgVersion)) {
+                    util.log("[ERROR] Incorrect driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  }
+                }
+              }
+            });
+
+            // Verify all expected operating systems and architectures are included
+            for (var os in pkgOSListUnique) {
+              if (! uniqueOS[os]) {
+                util.log("[ERROR] Missing OS (" + os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              } else {
+                if (uniqueOS[os].length > 0) {
+                  pkgOSListUnique[os].forEach(function(arch) {
+                    if (uniqueOS[os].indexOf(arch) < 0) {
+                      util.log("[ERROR] Missing architecture (" + arch + ") for " + os + " in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    }
+                  });
+                }
+              }
+            }
+
+          } else {
+            // There's only a single driverFile entry -- Verify that it's correct
+            if (driverFileList[0].os) {
+              // Verify that the one listed OS is expected
+              if (! pkgOSListUnique[driverFileList[0].os]) {
+                util.log("[ERROR] Unexpected OS (" + driverFileList[0].os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              }
+
+              // Verify that only one OS is expected
+              if (Object.keys(pkgOSListUnique).length > 1) {
+                for (var os in pkgOSListUnique) {
+                  if (os !== driverFileList[0].os) util.log("[ERROR] Missing OS (" + os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                }
+              }
+            }
+
+            if (driverFileList[0].arch) {
+              // Verify that the one listed architecture is expected
+              for (var os in pkgOSListUnique) {
+                if (pkgOSListUnique[os].indexOf(driverFileList[0].arch) < 0) {
+                  util.log("[ERROR] Unexpected architecture (" + driverFileList[0].arch + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                }
+              }
+
+              // Verify that only one architecture is expected
+              for (var os in pkgOSListUnique) {
+                if (pkgOSListUnique[os].length > 1) {
+                  for (var arch in pkgOSListUnique[os]) {
+                    if (arch !== driverFileList[0].arch) util.log("[ERROR] Missing architecture (" + arch + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  }
+                }
+              }
+            }
+
+            // Verify driver file name
+            if (! driverFileList[0].name) {
+              util.log("[ERROR] Missing driver name in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            } else if (config.pkgTypes[jarContent.jarType].ddFileName.indexOf(driverFileList[0].name) < 0) {
+              util.log("[ERROR] Unexpected driver name (" + driverFileList[0].name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            }
+
+            // Verify driver version
+            if (! driverFileList[0].version) {
+              util.log("[ERROR] Missing driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            } else {
+              if (driverFileList[0].version !== config.pkgTypes[jarContent.jarType].ddVerFormat.replace('##VERSION##', pkgVersion)) {
+                util.log("[ERROR] Incorrect driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              }
+            }
+          }
+
+        } else {
+          // Handle firmware package
+
+        }
+      }
+    }
 
     // Verify description
     // Note: verification of description must be last, due to pieces of the string being pulled from above checks

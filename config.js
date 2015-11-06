@@ -294,7 +294,8 @@ module.exports = {
       osType: 'windows',
       proto: 'nic',
       inputDesc: 'Emulex NIC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['ocnd63.sys', 'ocnd64.sys']
+      ddFileName: ['ocnd63.sys', 'ocnd64.sys'],
+      ddVerFormat: '##VERSION##'
     },
     ddWinISCSI: {
       name: 'Windows iSCSI Driver',
@@ -304,7 +305,8 @@ module.exports = {
       osType: 'windows',
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2iscsi.sys']
+      ddFileName: ['be2iscsi.sys'],
+      ddVerFormat: '##VERSION##'
     },
     ddWinFC: {
       name: 'Windows FC Driver',
@@ -314,7 +316,8 @@ module.exports = {
       osType: 'windows',
       proto: 'fc',
       inputDesc: 'Emulex FC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['elxfc.sys']
+      ddFileName: ['elxfc.sys'],
+      ddVerFormat: '##VERSION##'
     },
     ddWinFCoE: {
       name: 'Windows FCoE Driver',
@@ -324,7 +327,8 @@ module.exports = {
       osType: 'windows',
       proto: 'cna',
       inputDesc: 'Emulex FCoE Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['elxcna.sys']
+      ddFileName: ['elxcna.sys'],
+      ddVerFormat: '##VERSION##'
     },
     ddRHEL5NIC: {
       name: 'RHEL 5.x NIC Driver',
@@ -334,7 +338,8 @@ module.exports = {
       osType: 'linux',
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2net.ko']
+      ddFileName: ['be2net.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddRHEL5ISCSI: {
       name: 'RHEL 5.x iSCSI Driver',
@@ -344,7 +349,8 @@ module.exports = {
       osType: 'linux',
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2iscsi.ko']
+      ddFileName: ['be2iscsi.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddRHEL5FC: {
       name: 'RHEL 5.x FC Driver',
@@ -354,7 +360,8 @@ module.exports = {
       osType: 'linux',
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['lpfc.ko']
+      ddFileName: ['lpfc.ko'],
+      ddVerFormat: '0:##VERSION##'
     },
     ddRHEL6NIC: {
       name: 'RHEL 6.x NIC Driver',
@@ -364,7 +371,8 @@ module.exports = {
       osType: 'linux',
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2net.ko']
+      ddFileName: ['be2net.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddRHEL6ISCSI: {
       name: 'RHEL 6.x iSCSI Driver',
@@ -374,7 +382,8 @@ module.exports = {
       osType: 'linux',
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2iscsi.ko']
+      ddFileName: ['be2iscsi.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddRHEL6FC: {
       name: 'RHEL 6.x FC Driver',
@@ -384,7 +393,8 @@ module.exports = {
       osType: 'linux',
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['lpfc.ko']
+      ddFileName: ['lpfc.ko'],
+      ddVerFormat: '0:##VERSION##'
     },
     ddRHEL7NIC: {
       name: 'RHEL 7.x NIC Driver',
@@ -394,7 +404,8 @@ module.exports = {
       osType: 'linux',
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2net.ko']
+      ddFileName: ['be2net.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddRHEL7ISCSI: {
       name: 'RHEL 7.x iSCSI Driver',
@@ -404,7 +415,8 @@ module.exports = {
       osType: 'linux',
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2iscsi.ko']
+      ddFileName: ['be2iscsi.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddRHEL7FC: {
       name: 'RHEL 7.x FC Driver',
@@ -414,7 +426,8 @@ module.exports = {
       osType: 'linux',
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['lpfc.ko']
+      ddFileName: ['lpfc.ko'],
+      ddVerFormat: '0:##VERSION##'
     },
     ddSLES10NIC: {
       name: 'SLES 10.x NIC Driver',
@@ -424,7 +437,8 @@ module.exports = {
       osType: 'linux',
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2net.ko']
+      ddFileName: ['be2net.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddSLES10ISCSI: {
       name: 'SLES 10.x iSCSI Driver',
@@ -434,7 +448,8 @@ module.exports = {
       osType: 'linux',
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2iscsi.ko']
+      ddFileName: ['be2iscsi.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddSLES10FC: {
       name: 'SLES 10.x FC Driver',
@@ -444,7 +459,8 @@ module.exports = {
       osType: 'linux',
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['lpfc.ko']
+      ddFileName: ['lpfc.ko'],
+      ddVerFormat: '0:##VERSION##'
     },
     ddSLES11NIC: {
       name: 'SLES 11.x NIC Driver',
@@ -454,7 +470,8 @@ module.exports = {
       osType: 'linux',
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2net.ko']
+      ddFileName: ['be2net.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddSLES11ISCSI: {
       name: 'SLES 11.x iSCSI Driver',
@@ -464,7 +481,8 @@ module.exports = {
       osType: 'linux',
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2iscsi.ko']
+      ddFileName: ['be2iscsi.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddSLES11FC: {
       name: 'SLES 11.x FC Driver',
@@ -474,7 +492,8 @@ module.exports = {
       osType: 'linux',
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['lpfc.ko']
+      ddFileName: ['lpfc.ko'],
+      ddVerFormat: '0:##VERSION##'
     },
     ddSLES12NIC: {
       name: 'SLES 12.x NIC Driver',
@@ -484,7 +503,8 @@ module.exports = {
       osType: 'linux',
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2net.ko']
+      ddFileName: ['be2net.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddSLES12ISCSI: {
       name: 'SLES 12.x iSCSI Driver',
@@ -494,7 +514,8 @@ module.exports = {
       osType: 'linux',
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2iscsi.ko']
+      ddFileName: ['be2iscsi.ko'],
+      ddVerFormat: '##VERSION##'
     },
     ddSLES12FC: {
       name: 'SLES 12.x FC Driver',
@@ -504,7 +525,8 @@ module.exports = {
       osType: 'linux',
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['lpfc.ko']
+      ddFileName: ['lpfc.ko'],
+      ddVerFormat: '0:##VERSION##'
     },
     fwBE3Linux: {
       name: 'Linux BE Firmware',
