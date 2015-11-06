@@ -303,7 +303,7 @@ function verifyInputXML(jarContent) {
         if (! Array.isArray(inputDriverFile)) var driverFileList = [inputDriverFile];
         else var driverFileList = inputDriverFile;
 
-        // Gather some expected info from BOM data
+        // Build list of expected operating systems for this package (based on BOM)
         var pkgOSList = [];
         workingBOM.osList.forEach(function(bomOS) {
           if (config.pkgTypes[jarContent.jarType].type === 'dd' && bomOS.ddName === config.pkgTypes[jarContent.jarType].os) {
@@ -322,6 +322,28 @@ function verifyInputXML(jarContent) {
             }
           });
         });
+
+        // Build list of expected driverFile entries for this package (based on BOM)
+        if (config.pkgTypes[jarContent.jarType].type === 'fw') {
+          var pkgAdapterList = [];
+          workingBOM.adapterList.forEach(function(adapter) {
+            if (adapter.asic === config.pkgTypes[jarContent.jarType].asic) pkgAdapterList.push(adapter);
+          });
+          var pkgDriverFileEntries = {};
+          pkgAdapterList.forEach(function(adapter) {
+            adapter.agent.forEach(function(agent) {
+              if (! pkgDriverFileEntries[agent.type]) {
+                pkgDriverFileEntries[agent.type] = [agent.id];
+              } else {
+                if (pkgDriverFileEntries[agent.type].indexOf(agent.id) < 0) pkgDriverFileEntries[agent.type].push(agent.id);
+              }
+              if (! pkgDriverFileEntries[config.classMap[agent.type]]) pkgDriverFileEntries[config.classMap[agent.type]] = [];
+              adapter.v2.forEach(function(v2) {
+                if (pkgDriverFileEntries[config.classMap[agent.type]].indexOf(v2) < 0) pkgDriverFileEntries[config.classMap[agent.type]].push(v2);
+              });
+            });
+          });
+        }
 
         if (config.pkgTypes[jarContent.jarType].type === 'dd') {
           // Handle driver package
@@ -449,7 +471,14 @@ function verifyInputXML(jarContent) {
 
         } else {
           // Handle firmware package
+          if (driverFileList.length > 1) {
+            console.log(jarContent.jarType);
+            console.dir(pkgDriverFileEntries);
 
+          } else {
+            // Firmware packages should always have multiple entries -- Show error
+            util.log("[ERROR] Insufficient number of entries in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+          }
         }
       }
     }

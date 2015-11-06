@@ -649,6 +649,13 @@ module.exports = {
     },
   },
 
+  // Classification mapping
+  classMap: {
+    10: 'firmware',   // Firmware only
+    13: '13',         // Combined FW and Boot Code
+    32773: 'bios'     // Boot Code (BIOS)
+  },
+
   // All header search strings used to find relevant sections
   headerStr: {
     relName: 'release: ',
