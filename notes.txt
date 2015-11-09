@@ -22,18 +22,18 @@ Linux Driver Packages:
   - Verify XML matches BOM
   - Verify tgz file can be extracted successfully
 
-
-
 Windows Driver Packages:
 
 Firmware Packages:
 
 =========================================
 
- - Get all BE3, Lancer, and Skyhawk package driverFiles fixed. classification should be '13' not 'firmware'
- - Get invalid x32 windows driver entry removed from Windows FCoE driver package
- - Get duplicate windows driver entry removed from Windows NIC driver package
- - Get duplicate Agentless entries removed from Saturn FW packages
- - Get duplicate Agentless entries removed from Lancer FW packages
+Problems Found w/ Existing Packages:
+ - All BE3, Lancer, and Skyhawk package driverFiles classifications should be '13' not 'firmware'
+ - Invalid x32 windows driver entry needs to be removed from Windows FCoE driver package
+ - Duplicate Windows driver entry needs to be removed from Windows NIC driver package
+ - Duplicate Agentless entries need to be removed from Saturn FW packages
+ - Duplicate Agentless entries need to be removed from Lancer FW packages
+ - The OS "VMware vSphere 2013" needs to be added to all VMware firmware packages
 
- - Determine why SH FW packages contain "00JY829" and are missing "00JY827"
+ - Old BOM contained 00JY829 instead of 00JY827 for Gold Lite. Ensure this is fixed in new packages.
