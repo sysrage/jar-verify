@@ -372,7 +372,7 @@ for (var i in worksheet) {
 
             // Build list of DriverFiles entries
             var v2List = [];
-            v2List = worksheet[adapterV2Col + y].v.toString().toUpperCase().match(/\S+/g);
+            v2List = worksheet[adapterV2Col + y].v.toString().match(/\S+/g);
 
             // Build list of Agentless entries
             var agentList = [];

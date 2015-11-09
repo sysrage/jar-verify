@@ -592,29 +592,27 @@ module.exports = {
       os: 'linux',
       osType: 'linux',
       asic: 'Saturn',
-      postVersion: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
+      bootRegex: '([0-9\.]+[xa][0-9]+)',
       inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
     },
     fwSaturnVMware: {
       name: 'VMware Saturn Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+[xa][0-9]+\-[0-9]+)_vmware',
-      fwRegex: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
       type: 'fw',
       os: 'vmware',
       osType: 'vmware',
       asic: 'Saturn',
-      postVersion: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
+      bootRegex: '([0-9\.]+[xa][0-9]+)',
       inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
     },
     fwSaturnWindows: {
       name: 'Windows Saturn Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+[xa][0-9]+\-[0-9]+)_windows',
-      fwRegex: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
       type: 'fw',
       os: 'windows',
       osType: 'windows',
       asic: 'Saturn',
-      postVersion: '([0-9\.]+[xa][0-9]+)\-([0-9\.]+[xa][0-9]+)',
+      bootRegex: '([0-9\.]+[xa][0-9]+)',
       inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
     },
     fwSkyhawkLinux: {

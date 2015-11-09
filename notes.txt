@@ -27,3 +27,13 @@ Linux Driver Packages:
 Windows Driver Packages:
 
 Firmware Packages:
+
+=========================================
+
+ - Get all BE3, Lancer, and Skyhawk package driverFiles fixed. classification should be '13' not 'firmware'
+ - Get invalid x32 windows driver entry removed from Windows FCoE driver package
+ - Get duplicate windows driver entry removed from Windows NIC driver package
+ - Get duplicate Agentless entries removed from Saturn FW packages
+ - Get duplicate Agentless entries removed from Lancer FW packages
+
+ - Determine why SH FW packages contain "00JY829" and are missing "00JY827"
