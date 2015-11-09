@@ -650,6 +650,74 @@ function verifyInputXML(jarContent) {
       }
     }
 
+    // Determine if package matches adapter supporting PLDM FW updates
+    if (config.pkgTypes[jarContent.jarType].type === 'fw') {
+      var pkgSupportsPLDM = false;
+      workingBOM.adapterList.forEach(function(adapter) {
+        if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && adapter.pldm.vendor) pkgSupportsPLDM = true;
+      });
+      if (pkgSupportsPLDM) {
+        // Verify pldmFirmware section
+        if (! jarContent.inputFile.pldmFirmware) {
+          util.log("[ERROR] Section 'pldmFirmware' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        } else {
+          // Verify pldmFileName
+          if (! jarContent.inputFile.pldmFirmware.pldmFileName) {
+            util.log("[ERROR] Parameter 'pldmFileName' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          } else {
+            if (jarContent.inputFile.pldmFirmware.pldmFileName.indexOf(pkgVersion) < 0) {
+              util.log("[WARNING] Package version not found in parameter 'pldmFileName' from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            }
+          }
+
+          // Verify deviceDescriptor entries
+          if (! jarContent.inputFile.pldmFirmware.deviceDescriptor) {
+            util.log("[ERROR] Parameter 'deviceDescriptor' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          } else {
+            var inputDeviceDesc = jarContent.inputFile.pldmFirmware.deviceDescriptor;
+            if (! Array.isArray(inputDeviceDesc)) var deviceDescList = [inputDeviceDesc];
+            else var deviceDescList = inputDeviceDesc;
+
+            // compare count of deviceDescriptor entries to number of matching adapters in BOM
+
+            // Verify vendorSpecifier
+
+            // Verify deviceSpecifier
+
+            // Verify imageId
+
+            // Verify classification
+
+          }
+
+          // Verify file entries
+          if (! jarContent.inputFile.pldmFirmware.file) {
+            util.log("[ERROR] Parameter 'file' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          } else {
+            var inputPLDMFile = jarContent.inputFile.pldmFirmware.file;
+            if (! Array.isArray(inputPLDMFile)) var pldmFileList = [inputPLDMFile];
+            else var pldmFileList = inputPLDMFile;
+
+            // compare count of file entries to number of agentless entries for matching adapters in BOM
+
+            // Verify name
+
+            // Verify source
+
+            // Verify version
+
+            // Verify offset
+
+          }
+        }
+      } else {
+        // Verify package does *not* contain PLDM FW update data
+        if (jarContent.inputFile.pldmFirmware) {
+          util.log("[ERROR] Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        }
+      }
+    }
+
     // Verify description
     // Note: verification of description must be last, due to pieces of the string being pulled from above checks
     if (! jarContent.inputFile.description) {
