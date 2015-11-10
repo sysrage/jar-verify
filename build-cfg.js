@@ -402,20 +402,24 @@ if (! workingBOM.osList) {
     workingBOM.adapterList.forEach(function(adapter) {
       if (adapter.asic === asic) {
         if (! fwData[asic][cASIC.fwCfgNames[adapter.type]]) {
-          fwData[asic][cASIC.fwCfgNames[adapter.type]] = {type: 'fw', names: cASIC.fwMatrixNames[adapter.type.concat()]}
+          fwData[asic][cASIC.fwCfgNames[adapter.type]] = {type: 'fw', names: cASIC.fwMatrixNames[adapter.type].concat(), boards: adapter.v2.concat()}
         } else {
           cASIC.fwMatrixNames[adapter.type].forEach(function(name) {
             if (fwData[asic][cASIC.fwCfgNames[adapter.type]].names.indexOf(name) < 0) fwData[asic][cASIC.fwCfgNames[adapter.type]].names.push(name);
           });
+          adapter.v2.forEach(function(v2) {
+            if (fwData[asic][cASIC.fwCfgNames[adapter.type]].boards.indexOf(v2) < 0) fwData[asic][cASIC.fwCfgNames[adapter.type]].boards.push(v2);
+          });
         }
         if (cASIC.bootCfgNames) {
           if (! fwData[asic][cASIC.bootCfgNames[adapter.type]]) {
-            fwData[asic][cASIC.bootCfgNames[adapter.type]] = {type: 'boot', names: cASIC.fwMatrixNames[adapter.type].concat()}
+            fwData[asic][cASIC.bootCfgNames[adapter.type]] = {type: 'boot', names: cASIC.fwMatrixNames[adapter.type].concat(), boards: adapter.v2.concat()}
           } else {
             cASIC.fwMatrixNames[adapter.type].forEach(function(name) {
-              if (fwData[asic][cASIC.bootCfgNames[adapter.type]].names.indexOf(name) < 0) {
-                fwData[asic][cASIC.bootCfgNames[adapter.type]].names.push(name);
-              }
+              if (fwData[asic][cASIC.bootCfgNames[adapter.type]].names.indexOf(name) < 0) fwData[asic][cASIC.bootCfgNames[adapter.type]].names.push(name);
+            });
+            adapter.v2.forEach(function(v2) {
+              if (fwData[asic][cASIC.bootCfgNames[adapter.type]].boards.indexOf(v2) < 0) fwData[asic][cASIC.bootCfgNames[adapter.type]].boards.push(v2);
             });
           }
         }
@@ -424,13 +428,6 @@ if (! workingBOM.osList) {
         } else {
           adapter.mtm.forEach(function(mtm) {
             if (fwData[asic].mtmList.indexOf(mtm) < 0) fwData[asic].mtmList.push(mtm);
-          });
-        }
-        if (! fwData[asic].boardList) {
-          fwData[asic].boardList = adapter.v2.concat();
-        } else {
-          adapter.v2.forEach(function(v2) {
-            if (fwData[asic].boardList.indexOf(v2) < 0) fwData[asic].boardList.push(v2);
           });
         }
       }
@@ -482,7 +479,7 @@ if (! workingBOM.osList) {
         });
         baseDump += "\n[" + fwType.toUpperCase() + "-BOARDS]";
 
-        fwData[asic].boardList.forEach(function(board) {
+        fwData[asic][fwType].boards.forEach(function(board) {
           baseDump += "\n" + board;
         });
       }

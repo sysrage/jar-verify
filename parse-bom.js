@@ -249,14 +249,8 @@ for (var i in worksheet) {
           continue;
         } else {
           var val = worksheet[systemNameCol + y].v.toString().toLowerCase();
-          if (val === config.headerStr.systemRack) {
-            systemType = 'rack';
-            wasBlank = false;
-          } else if (val === config.headerStr.systemFlex) {
-            systemType = 'flex';
-            wasBlank = false;
-          } else if (val === config.headerStr.systemBC) {
-            systemType = 'bladecenter';
+          if (config.headerStr.systemTypes.indexOf(val) > -1) {
+            systemType = val;
             wasBlank = false;
           } else {
             util.log("[ERROR] Invalid system type header in Machine Types section.");

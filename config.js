@@ -1,5 +1,4 @@
 // Configuration file for jar-verify.
-
 module.exports = {
 
   // Temporary directory for file extraction/comparison
@@ -764,9 +763,10 @@ module.exports = {
     relType: 'type: ',
     osList: 'operating systems',
     systemList: 'machine types',
-    systemRack: 'rack',
-    systemFlex: 'flex',
-    systemBC: 'bladecenter',
+    systemTypes: ['rack', 'flex', 'bladecenter'], // must match types found in asicTypes
+    // systemRack: 'rack',
+    // systemFlex: 'flex',
+    // systemBC: 'bladecenter',
     adapterList: 'adapter models',
     // The following are Applicable Device ID entries - This will be removed
     ddWinNIC: 'win nic dd',
