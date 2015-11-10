@@ -59,6 +59,26 @@ function getParams() {
   return paramList;
 }
 
+// Function to write data to a file but make a backup first if file already exists
+function writeWithBackup(file, data, description) {
+  try {
+    var curDate = new Date();
+    var dateString = '' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
+    var backupFile = file + '-' + dateString;
+    var oldFile = fs.readFileSync(file);
+    if (! description) var description = "";
+    fs.writeFileSync(backupFile, oldFile);
+    util.log("[INFO] An existing " + description + "file for this release has been backed up.");
+  } catch (err) {
+    if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old " + description + "file. New data will not be saved.\n" + err);
+  }
+
+  fs.writeFile(file, data, function(err) {
+    if (err) return util.log("[ERROR] Unable to write " + description + "file to disk.\n" + err);
+    util.log("[INFO] The " + description + "file has been written to '" + file + "'.");
+  });
+}
+
 
 /**************************************************************/
 /* Start Program                                              */
@@ -146,21 +166,7 @@ if (! workingBOM.adapterList) {
   }
 
   // Back up old agentless.cfg for this release then save new file
-  var agentlessCfgFile = workingRelease + '-agentless.cfg';
-  try {
-    var oldCfg = fs.readFileSync(config.dataDir + agentlessCfgFile);
-    var curDate = new Date();
-    var buName = agentlessCfgFile + '-' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
-    fs.writeFileSync(config.dataDir + buName, oldCfg);
-    util.log("[INFO] An existing agentless.cfg file for this release has been backed up.");
-  } catch (err) {
-    if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old agentless.cfg file. New data will not be saved.\n" + err);
-  }
-
-  fs.writeFile(config.dataDir + agentlessCfgFile, agentlessCfgDump, function(err) {
-    if (err) return util.log("[ERROR] Unable to write agentless.cfg data to disk.\n" + err);
-    util.log("[INFO] All agentless.cfg data has been written to '" + config.dataDir + agentlessCfgFile + "'.");
-  });
+  writeWithBackup(config.dataDir + workingRelease + '-agentless.cfg', agentlessCfgDump, 'agentless.cfg ');
 }
 
 
@@ -212,20 +218,279 @@ if (! workingBOM.appDIDList) {
   }
 
   // Back up old app_dev_id.cfg for this release then save new file
-  var appDevIdCfgFile = workingRelease + '-app_dev_id.cfg';
-  try {
-    var oldCfg = fs.readFileSync(config.dataDir + appDevIdCfgFile);
-    var curDate = new Date();
-    var buName = appDevIdCfgFile + '-' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
-    fs.writeFileSync(config.dataDir + buName, oldCfg);
-    util.log("[INFO] An existing app_dev_id.cfg file for this release has been backed up.");
-  } catch (err) {
-    if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old app_dev_id.cfg file. New data will not be saved.\n" + err);
-  }
-
-  fs.writeFile(config.dataDir + appDevIdCfgFile, appDevIdCfgDump, function(err) {
-    if (err) return util.log("[ERROR] Unable to write app_dev_id.cfg data to disk.\n" + err);
-    util.log("[INFO] All app_dev_id.cfg data has been written to '" + config.dataDir + appDevIdCfgFile + "'.");
-  });
+  writeWithBackup(config.dataDir + workingRelease + '-app_dev_id.cfg', appDevIdCfgDump, 'app_dev_id.cfg ');
 }
 
+// Build base.cfg file based on BOM
+if (! workingBOM.osList) {
+  util.log("[ERROR] No Operating System entries found in BOM file.\n");
+} else if (! workingBOM.adapterList) {
+  util.log("[ERROR] No adapters found in BOM file.\n");
+} else {
+  // Build entries for [BASE] section
+  var baseArchitectures = [];
+  var baseLinux = {};
+  var baseVmware = [];
+  var baseWindows = [];
+  var baseAsics = [];
+  var baseLinDrivers = [];
+  var baseWinDrivers = [];
+  var baseMTMs = [];
+  workingBOM.osList.forEach(function(os) {
+    if (baseArchitectures.indexOf(os.arch) < 0) baseArchitectures.push(os.arch);
+    if (os.type === 'linux') {
+      os.pkgsdkName.forEach(function(sdkName) {
+        if (! baseLinux[sdkName]) {
+          baseLinux[sdkName] = {
+            ddName: os.ddName,
+            subVersions: [os.subVersion]
+          };
+        } else {
+          if (baseLinux[sdkName].subVersions.indexOf(os.subVersion) < 0) baseLinux[sdkName].subVersions.push(os.subVersion);
+        }
+      });
+    } else if (os.type === 'windows') {
+      os.pkgsdkName.forEach(function(sdkName) {
+        if (baseWindows.indexOf(sdkName) < 0) baseWindows.push(sdkName);
+      });
+    } else if (os.type === 'vmware') {
+      os.pkgsdkName.forEach(function(sdkName) {
+        if (baseVmware.indexOf(sdkName) < 0) baseVmware.push(sdkName);
+      });
+    }
+  });
+  workingBOM.adapterList.forEach(function(adapter) {
+    adapter.mtm.forEach(function(mtm) {
+      if (baseMTMs.indexOf(mtm) < 0 ) baseMTMs.push(mtm);
+    });
+    if (baseAsics.indexOf(adapter.asic) < 0) {
+      baseAsics.push(adapter.asic);
+      for (var a = 0; a < config.asicTypes.length; a++) {
+        if (config.asicTypes[a].name === adapter.asic) {
+          var asicType = config.asicTypes[a].type;
+          break;
+        }
+      }
+      if (asicType === 'cna') var baseProtos = ['cna', 'iscsi', 'nic'];
+      else var baseProtos = [asicType];
+      baseProtos.forEach(function(proto) {
+        if (baseWinDrivers.indexOf(proto.replace('cna', 'fcoe')) < 0) baseWinDrivers.push(proto.replace('cna', 'fcoe'));
+        for (var p in config.pkgTypes) {
+          if (config.pkgTypes[p].osType === 'linux' && config.pkgTypes[p].type === 'dd' && config.pkgTypes[p].proto === proto) {
+            config.pkgTypes[p].ddFileName.forEach(function(dd) {
+              var ddShort = dd.replace('.ko', '');
+              if (baseLinDrivers.indexOf(ddShort) < 0) baseLinDrivers.push(ddShort);
+            });
+          }
+        }
+      });
+    }
+  });
+
+  // Format [BASE] data as expected for base.cfg file
+  var baseDump = "[BASE]\nstaging = DESTDIR";
+
+  // This needs to be cleaned up
+  baseDump += "\narchitectures = ";
+  var first = true;
+  baseArchitectures.forEach(function(arch) {
+    if (! first) baseDump += ",";
+    first = false;
+    if (arch === 'x86') baseDump += 'i386';
+    if (arch === 'x64') baseDump += 'x86_64';
+  });
+
+  baseDump += "\nlinux = ";
+  var first = true;
+  for (var os in baseLinux) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += os.toLowerCase();
+  }
+
+  baseDump += "\nlinux_os = ";
+  var first = true;
+  for (var os in baseLinux) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += baseLinux[os].ddName;
+  }
+
+  baseDump += "\nvmware = ";
+  var first = true;
+  baseVmware.forEach(function(os) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += os;
+  });
+
+  baseDump += "\nwindows = ";
+  var first = true;
+  baseWindows.forEach(function(os) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += os;
+  });
+
+  baseDump += "\nfwsupport = ";
+  var first = true;
+  baseAsics.forEach(function(asic) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += asic.toLowerCase();
+  });
+
+  baseDump += "\nlinux_drivers = ";
+  var first = true;
+  baseLinDrivers.forEach(function(dd) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += dd;
+  });
+
+  baseDump += "\nwindows_drivers = ";
+  var first = true;
+  baseWinDrivers.forEach(function(dd) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += dd;
+  });
+
+  baseDump += "\nmtm = ";
+  var first = true;
+  baseMTMs.forEach(function(mtm) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += mtm;
+  });
+
+  baseDump += "\nautochangelogs = False\nelxflashstandalone =  True";
+
+  // Format driver subversion data as expected for base.cfg file
+  baseDump += "\n\n[DRIVER SUBVERSIONS]";
+  baseDump += "\nwindows_fc = 1";
+  baseDump += "\nwindows_fcoe = 1";
+  baseDump += "\nwindows_nic = 1";
+  baseDump += "\nwindows_iscsi = 1";
+  baseDump += "\n\n[LNX_DRIVER]";
+  baseDump += "\nlinux_nic = 1";
+  baseDump += "\nlinux_iscsi = 1";
+  baseDump += "\nlinux_lpfc = 1";
+
+  // Format Linux OS version data as expected for base.cfg file
+  for (var os in baseLinux) {
+    baseDump += "\n\n[" + os + "]";
+    baseLinux[os].subVersions.forEach(function(sub) {
+      if (sub === '0') baseDump += "\n" + baseLinux[os].ddName;
+      if (sub !== '0' && os.indexOf('RHEL') > -1) baseDump += "\n" + baseLinux[os].ddName + "." + sub;
+      if (sub !== '0' && os.indexOf('SLES') > -1) baseDump += "\n" + baseLinux[os].ddName + "-sp" + sub;
+    });
+  }
+
+  // Build entries for firmware sections
+  var fwData = {};
+  var cASIC = {};
+  baseAsics.forEach(function(asic) {
+    if (! fwData[asic]) fwData[asic] = {};
+    for (var a = 0; a < config.asicTypes.length; a++) {
+      if (config.asicTypes[a].name === asic) {
+        cASIC = config.asicTypes[a];
+        break;
+      }
+    }
+
+    workingBOM.adapterList.forEach(function(adapter) {
+      if (adapter.asic === asic) {
+        if (! fwData[asic][cASIC.fwCfgNames[adapter.type]]) {
+          fwData[asic][cASIC.fwCfgNames[adapter.type]] = {type: 'fw', names: cASIC.fwMatrixNames[adapter.type.concat()]}
+        } else {
+          cASIC.fwMatrixNames[adapter.type].forEach(function(name) {
+            if (fwData[asic][cASIC.fwCfgNames[adapter.type]].names.indexOf(name) < 0) fwData[asic][cASIC.fwCfgNames[adapter.type]].names.push(name);
+          });
+        }
+        if (cASIC.bootCfgNames) {
+          if (! fwData[asic][cASIC.bootCfgNames[adapter.type]]) {
+            fwData[asic][cASIC.bootCfgNames[adapter.type]] = {type: 'boot', names: cASIC.fwMatrixNames[adapter.type].concat()}
+          } else {
+            cASIC.fwMatrixNames[adapter.type].forEach(function(name) {
+              if (fwData[asic][cASIC.bootCfgNames[adapter.type]].names.indexOf(name) < 0) {
+                fwData[asic][cASIC.bootCfgNames[adapter.type]].names.push(name);
+              }
+            });
+          }
+        }
+        if (! fwData[asic].mtmList) {
+          fwData[asic].mtmList = adapter.mtm.concat();
+        } else {
+          adapter.mtm.forEach(function(mtm) {
+            if (fwData[asic].mtmList.indexOf(mtm) < 0) fwData[asic].mtmList.push(mtm);
+          });
+        }
+        if (! fwData[asic].boardList) {
+          fwData[asic].boardList = adapter.v2.concat();
+        } else {
+          adapter.v2.forEach(function(v2) {
+            if (fwData[asic].boardList.indexOf(v2) < 0) fwData[asic].boardList.push(v2);
+          });
+        }
+      }
+    });
+  });
+
+  // Format firmware section data as expected for base.cfg file
+  for (var asic in fwData) {
+    baseDump += "\n\n[" + asic.toUpperCase() + "]\nfw = ";
+    var firstFW = true;
+    var firstBoot = true;
+    var bootList = '';
+    for (var fwType in fwData[asic]) {
+      if (fwData[asic][fwType].type === 'fw') {
+        if (! firstFW) baseDump += ",";
+        firstFW = false;
+        baseDump += fwType;
+      } else if (fwData[asic][fwType].type === 'boot') {
+        if (! firstBoot) bootList += ",";
+        firstBoot = false;
+        bootList += fwType;
+      }
+    }
+
+    if (bootList) baseDump += "\nboot = " + bootList;
+
+    baseDump += "\nmtm = ";
+    var first = true;
+    fwData[asic].mtmList.forEach(function(mtm) {
+      if (! first) baseDump += ",";
+      first = false;
+      baseDump += mtm;
+    });
+
+    baseDump += "\ncfl = /home/integrat/toe/firmware/tetra_cfl";
+
+    baseDump += "\nsubversion = 1";
+
+    for (var fwType in fwData[asic]) {
+      if (fwType !== 'mtmList' && fwType !== 'boardList') {
+        baseDump += "\n\n[" + fwType.toUpperCase() + "]";
+
+        baseDump += "\nname = ";
+        var first = true;
+        fwData[asic][fwType].names.forEach(function(name) {
+          if (! first) baseDump += ",";
+          first = false;
+          baseDump += name;
+        });
+        baseDump += "\n[" + fwType.toUpperCase() + "-BOARDS]";
+
+        fwData[asic].boardList.forEach(function(board) {
+          baseDump += "\n" + board;
+        });
+      }
+    }
+  }
+
+  baseDump += "\n";
+
+  // Back up old base.cfg for this release then save new file
+  writeWithBackup(config.dataDir + workingRelease + '-base.cfg', baseDump, 'base.cfg ');
+}

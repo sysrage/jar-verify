@@ -239,6 +239,7 @@ for (var i in worksheet) {
 
     var wasBlank = true;
     var moreRows = true;
+    var systemType = null;
 
     while (moreRows) {
       if (wasBlank) {
@@ -248,7 +249,14 @@ for (var i in worksheet) {
           continue;
         } else {
           var val = worksheet[systemNameCol + y].v.toString().toLowerCase();
-          if (config.headerStr.systemType.indexOf(val) > -1) {
+          if (val === config.headerStr.systemRack) {
+            systemType = 'rack';
+            wasBlank = false;
+          } else if (val === config.headerStr.systemFlex) {
+            systemType = 'flex';
+            wasBlank = false;
+          } else if (val === config.headerStr.systemBC) {
+            systemType = 'bladecenter';
             wasBlank = false;
           } else {
             util.log("[ERROR] Invalid system type header in Machine Types section.");
@@ -269,7 +277,8 @@ for (var i in worksheet) {
             var mtmList = worksheet[systemMTMCol + y].v.toString().replace(' ', '').split(',');
             systemList[worksheet[systemItemCol + y].v] = {
               name: worksheet[systemNameCol + y].v.trim(),
-              mtm: mtmList
+              type: systemType,
+              mtm: mtmList,
             };
           }
         }
@@ -345,6 +354,7 @@ for (var i in worksheet) {
           } else {
             // Build list of supported machine types
             var mtmList = [];
+            var adapterType = null;
             var tempList = worksheet[adapterMTMCol + y].v.toString().replace(' ', '').split(',');
             tempList.forEach(function(entry) {
               if (entry.search('-') > -1) {
@@ -355,6 +365,11 @@ for (var i in worksheet) {
                     systemList[m].mtm.forEach(function (mtm) {
                       mtmList.push(mtm);
                     });
+                    if (adapterType && adapterType !== systemList[m].type) {
+                      util.log("[ERROR] Adapter matched to multiple system types (" + adapterType + " and " + systemList[m].type + ") in cell " + adapterMTMCol + y + ".");
+                    } else {
+                      adapterType = systemList[m].type;
+                    }
                   } else {
                     util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + m + ").");
                   }
@@ -364,6 +379,11 @@ for (var i in worksheet) {
                   systemList[entry].mtm.forEach(function (mtm) {
                     mtmList.push(mtm);
                   });
+                  if (adapterType && adapterType !== systemList[entry].type) {
+                    util.log("[ERROR] Adapter matched to multiple system types (" + adapterType + " and " + systemList[entry].type + ") in cell " + adapterMTMCol + y + ".");
+                  } else {
+                    adapterType = systemList[entry].type;
+                  }
                 } else {
                   util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + entry + ").");
                 }
@@ -404,6 +424,7 @@ for (var i in worksheet) {
                 agent: agentList,
                 pldm: pldmData,
                 asic: asicType,
+                type: adapterType,
                 mtm: mtmList
               });
             }

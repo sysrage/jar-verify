@@ -20,29 +20,74 @@ module.exports = {
       name: 'BE3',
       type: 'cna',
       agentlessCfgNames: {
-        '13': 'BE3_AG-BOARDS'
+        13: 'BE3_AG-BOARDS'
+      },
+      fwCfgNames: {
+        rack: 'oc11',
+        flex: 'oc11',
+        bladecenter: 'oc11'
+      },
+      fwMatrixNames: {
+        rack: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
+        flex: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
+        bladecenter: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
       }
     },
     {
       name: 'Lancer',
       type: 'fc',
       agentlessCfgNames: {
-        '13': 'LAN_AG-BOARDS'
+        13: 'LAN_AG-BOARDS'
+      },
+      fwCfgNames: {
+        rack: 'A',
+        flex: 'A',
+        bladecenter: 'A'
+      },
+      fwMatrixNames: {
+        rack: ['LPe16000', 'LPe16002'],
+        flex: ['LPm16002', 'LPm16004'],
+        bladecenter: [],
       }
     },
     {
       name: 'Saturn',
       type: 'fc',
       agentlessCfgNames: {
-        '10': 'SAT_AG-BOARDS',
-        '32773': 'SAT_BOOT_AG-BOARDS'
+        10: 'SAT_AG-BOARDS',
+        32773: 'SAT_BOOT_AG-BOARDS'
+      },
+      fwCfgNames: {
+        rack: 'ud',
+        flex: 'uf',
+        bladecenter: 'uf'
+      },
+      bootCfgNames: {
+        rack: 'UU',
+        flex: 'UU',
+        bladecenter: 'UU'
+      },
+      fwMatrixNames: {
+        rack: ['LPe12000', 'LPe12002'],
+        flex: ['LPe1205', 'LPe1205a'],
+        bladecenter: ['LPe1205-CIOv'],
       }
     },
     {
       name: 'Skyhawk',
       type: 'cna',
       agentlessCfgNames: {
-        '13': 'SKY_AG-BOARDS'
+        13: 'SKY_AG-BOARDS'
+      },
+      fwCfgNames: {
+        rack: 'oc14',
+        flex: 'oc14',
+        bladecenter: 'oc14'
+      },
+      fwMatrixNames: {
+        rack: ['OCe14100-FCoE', 'OCe14100-iSCSI', 'OCe14100-NIC'],
+        flex: ['OCe14100-FCoE', 'OCe14100-iSCSI', 'OCe14100-NIC'],
+        bladecenter: [],
       }
     },
   ],
@@ -719,7 +764,9 @@ module.exports = {
     relType: 'type: ',
     osList: 'operating systems',
     systemList: 'machine types',
-    systemType: ['rack', 'flex'], // System type headers (ignored but need to be tracked)
+    systemRack: 'rack',
+    systemFlex: 'flex',
+    systemBC: 'bladecenter',
     adapterList: 'adapter models',
     // The following are Applicable Device ID entries - This will be removed
     ddWinNIC: 'win nic dd',

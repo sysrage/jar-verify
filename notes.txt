@@ -49,9 +49,3 @@ base15a.cfg:
  - How are the 'name' variables used in each firmware section? Are they only used for the fwmatrix.txt file? They seem to be wrong for Saturn.
  - When are subversions for the firmware sections changed?
  - mtms15a.cfg should be completely eliminated - list of machine types can be included directly in base.cfg
-
- - May need to add 'mezz', 'ml2', or 'standup' designation to BOM for each adapter type
-    -- otherwise, parse rack vs. flex and add type to BOM JSON
-    -- needed for defining UD vs. UF firmware image in cfg files
-
- -
