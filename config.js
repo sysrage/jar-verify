@@ -16,10 +16,35 @@ module.exports = {
 
   // Definition of all available ASIC types
   asicTypes: [
-    {name: 'BE3', type: 'cna'},
-    {name: 'Lancer', type: 'fc'},
-    {name: 'Saturn', type: 'fc'},
-    {name: 'Skyhawk', type: 'cna'},
+    {
+      name: 'BE3',
+      type: 'cna',
+      agentlessCfgNames: {
+        '13': 'BE3_AG-BOARDS'
+      }
+    },
+    {
+      name: 'Lancer',
+      type: 'fc',
+      agentlessCfgNames: {
+        '13': 'LAN_AG-BOARDS'
+      }
+    },
+    {
+      name: 'Saturn',
+      type: 'fc',
+      agentlessCfgNames: {
+        '10': 'SAT_AG-BOARDS',
+        '32773': 'SAT_BOOT_AG-BOARDS'
+      }
+    },
+    {
+      name: 'Skyhawk',
+      type: 'cna',
+      agentlessCfgNames: {
+        '13': 'SKY_AG-BOARDS'
+      }
+    },
   ],
 
   // Definition of all Operating System mappings
@@ -295,7 +320,8 @@ module.exports = {
       proto: 'nic',
       inputDesc: 'Emulex NIC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['ocnd63.sys', 'ocnd64.sys'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Win NIC DD'
     },
     ddWinISCSI: {
       name: 'Windows iSCSI Driver',
@@ -306,7 +332,8 @@ module.exports = {
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.sys'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Win iSCSI DD'
     },
     ddWinFC: {
       name: 'Windows FC Driver',
@@ -317,7 +344,8 @@ module.exports = {
       proto: 'fc',
       inputDesc: 'Emulex FC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['elxfc.sys'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Win FC DD'
     },
     ddWinFCoE: {
       name: 'Windows FCoE Driver',
@@ -328,7 +356,8 @@ module.exports = {
       proto: 'cna',
       inputDesc: 'Emulex FCoE Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['elxcna.sys'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Win FCoE DD'
     },
     ddRHEL5NIC: {
       name: 'RHEL 5.x NIC Driver',
@@ -339,7 +368,8 @@ module.exports = {
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux NIC DD'
     },
     ddRHEL5ISCSI: {
       name: 'RHEL 5.x iSCSI Driver',
@@ -350,10 +380,11 @@ module.exports = {
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux iSCSI DD'
     },
     ddRHEL5FC: {
-      name: 'RHEL 5.x FC Driver',
+      name: 'RHEL 5.x FC/FCoE Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel5',
       type: 'dd',
       os: 'rhel5',
@@ -361,7 +392,8 @@ module.exports = {
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
-      ddVerFormat: '0:##VERSION##'
+      ddVerFormat: '0:##VERSION##',
+      appDevIdCfgName: 'Linux FC/FCoE DD'
     },
     ddRHEL6NIC: {
       name: 'RHEL 6.x NIC Driver',
@@ -372,7 +404,8 @@ module.exports = {
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux NIC DD'
     },
     ddRHEL6ISCSI: {
       name: 'RHEL 6.x iSCSI Driver',
@@ -383,10 +416,11 @@ module.exports = {
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux iSCSI DD'
     },
     ddRHEL6FC: {
-      name: 'RHEL 6.x FC Driver',
+      name: 'RHEL 6.x FC/FCoE Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel6',
       type: 'dd',
       os: 'rhel6',
@@ -394,7 +428,8 @@ module.exports = {
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
-      ddVerFormat: '0:##VERSION##'
+      ddVerFormat: '0:##VERSION##',
+      appDevIdCfgName: 'Linux FC/FCoE DD'
     },
     ddRHEL7NIC: {
       name: 'RHEL 7.x NIC Driver',
@@ -405,7 +440,8 @@ module.exports = {
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux NIC DD'
     },
     ddRHEL7ISCSI: {
       name: 'RHEL 7.x iSCSI Driver',
@@ -416,10 +452,11 @@ module.exports = {
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux iSCSI DD'
     },
     ddRHEL7FC: {
-      name: 'RHEL 7.x FC Driver',
+      name: 'RHEL 7.x FC/FCoE Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel7',
       type: 'dd',
       os: 'rhel7',
@@ -427,7 +464,8 @@ module.exports = {
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
-      ddVerFormat: '0:##VERSION##'
+      ddVerFormat: '0:##VERSION##',
+      appDevIdCfgName: 'Linux FC/FCoE DD'
     },
     ddSLES10NIC: {
       name: 'SLES 10.x NIC Driver',
@@ -438,7 +476,8 @@ module.exports = {
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux NIC DD'
     },
     ddSLES10ISCSI: {
       name: 'SLES 10.x iSCSI Driver',
@@ -449,10 +488,11 @@ module.exports = {
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux iSCSI DD'
     },
     ddSLES10FC: {
-      name: 'SLES 10.x FC Driver',
+      name: 'SLES 10.x FC/FCoE Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles10',
       type: 'dd',
       os: 'sles10',
@@ -460,7 +500,8 @@ module.exports = {
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
-      ddVerFormat: '0:##VERSION##'
+      ddVerFormat: '0:##VERSION##',
+      appDevIdCfgName: 'Linux FC/FCoE DD'
     },
     ddSLES11NIC: {
       name: 'SLES 11.x NIC Driver',
@@ -471,7 +512,8 @@ module.exports = {
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux NIC DD'
     },
     ddSLES11ISCSI: {
       name: 'SLES 11.x iSCSI Driver',
@@ -482,10 +524,11 @@ module.exports = {
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux iSCSI DD'
     },
     ddSLES11FC: {
-      name: 'SLES 11.x FC Driver',
+      name: 'SLES 11.x FC/FCoE Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles11',
       type: 'dd',
       os: 'sles11',
@@ -493,7 +536,8 @@ module.exports = {
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
-      ddVerFormat: '0:##VERSION##'
+      ddVerFormat: '0:##VERSION##',
+      appDevIdCfgName: 'Linux FC/FCoE DD'
     },
     ddSLES12NIC: {
       name: 'SLES 12.x NIC Driver',
@@ -504,7 +548,8 @@ module.exports = {
       proto: 'nic',
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux NIC DD'
     },
     ddSLES12ISCSI: {
       name: 'SLES 12.x iSCSI Driver',
@@ -515,10 +560,11 @@ module.exports = {
       proto: 'iscsi',
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
-      ddVerFormat: '##VERSION##'
+      ddVerFormat: '##VERSION##',
+      appDevIdCfgName: 'Linux iSCSI DD'
     },
     ddSLES12FC: {
-      name: 'SLES 12.x FC Driver',
+      name: 'SLES 12.x FC/FCoE Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles12',
       type: 'dd',
       os: 'sles12',
@@ -526,7 +572,8 @@ module.exports = {
       proto: 'fc',
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
-      ddVerFormat: '0:##VERSION##'
+      ddVerFormat: '0:##VERSION##',
+      appDevIdCfgName: 'Linux FC/FCoE DD'
     },
     fwBE3Linux: {
       name: 'Linux BE Firmware',
@@ -536,7 +583,8 @@ module.exports = {
       osType: 'linux',
       asic: 'BE3',
       preVersion: 'oc11-',
-      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'BE FW'
     },
     fwBE3VMware: {
       name: 'VMware BE Firmware',
@@ -546,7 +594,8 @@ module.exports = {
       osType: 'vmware',
       asic: 'BE3',
       preVersion: 'oc11-',
-      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'BE FW'
     },
     fwBE3Windows: {
       name: 'Windows BE Firmware',
@@ -556,7 +605,8 @@ module.exports = {
       osType: 'windows',
       asic: 'BE3',
       preVersion: 'oc11-',
-      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'BE FW'
     },
     fwLancerLinux: {
       name: 'Linux Lancer Firmware',
@@ -565,7 +615,8 @@ module.exports = {
       os: 'linux',
       osType: 'linux',
       asic: 'Lancer',
-      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Lancer FW'
     },
     fwLancerVMware: {
       name: 'VMware Lancer Firmware',
@@ -574,7 +625,8 @@ module.exports = {
       os: 'vmware',
       osType: 'vmware',
       asic: 'Lancer',
-      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Lancer FW'
     },
     fwLancerWindows: {
       name: 'Windows Lancer Firmware',
@@ -583,7 +635,8 @@ module.exports = {
       os: 'windows',
       osType: 'windows',
       asic: 'Lancer',
-      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Lancer FW'
     },
     fwSaturnLinux: {
       name: 'Linux Saturn Firmware',
@@ -593,7 +646,8 @@ module.exports = {
       osType: 'linux',
       asic: 'Saturn',
       bootRegex: '([0-9\.]+[xa][0-9]+)',
-      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Saturn FW'
     },
     fwSaturnVMware: {
       name: 'VMware Saturn Firmware',
@@ -603,7 +657,8 @@ module.exports = {
       osType: 'vmware',
       asic: 'Saturn',
       bootRegex: '([0-9\.]+[xa][0-9]+)',
-      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Saturn FW'
     },
     fwSaturnWindows: {
       name: 'Windows Saturn Firmware',
@@ -613,7 +668,8 @@ module.exports = {
       osType: 'windows',
       asic: 'Saturn',
       bootRegex: '([0-9\.]+[xa][0-9]+)',
-      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Saturn FW'
     },
     fwSkyhawkLinux: {
       name: 'Linux Skyhawk Firmware',
@@ -623,7 +679,8 @@ module.exports = {
       osType: 'linux',
       asic: 'Skyhawk',
       preVersion: 'oc14-',
-      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Skyhawk FW'
     },
     fwSkyhawkVMware: {
       name: 'VMware Skyhawk Firmware',
@@ -633,7 +690,8 @@ module.exports = {
       osType: 'vmware',
       asic: 'Skyhawk',
       preVersion: 'oc14-',
-      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Skyhawk FW'
     },
     fwSkyhawkWindows: {
       name: 'Windows Skyhawk Firmware',
@@ -643,7 +701,8 @@ module.exports = {
       osType: 'windows',
       asic: 'Skyhawk',
       preVersion: 'oc14-',
-      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##'
+      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Skyhawk FW'
     },
   },
 

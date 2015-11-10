@@ -30,10 +30,28 @@ Firmware Packages:
 
 Problems Found w/ Existing Packages:
  - All BE3, Lancer, and Skyhawk package driverFiles classifications should be '13' not 'firmware'
- - Invalid x32 windows driver entry needs to be removed from Windows FCoE driver package
- - Duplicate Windows driver entry needs to be removed from Windows NIC driver package
+ - Invalid x32 Windows driverFile entry needs to be removed from Windows FCoE driver package
+ - Duplicate Windows driverFile entry needs to be removed from Windows NIC driver package
  - Duplicate Agentless entries need to be removed from Saturn FW packages
  - Duplicate Agentless entries need to be removed from Lancer FW packages
  - The OS "VMware vSphere 2013" needs to be added to all VMware firmware packages
 
  - Old BOM contained 00JY829 instead of 00JY827 for Gold Lite. Ensure this is fixed in new packages.
+
+=========================================
+
+base15a.cfg:
+
+ - What exactly does 'architectures' indicate? Each OS has different architecture support, so how is this general variable used?
+ - What is the difference between the 'linux' and 'linux_os' variables and how is each one used?
+ - What is the significance of the commented out 'linux_drivers' variable as opposed to the uncommented one? Does the order matter?
+ - Are the '[DRIVER SUBVERSIONS]' and '[LNX_DRIVER]' sections ever changed or are they always set to '1'?
+ - How are the 'name' variables used in each firmware section? Are they only used for the fwmatrix.txt file? They seem to be wrong for Saturn.
+ - When are subversions for the firmware sections changed?
+ - mtms15a.cfg should be completely eliminated - list of machine types can be included directly in base.cfg
+
+ - May need to add 'mezz', 'ml2', or 'standup' designation to BOM for each adapter type
+    -- otherwise, parse rack vs. flex and add type to BOM JSON
+    -- needed for defining UD vs. UF firmware image in cfg files
+
+ -

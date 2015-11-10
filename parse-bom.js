@@ -395,16 +395,18 @@ for (var i in worksheet) {
               var pldmData = { vendor: tempData[1], device: tempData[2] };
             }
 
-            // Add adapter to list
-            adapterList.push({
-              name: worksheet[adapterNameCol + y].v.toString().replace('\r\n', ' ').trim(),
-              model: worksheet[adapterModelCol + y].v.toString().trim(),
-              v2: v2List,
-              agent: agentList,
-              pldm: pldmData,
-              asic: asicType,
-              mtm: mtmList
-            });
+            // Add adapter to list if it's supported by any machine types
+            if (mtmList.length > 0) {
+              adapterList.push({
+                name: worksheet[adapterNameCol + y].v.toString().replace('\r\n', ' ').trim(),
+                model: worksheet[adapterModelCol + y].v.toString().trim(),
+                v2: v2List,
+                agent: agentList,
+                pldm: pldmData,
+                asic: asicType,
+                mtm: mtmList
+              });
+            }
           }
         }
       }
