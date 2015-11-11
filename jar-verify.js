@@ -677,13 +677,13 @@ function verifyInputXML(jarContent) {
             var inputDeviceDesc = jarContent.inputFile.pldmFirmware.deviceDescriptor;
             if (! Array.isArray(inputDeviceDesc)) var deviceDescList = [inputDeviceDesc];
             else var deviceDescList = inputDeviceDesc;
-            var pkgAdapterList = [];
+            var pldmAdapterList = [];
             workingBOM.adapterList.forEach(function(adapter) {
-              if (adapter.asic === config.pkgTypes[jarContent.jarType].asic) pkgAdapterList.push(adapter);
+              if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && adapter.pldm) pldmAdapterList.push(adapter);
             });
 
             // compare count of deviceDescriptor entries to number of matching adapters in BOM
-            // console.log(jarContent.jarType);
+
 
             // Verify vendorSpecifier
 
