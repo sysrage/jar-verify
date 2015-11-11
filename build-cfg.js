@@ -467,7 +467,7 @@ if (! workingBOM.osList) {
     baseDump += "\nsubversion = 1";
 
     for (var fwType in fwData[asic]) {
-      if (fwType !== 'mtmList' && fwType !== 'boardList') {
+      if (fwType !== 'mtmList') {
         baseDump += "\n\n[" + fwType.toUpperCase() + "]";
 
         baseDump += "\nname = ";

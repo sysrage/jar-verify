@@ -45,7 +45,9 @@ base15a.cfg:
  - What exactly does 'architectures' indicate? Each OS has different architecture support, so how is this general variable used?
  - What is the difference between the 'linux' and 'linux_os' variables and how is each one used?
  - What is the significance of the commented out 'linux_drivers' variable as opposed to the uncommented one? Does the order matter?
- - Are the '[DRIVER SUBVERSIONS]' and '[LNX_DRIVER]' sections ever changed or are they always set to '1'?
  - How are the 'name' variables used in each firmware section? Are they only used for the fwmatrix.txt file? They seem to be wrong for Saturn.
+
+ - Are the '[DRIVER SUBVERSIONS]' and '[LNX_DRIVER]' sections ever changed or are they always set to '1'?
  - When are subversions for the firmware sections changed?
+ - subversions should really be completely removed from base.cfg
  - mtms15a.cfg should be completely eliminated - list of machine types can be included directly in base.cfg

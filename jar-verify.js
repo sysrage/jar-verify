@@ -600,7 +600,7 @@ function verifyInputXML(jarContent) {
         // Build list of expected machine types for this package
         var pkgMTMList = [];
         if (config.pkgTypes[jarContent.jarType].type === 'dd') {
-          if (['nic', 'iscsi', 'fcoe'].indexOf(config.pkgTypes[jarContent.jarType].proto) > -1) {
+          if (['nic', 'iscsi', 'cna'].indexOf(config.pkgTypes[jarContent.jarType].proto) > -1) {
             var pkgASICTypes = ['cna'];
           } else if (config.pkgTypes[jarContent.jarType].proto === 'fc' && config.pkgTypes[jarContent.jarType].osType === 'windows') {
             var pkgASICTypes = ['fc'];
@@ -610,7 +610,7 @@ function verifyInputXML(jarContent) {
 
           workingBOM.adapterList.forEach(function(adapter) {
             for (var a = 0; a < config.asicTypes.length; a++) {
-              if (config.asicTypes[a].name === adapter.asic) {
+              if (adapter.asic === config.asicTypes[a].name && pkgASICTypes.indexOf(config.asicTypes[a].type) > -1) {
                 adapter.mtm.forEach(function(mtm) {
                   if (pkgMTMList.indexOf(mtm) < 0) pkgMTMList.push(mtm);
                 });
@@ -679,6 +679,10 @@ function verifyInputXML(jarContent) {
             else var deviceDescList = inputDeviceDesc;
 
             // compare count of deviceDescriptor entries to number of matching adapters in BOM
+            // console.log(jarContent.jarType);
+            // workingBOM.adapterList.forEach(function(adapter) {
+            //   if ()
+            // });
 
             // Verify vendorSpecifier
 

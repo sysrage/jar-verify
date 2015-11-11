@@ -763,10 +763,7 @@ module.exports = {
     relType: 'type: ',
     osList: 'operating systems',
     systemList: 'machine types',
-    systemTypes: ['rack', 'flex', 'bladecenter'], // must match types found in asicTypes
-    // systemRack: 'rack',
-    // systemFlex: 'flex',
-    // systemBC: 'bladecenter',
+    systemTypes: ['rack', 'flex', 'bladecenter'], // must match names in asicTypes.fwCfgNames & asicTypes.fwCfgNames
     adapterList: 'adapter models',
     // The following are Applicable Device ID entries - This will be removed
     ddWinNIC: 'win nic dd',
