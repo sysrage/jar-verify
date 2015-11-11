@@ -720,6 +720,11 @@ function verifyInputXML(jarContent) {
           util.log("[ERROR] Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
         }
       }
+    } else {
+      // Verify driver package does *not* contain PLDM FW update data
+      if (jarContent.inputFile.pldmFirmware) {
+        util.log("[ERROR] Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      }
     }
 
     // Verify description
