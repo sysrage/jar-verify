@@ -687,9 +687,9 @@ function verifyInputXML(jarContent) {
             var bomAdapterList = [];
             var bomDeviceCount = 0;
             workingBOM.adapterList.forEach(function(adapter) {
-              if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && adapter.pldm) {
+              if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && Object.keys(adapter.pldm).length > 0) {
                 bomAdapterList.push(adapter);
-                bomDevCount += adapter.agent.length;
+                bomDeviceCount += adapter.agent.length;
               }
             });
 
@@ -722,7 +722,7 @@ function verifyInputXML(jarContent) {
                 // Verify full entry matches an expected adapter from the BOM
                 var matchingEntry = false;
                 bomAdapterList.forEach(function(adapter) {
-                  if (devDescEntry.vendorSpecifier.toUpperCase() === '0x' + adapter.pldm.vendor.toUpperCase() && '0x' + devDescEntry.deviceSpecifier.toUpperCase() === adapter.pldm.device.toUpperCase()) {
+                  if (devDescEntry.vendorSpecifier.toUpperCase() === '0X' + adapter.pldm.vendor.toUpperCase() && devDescEntry.deviceSpecifier.toUpperCase() === '0X' + adapter.pldm.device.toUpperCase()) {
                     var matchingAgent = false;
                     adapter.agent.forEach(function(agent) {
                       if (devDescEntry.imageId === '00' + agent.id && devDescEntry.classification === agent.type) matchingEntry = true;
@@ -756,7 +756,9 @@ function verifyInputXML(jarContent) {
               // Verify the number of entries matches number of Agentless types for matching adapters in BOM
               var uniqueTypes = [];
               bomAdapterList.forEach(function(adapter) {
-                if (uniqueTypes.indexOf(adapter.agent.type) < 0) uniqueTypes.push(adapter.agent.type);
+                adapter.agent.forEach(function(agent) {
+                  if (uniqueTypes.indexOf(agent.type) < 0) uniqueTypes.push(agent.type);
+                });
               });
               if (uniqueFiles.length !== uniqueTypes.length) {
                 util.log("[ERROR] Incorrect number of 'file' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
@@ -775,7 +777,7 @@ function verifyInputXML(jarContent) {
                   util.log("[ERROR] Missing 'file.offset' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                 } else {
                   // Verify file.name
-                  if (fileEntry.name !== fileCount) {
+                  if (fileEntry.name !== fileCount.toString()) {
                     util.log("[ERROR] Unexpected value (" + fileEntry.name + ") for 'file.name' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                   }
                   fileCount++;
