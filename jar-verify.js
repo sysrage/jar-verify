@@ -825,6 +825,30 @@ function verifyInputXML(jarContent) {
   }
 }
 
+function verifyPackageXML(jarContent) {
+  // console.log(jarContent.xmlFileName);
+  // console.log(JSON.stringify(jarContent.xmlFile, null, 2));
+
+}
+
+function verifyReadmeFile(jarContent) {
+  // console.log(jarContent.readmeFileName);
+  // console.log(jarContent.readmeFile);
+
+}
+
+function verifyChangeFile(jarContent) {
+  // console.log(jarContent.changeFileName);
+  // console.log(jarContent.changeFile);
+
+}
+
+function verifyPayloadFile(jarContent) {
+  var payloadFile = tempPath + jarContent.jarType + '/' + jarContent.binFileName;
+  // console.log(payloadFile);
+
+}
+
 /**************************************************************/
 /* Start Program                                              */
 /**************************************************************/
@@ -897,6 +921,8 @@ try {
     return util.log("[ERROR] Unexpected error: " + err);
   }
 }
+
+util.log("[STATUS] Building list of JAR files for the specified release and build...\n");
 
 // Gather list of JAR files in jarDir
 try {
@@ -973,26 +999,30 @@ for (jarType in jarFiles) {
   }
 }
 
+util.log("[STATUS] Verifying content of " + Object.keys(jarFiles).length + " JAR files...\n");
+
 // All items in jarFiles should now be valid - begin verification
 for (jarType in jarFiles) {
   getJarContent(jarType).then(function(jarContent) {
     // Verify input XML data
+    // util.log("[STATUS] Verifying input XML for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
     verifyInputXML(jarContent);
 
     // Verify package XML data
-    // console.log(jarContent.xmlFileName);
-    // console.log(JSON.stringify(jarContent.xmlFile, null, 2));
+    // util.log("[STATUS] Verifying package XML for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    verifyPackageXML(jarContent);
 
     // Verify readme data
-    // console.log(jarContent.readmeFileName);
-    // console.log(jarContent.readmeFile);
+    // util.log("[STATUS] Verifying README file for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    verifyReadmeFile(jarContent);
 
     // Verify change history data
-    // console.log(jarContent.changeFileName);
-    // console.log(jarContent.changeFile);
+    // util.log("[STATUS] Verifying Change History file for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    verifyChangeFile(jarContent);
 
     // Verify payload
-    var payloadFile = tempPath + jarContent.jarType + '/' + jarContent.binFileName;
+    // util.log("[STATUS] Verifying payload for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    verifyPayloadFile(jarContent);
 
   }, function(err) {
     if (err.code === 'EACCES') {
@@ -1016,6 +1046,8 @@ for (jarType in jarFiles) {
 }
 
 process.on('exit', function() {
+  util.log("[STATUS] Finished all verification steps. Cleaning up...\n");
+
   // Clean up temporary files
   rmdir.sync(tempPath, {gently: tempPath}, function(err) {
     if (err) util.log("[ERROR] Unable to delete temporary files: " + err);
