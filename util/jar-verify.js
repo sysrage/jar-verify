@@ -855,7 +855,7 @@ function verifyPayloadFile(jarContent) {
 
 // Read configuration file
 try {
-  var config = require('./config.js');
+  var config = require('../config.js');
 } catch (err) {
   return util.log("[ERROR] Unable to open configuration file.\n" + err);
 }

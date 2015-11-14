@@ -129,7 +129,7 @@ function validateOS(osName, cell) {
 
 // Read configuration file
 try {
-  var config = require('./config.js');
+  var config = require('../config.js');
 } catch (err) {
   util.log("[ERROR] Unable to open configuration file.");
   console.log(err);
