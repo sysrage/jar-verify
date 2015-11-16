@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* Parse Lenovo UX Package BOM file and generate JSON object using Node.js
  * Written by Brian Bothwell (brian.bothwell@avagotech.com)
  *

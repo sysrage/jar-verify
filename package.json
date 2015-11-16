@@ -5,6 +5,7 @@
   "main": "jar-verify.js",
   "dependencies": {
     "mkdirp": "^0.5.1",
+    "pretty-data": "^0.40.0",
     "rimraf": "^2.4.3",
     "xlsx": "^0.8.0",
     "xml2object": "^0.1.2",
@@ -20,6 +21,12 @@
   },
   "author": "Brian Bothwell",
   "license": "ISC",
+  "bin": {
+    "build-cfg": "util/build-cfg.js",
+    "jar-verify": "util/jar-verify.js",
+    "parse-bom": "util/parse-bom.js",
+    "pldm-extract": "util/pldm-extract.js"
+  },
   "bugs": {
     "url": "https://github.com/sysrage/jar-verify/issues"
   },

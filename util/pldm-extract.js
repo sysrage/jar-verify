@@ -1,11 +1,57 @@
+#!/usr/bin/env node
+/* Extract PLDM XML data and firmware image using Node.js
+ * Written by Brian Bothwell (brian.bothwell@avagotech.com)
+ *
+ * To use, run: `node pldm-extract.js <payload file>` where <payload file> is a
+ * firmware UX package payload file (bin or exe).
+ *
+ * Requres:
+ *  - Node.js
+ *  - pretty-data
+ *  - xml2object
+ */
+
 var util        = require('util');
 var path        = require('path');
 var fs          = require('fs');
 var stream      = require('stream');
 
+var pd          = require('pretty-data').pd;
 var xml2object  = require('xml2object');
 
-// Read configuration file
+/**************************************************************/
+/* Function/Class Definitions                                 */
+/**************************************************************/
+
+// Function to write data to a file but make a backup first if file already exists
+function writeWithBackup(file, data, description) {
+  try {
+    var curDate = new Date();
+    var dateString = '' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
+    var backupFile = file + '-' + dateString;
+    var oldFile = fs.readFileSync(file);
+    if (! description) var description = "";
+    fs.writeFileSync(backupFile, oldFile);
+    util.log("[INFO] An existing " + description + "file for this package has been backed up.\n");
+  } catch (err) {
+    if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old " + description + "file. New data will not be saved.\n" + err);
+  }
+
+  fs.writeFile(file, data, function(err) {
+    if (err) return util.log("[ERROR] Unable to write " + description + "file to disk.\n" + err);
+    util.log("[INFO] The " + description + "file has been written to '" + file + "'.\n");
+  });
+}
+
+
+/**************************************************************/
+/* Start Program                                              */
+/**************************************************************/
+
+// var config = {dataDir: __dirname + '/data/'};
+// To use standalone, comment out all 'config' sections below and uncomment the above line
+
+// Read configuration file -- Comment out this section for standalone usage
 try {
   var config = require('../config.js');
 } catch (err) {
@@ -14,9 +60,8 @@ try {
   return 1;
 }
 
+// Create data directory if it doesn't exist -- Comment out this section for standalone usage
 if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
-
-// Create data directory if it doesn't exist
 if (! fs.existsSync(config.dataDir)){
   try {
     fs.mkdirSync(config.dataDir);
@@ -29,8 +74,8 @@ if (! fs.existsSync(config.dataDir)){
 
 // Verify UX Package payload file has been passed as an argument
 if (! process.argv[2]) {
-  console.log("Usage: node pldm-extract.js <Payload File>" +
-    "\nWhere <Payload File> is the name of a UX Package payload file.\n");
+  console.log("Usage: node pldm-extract.js <payload file>" +
+    "\nWhere <payload file> is the name of a UX Package payload file.\n");
   return 1;
 }
 
@@ -55,9 +100,11 @@ fs.readFile(binFile, function(err, data) {
   if (xmlEnd < 0) return util.log("[ERROR] Unable to find end of PLDM binary section of payload file.\n");
   var xmlRawData = data.slice(xmlStart, xmlEnd).toString();
 
-  console.log("PLDM XML Data:\n==============\n");
-  console.log(xmlRawData + "\n");
+  // Back up old PLDM XML data for this payload then save the new data
+  var xmlFileName = config.dataDir + path.basename(binFile).replace(/(?:\.exe|\.bin)$/, '-pldm.xml');
+  writeWithBackup(xmlFileName, pd.xml(xmlRawData), 'PLDM XML data ');
 
+  // Create stream from XML data for use with xml2object
   var xmlStream = new stream.Readable();
   xmlStream._read = function noop() {};
   xmlStream.push(xmlRawData);
@@ -73,21 +120,8 @@ fs.readFile(binFile, function(err, data) {
       var fwImage = data.slice(xmlEnd, xmlEnd + fwSize);
 
       // Back up old firmware image for this payload then save the new image
-      var imageFileName = path.basename(binFile).replace(/(?:exe|bin)$/, 'pldm');
-      try {
-        var oldImageFile = fs.readFileSync(config.dataDir + imageFileName);
-        var curDate = new Date();
-        var buName = imageFileName + '-' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
-        fs.writeFileSync(config.dataDir + buName, oldImageFile);
-        util.log("[INFO] An existing PLDM firmware image for this package has been backed up.");
-      } catch (err) {
-        if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old PLDM firmware image. New image will not be saved.\n" + err);
-      }
-
-      fs.writeFile(config.dataDir + imageFileName, fwImage, function(err) {
-        if (err) return util.log("[ERROR] Unable to write PLDM firmware image to disk.\n" + err);
-        util.log("[INFO] The PLDM firmware image has been written to '" + config.dataDir + imageFileName + "'.");
-      });
+      var imageFileName = config.dataDir + path.basename(binFile).replace(/(?:\.exe|\.bin)$/, '-pldm.bin');
+      writeWithBackup(imageFileName, fwImage, 'PLDM firmware image ');
     }
   });
   parser.start();

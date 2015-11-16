@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* Verify UX Package JAR files based on BOM file using Node.js
  * Written by Brian Bothwell (brian.bothwell@avagotech.com)
  *
