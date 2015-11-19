@@ -108,7 +108,7 @@ fs.readFile(binFile, function(err, data) {
 
   // Find PLDM firmware image data within payload file
   var binHeader = xmlStart + xmlBlocks * 512;
-  var binStart = xmlStart + xmlBlocks * 512 + 512;
+  var binStart = binHeader + 512;
   var binSize = parseInt(data.slice(binHeader + 124, binHeader + 136), 8);
   var binEnd  = binStart + binSize;
   var binRawData = data.slice(binStart, binEnd);
