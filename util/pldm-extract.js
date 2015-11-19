@@ -93,19 +93,29 @@ fs.readFile(binFile, function(err, data) {
     return 1;
   }
 
-  // Find PLDM data within payload file
+  // Find PLDM XML data within payload file
   var tarStart = data.indexOf('pldm.xml');
   if (tarStart < 0) return util.log("[ERROR] Unable to find start of PLDM binary section of payload file.\n");
   var xmlStart = tarStart + 512;
   var xmlSize = parseInt(data.slice(tarStart + 124, tarStart + 136), 8);
   var xmlEnd = xmlStart + xmlSize;
   var xmlBlocks = Math.ceil(xmlSize / 512);
-  var binStart = xmlStart + xmlBlocks * 512 + 512;
   var xmlRawData = data.slice(xmlStart, xmlEnd).toString();
 
   // Back up old PLDM XML data for this payload then save the new data
   var xmlFileName = config.dataDir + path.basename(binFile).replace(/(?:\.exe|\.bin)$/, '-pldm.xml');
   writeWithBackup(xmlFileName, pd.xml(xmlRawData), 'PLDM XML data ');
+
+  // Find PLDM firmware image data within payload file
+  var binHeader = xmlStart + xmlBlocks * 512;
+  var binStart = xmlStart + xmlBlocks * 512 + 512;
+  var binSize = parseInt(data.slice(binHeader + 124, binHeader + 136), 8);
+  var binEnd  = binStart + binSize;
+  var binRawData = data.slice(binStart, binEnd);
+
+  // Back up old firmware image for this payload then save the new image
+  var binFileName = config.dataDir + path.basename(binFile).replace(/(?:\.exe|\.bin)$/, '-pldm.bin');
+  writeWithBackup(binFileName, binRawData, 'PLDM firmware image ');
 
   // Create stream from XML data for use with xml2object
   var xmlStream = new stream.Readable();
@@ -113,18 +123,16 @@ fs.readFile(binFile, function(err, data) {
   xmlStream.push(xmlRawData);
   xmlStream.push(null);
 
+  // Verify XML data matches actual firmware image
   var parser = new xml2object([ 'IBMBladeCenterFWUpdFmt' ], xmlStream);
   parser.on('object', function(name, obj) {
     var xmlData = obj;
+    // Verify firmware image size matches size in XML file
     if (! xmlData.image || ! xmlData.image.size) {
       return util.log("[ERROR] Unable to find firmware image size in PLDM XML data.\n");
     } else {
       var fwSize = parseInt(xmlData.image.size);
-      var fwImage = data.slice(binStart, binStart + fwSize);
-
-      // Back up old firmware image for this payload then save the new image
-      var imageFileName = config.dataDir + path.basename(binFile).replace(/(?:\.exe|\.bin)$/, '-pldm.bin');
-      writeWithBackup(imageFileName, fwImage, 'PLDM firmware image ');
+      if (fwSize !== binSize) util.log("[ERROR] Actual firmware image size does not match size specified in PLDM XML data.\n");
     }
   });
   parser.start();
