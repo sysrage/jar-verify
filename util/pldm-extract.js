@@ -94,10 +94,11 @@ fs.readFile(binFile, function(err, data) {
     return 1;
   }
 
-  var xmlStart = data.indexOf('<IBMBladeCenterFWUpdFmt>');
-  if (xmlStart < 0) return util.log("[ERROR] Unable to find start of PLDM binary section of payload file.\n");
+  var xmlStart = data.indexOf('<IBMBladeCenterFWUpdFmt');
+  if (xmlStart < 0) return util.log("[ERROR] Unable to find start of PLDM binary XML section of payload file.\n");
   var xmlEnd = data.indexOf('</IBMBladeCenterFWUpdFmt>') + 25;
-  if (xmlEnd < 0) return util.log("[ERROR] Unable to find end of PLDM binary section of payload file.\n");
+  if (xmlEnd < 0) return util.log("[ERROR] Unable to find end of PLDM binary XML section of payload file.\n");
+
   var xmlRawData = data.slice(xmlStart, xmlEnd).toString();
 
   // Back up old PLDM XML data for this payload then save the new data
@@ -117,7 +118,7 @@ fs.readFile(binFile, function(err, data) {
       return util.log("[ERROR] Unable to find firmware image size in PLDM XML data.\n");
     } else {
       var fwSize = parseInt(xmlData.image.size);
-      var fwImage = data.slice(xmlEnd, xmlEnd + fwSize);
+      var fwImage = data.slice(xmlEnd + 594, xmlEnd + 594 + fwSize);
 
       // Back up old firmware image for this payload then save the new image
       var imageFileName = config.dataDir + path.basename(binFile).replace(/(?:\.exe|\.bin)$/, '-pldm.bin');
