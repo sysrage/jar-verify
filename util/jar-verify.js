@@ -689,8 +689,20 @@ function verifyInputXML(jarContent) {
             var bomDeviceCount = 0;
             workingBOM.adapterList.forEach(function(adapter) {
               if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && Object.keys(adapter.pldm).length > 0) {
-                bomAdapterList.push(adapter);
-                bomDeviceCount += adapter.agent.length;
+                var isUnique = true;
+                adapter.agent.forEach(function(agent) {
+                  var agentExists = false;
+                  bomAdapterList.forEach(function(bomAdapter) {
+                    bomAdapter.agent.forEach(function(bomAdapterAgent) {
+                      if (agent.id === bomAdapterAgent.id && agent.type === bomAdapterAgent.type) agentExists = true;
+                    });
+                  });
+                  if (agentExists) isUnique = false;
+                });
+                if (isUnique) {
+                  bomAdapterList.push(adapter);
+                  bomDeviceCount += adapter.agent.length;
+                }
               }
             });
 
