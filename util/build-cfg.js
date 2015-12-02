@@ -229,7 +229,6 @@ if (! workingBOM.osList) {
   util.log("[ERROR] No adapters found in BOM file.\n");
 } else {
   // Build entries for [BASE] section
-  var baseArchitectures = [];
   var baseLinux = {};
   var baseVmware = [];
   var baseWindows = [];
@@ -238,7 +237,6 @@ if (! workingBOM.osList) {
   var baseWinDrivers = [];
   var baseMTMs = [];
   workingBOM.osList.forEach(function(os) {
-    if (baseArchitectures.indexOf(os.arch) < 0) baseArchitectures.push(os.arch);
     if (os.type === 'linux') {
       os.pkgsdkName.forEach(function(sdkName) {
         if (! baseLinux[sdkName]) {
@@ -291,30 +289,12 @@ if (! workingBOM.osList) {
   // Format [BASE] data as expected for base.cfg file
   var baseDump = "[BASE]\nstaging = DESTDIR";
 
-  // This needs to be cleaned up
-  baseDump += "\narchitectures = ";
-  var first = true;
-  baseArchitectures.forEach(function(arch) {
-    if (! first) baseDump += ",";
-    first = false;
-    if (arch === 'x86') baseDump += 'i386';
-    if (arch === 'x64') baseDump += 'x86_64';
-  });
-
   baseDump += "\nlinux = ";
   var first = true;
   for (var os in baseLinux) {
     if (! first) baseDump += ",";
     first = false;
     baseDump += os.toLowerCase();
-  }
-
-  baseDump += "\nlinux_os = ";
-  var first = true;
-  for (var os in baseLinux) {
-    if (! first) baseDump += ",";
-    first = false;
-    baseDump += baseLinux[os].ddName;
   }
 
   baseDump += "\nvmware = ";
@@ -366,17 +346,6 @@ if (! workingBOM.osList) {
   });
 
   baseDump += "\nautochangelogs = False\nelxflashstandalone =  True";
-
-  // Format driver subversion data as expected for base.cfg file
-  baseDump += "\n\n[DRIVER SUBVERSIONS]";
-  baseDump += "\nwindows_fc = 1";
-  baseDump += "\nwindows_fcoe = 1";
-  baseDump += "\nwindows_nic = 1";
-  baseDump += "\nwindows_iscsi = 1";
-  baseDump += "\n\n[LNX_DRIVER]";
-  baseDump += "\nlinux_nic = 1";
-  baseDump += "\nlinux_iscsi = 1";
-  baseDump += "\nlinux_lpfc = 1";
 
   // Format Linux OS version data as expected for base.cfg file
   for (var os in baseLinux) {
@@ -463,8 +432,6 @@ if (! workingBOM.osList) {
       baseDump += mtm;
     });
 
-    baseDump += "\ncfl = /home/integrat/toe/firmware/tetra_cfl";
-
     baseDump += "\nsubversion = 1";
 
     for (var fwType in fwData[asic]) {
@@ -491,4 +458,38 @@ if (! workingBOM.osList) {
 
   // Back up old base.cfg for this release then save new file
   writeWithBackup(config.dataDir + workingRelease + '-base.cfg', baseDump, 'base.cfg ');
+}
+
+// Build pldm_support.cfg file based on BOM
+if (! workingBOM.adapterList) {
+  util.log("[ERROR] No adapters found in BOM file.\n");
+} else {
+  var pldmList = {};
+  workingBOM.adapterList.forEach(function(adapter) {
+    if (Object.keys(adapter.pldm).length > 0) {
+      // Adapter supports PLDM firmware download
+      var pldmSectionName = adapter.asic.toUpperCase();
+      adapter.agent.forEach(function(agent) {
+        var pldmEntry = '00' + agent.id + ' 0x' + adapter.pldm.vendor + ' 0x' + adapter.pldm.device;
+        if (! pldmList[pldmSectionName]) {
+          pldmList[pldmSectionName] = [pldmEntry];
+        } else {
+          if (pldmList[pldmSectionName].indexOf(pldmEntry) < 0) pldmList[pldmSectionName].push(pldmEntry);
+        }
+      });
+    }
+  });
+
+  // Format data as expected for pldm_support.cfg file
+  var pldmCfgDump = "";
+  for (var type in pldmList) {
+    pldmCfgDump += "[" + type + "]\n";
+    pldmList[type].forEach(function(entry) {
+      pldmCfgDump += entry + "\n";
+    });
+    pldmCfgDump += "\n";
+  }
+
+  // Back up old pldm_support.cfg for this release then save new file
+  writeWithBackup(config.dataDir + workingRelease + '-pldm_support.cfg', pldmCfgDump, 'pldm_support.cfg ');
 }

@@ -306,6 +306,8 @@ module.exports = {
     {name: 'elx_VanguardDL_FC',     value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E28210DF', type: 'fc'},
     {name: 'elx_Chameleon1P_FC',    value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E20310DF', type: 'fc'},
     {name: 'elx_Chameleon2P_FC',    value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E20410DF', type: 'fc'},
+    {name: 'elx_Croydon1P_FC',      value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33310DF', type: 'fc'},
+    {name: 'elx_Croydon2P_FC',      value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33210DF', type: 'fc'},
 
     // Skyhawk NIC
     {name: 'elx_Silver_N',          value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81010DF', type: 'nic'},

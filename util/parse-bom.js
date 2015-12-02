@@ -20,35 +20,6 @@ var xlsx    = require('xlsx');
 /* Function/Class Definitions                                 */
 /**************************************************************/
 
-// Function to parse Applicable Device ID entries -- This will be removed
-function readAppDID(type, cell) {
-  var appDIDCell = cell.match(/^([A-Za-z]+)([0-9]+)$/);
-  var x = appDIDCell[1];
-  var y = parseInt(appDIDCell[2]) + 1;
-  var emptyCell = false;
-  while (! emptyCell) {
-    if (worksheet[x + y]) {
-      var appDID = worksheet[x + y].v;
-      var valid = false;
-      // Verify AppDID matches a valid name from the configuration file
-      for (var i = 0; i < config.appDIDNames.length; i++) {
-        if (config.appDIDNames[i].name === appDID) {
-          valid = true;
-          break;
-        }
-      }
-      if (valid) {
-        bomAppDIDList[type].push(appDID);
-      } else {
-        util.log("[ERROR] Invalid Applicable Device ID in cell " + cell + ".");
-      }
-    } else {
-      emptyCell = true;
-    }
-    y++;
-  }
-}
-
 // Function to validate the supplied operating system
 function validateOS(osName, cell) {
   var validOS = false;
@@ -179,21 +150,6 @@ var releaseType = null;
 var osList = [];
 var systemList = [];
 var adapterList = [];
-
-// BOM Applicable Device ID entries -- This will be removed
-var bomAppDIDList = {
-  ddWinNIC: [],
-  ddWinISCSI: [],
-  ddWinFC: [],
-  ddWinFCoE: [],
-  ddLinNIC: [],
-  ddLinISCSI: [],
-  ddLinFC: [],
-  fwSaturn: [],
-  fwLancer: [],
-  fwBE3: [],
-  fwSkyhawk: []
-};
 
 // Parse worksheet
 for (var i in worksheet) {
@@ -429,19 +385,6 @@ for (var i in worksheet) {
       y++;
     }
   }
-
-  // Gather Applicable Device ID entries from BOM -- This will be removed
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinNIC) readAppDID('ddWinNIC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinISCSI) readAppDID('ddWinISCSI', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFC) readAppDID('ddWinFC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddWinFCoE) readAppDID('ddWinFCoE', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinNIC) readAppDID('ddLinNIC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinISCSI) readAppDID('ddLinISCSI', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.ddLinFC) readAppDID('ddLinFC', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSaturn) readAppDID('fwSaturn', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwLancer) readAppDID('fwLancer', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwBE3) readAppDID('fwBE3', i);
-  if (worksheet[i].v.toString().toLowerCase() === config.headerStr.fwSkyhawk) readAppDID('fwSkyhawk', i);
 }
 
 // Generate list of Applicable Device ID entries
@@ -473,10 +416,10 @@ adapterList.forEach(function(adapter) {
                 }
               }
               if (cASIC.type === 'cna' || cASIC.type === 'nic') {
-                // if (appDID.type === 'nic') { // uncomment this when parsing of BOM appDID is removed
+                if (appDID.type === 'nic') {
                   if (! appDIDList['dd'][os.ddName]['nic']) appDIDList['dd'][os.ddName]['nic'] = [];
                   if (appDIDList['dd'][os.ddName]['nic'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['nic'].push(appDID.name);
-                // }
+                }
               }
               if (cASIC.type === 'cna' || cASIC.type === 'iscsi') {
                 if (appDID.type === 'iscsi') {
@@ -501,74 +444,6 @@ adapterList.forEach(function(adapter) {
       });
     }
   });
-});
-
-// Compare BOM Applicable Device ID entries with auto-generated entries -- This will be removed
-bomAppDIDList.ddWinNIC.forEach(function(DID) {
-  if (appDIDList['dd']['windows']['nic'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Windows NIC driver AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['dd']['windows']['nic'].forEach(function(DID) {
-  if (bomAppDIDList.ddWinNIC.indexOf(DID) < 0) util.log("[WARNING] Expected Windows NIC driver AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.ddWinISCSI.forEach(function(DID) {
-  if (appDIDList['dd']['windows']['iscsi'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Windows ISCSI driver AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['dd']['windows']['iscsi'].forEach(function(DID) {
-  if (bomAppDIDList.ddWinISCSI.indexOf(DID) < 0) util.log("[WARNING] Expected Windows ISCSI driver AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.ddWinFC.forEach(function(DID) {
-  if (appDIDList['dd']['windows']['fc'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Windows FC driver AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['dd']['windows']['fc'].forEach(function(DID) {
-  if (bomAppDIDList.ddWinFC.indexOf(DID) < 0) util.log("[WARNING] Expected Windows FC driver AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.ddWinFCoE.forEach(function(DID) {
-  if (appDIDList['dd']['windows']['cna'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Windows FCoE driver AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['dd']['windows']['cna'].forEach(function(DID) {
-  if (bomAppDIDList.ddWinFCoE.indexOf(DID) < 0) util.log("[WARNING] Expected Windows FCoE driver AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.ddLinNIC.forEach(function(DID) {
-  if (appDIDList['dd']['rhel6']['nic'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Linux NIC driver AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['dd']['rhel6']['nic'].forEach(function(DID) {
-  if (bomAppDIDList.ddLinNIC.indexOf(DID) < 0) util.log("[WARNING] Expected Linux NIC driver AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.ddLinISCSI.forEach(function(DID) {
-  if (appDIDList['dd']['rhel6']['iscsi'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Linux ISCSI driver AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['dd']['rhel6']['iscsi'].forEach(function(DID) {
-  if (bomAppDIDList.ddLinISCSI.indexOf(DID) < 0) util.log("[WARNING] Expected Linux ISCSI driver AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.ddLinFC.forEach(function(DID) {
-  if (appDIDList['dd']['rhel6']['fc'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Linux FC driver AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['dd']['rhel6']['fc'].forEach(function(DID) {
-  if (bomAppDIDList.ddLinFC.indexOf(DID) < 0) util.log("[WARNING] Expected Linux FC driver AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.fwSaturn.forEach(function(DID) {
-  if (appDIDList['fw']['linux']['Saturn'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Saturn firmware AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['fw']['linux']['Saturn'].forEach(function(DID) {
-  if (bomAppDIDList.fwSaturn.indexOf(DID) < 0) util.log("[WARNING] Expected Saturn firmware AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.fwLancer.forEach(function(DID) {
-  if (appDIDList['fw']['linux']['Lancer'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Lancer firmware AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['fw']['linux']['Lancer'].forEach(function(DID) {
-  if (bomAppDIDList.fwLancer.indexOf(DID) < 0) util.log("[WARNING] Expected Lancer firmware AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.fwBE3.forEach(function(DID) {
-  if (appDIDList['fw']['linux']['BE3'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains BE3 firmware AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['fw']['linux']['BE3'].forEach(function(DID) {
-  if (bomAppDIDList.fwBE3.indexOf(DID) < 0) util.log("[WARNING] Expected BE3 firmware AppDID not found in BOM file (" + DID + ").");
-});
-bomAppDIDList.fwSkyhawk.forEach(function(DID) {
-  if (appDIDList['fw']['linux']['Skyhawk'].indexOf(DID) < 0) util.log("[WARNING] BOM file contains Skyhawk firmware AppDID which isn't expected (" + DID + ").");
-});
-appDIDList['fw']['linux']['Skyhawk'].forEach(function(DID) {
-  if (bomAppDIDList.fwSkyhawk.indexOf(DID) < 0) util.log("[WARNING] Expected Skyhawk firmware AppDID not found in BOM file (" + DID + ").");
 });
 
 // Display an error if any expected data was not found.
