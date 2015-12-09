@@ -14,6 +14,8 @@ module.exports = {
   vendor: 'elx(?:\-lnvgy)?',
 
   // Definition of all available ASIC types
+  // If two entries contain the same 'name' data (e.g. Lancer and Lancer G6), the more precise
+  // entry (i.e. Lancer G6) must be listed first.
   asicTypes: [
     {
       name: 'BE3',
@@ -30,6 +32,23 @@ module.exports = {
         rack: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
         flex: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
         bladecenter: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
+      }
+    },
+    {
+      name: 'Lancer G6',
+      type: 'fc',
+      agentlessCfgNames: {
+        13: 'LANG6_AG-BOARDS'
+      },
+      fwCfgNames: {
+        rack: 'A',
+        flex: 'A',
+        bladecenter: 'A'
+      },
+      fwMatrixNames: {
+        rack: ['LPe31000', 'LPe31002'],
+        flex: [],
+        bladecenter: [],
       }
     },
     {
@@ -654,9 +673,39 @@ module.exports = {
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'BE FW'
     },
+    fwLancerG6Linux: {
+      name: 'Linux Lancer G6 Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp3x\-[0-9\.]+\-[0-9]+)_linux',
+      type: 'fw',
+      os: 'linux',
+      osType: 'linux',
+      asic: 'Lancer G6',
+      inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Lancer G6 FW'
+    },
+    fwLancerG6VMware: {
+      name: 'VMware Lancer G6 Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp3x\-[0-9\.]+\-[0-9]+)_vmware',
+      type: 'fw',
+      os: 'vmware',
+      osType: 'vmware',
+      asic: 'Lancer G6',
+      inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Lancer G6 FW'
+    },
+    fwLancerG6Windows: {
+      name: 'Windows Lancer G6 Firmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp3x\-[0-9\.]+\-[0-9]+)_windows',
+      type: 'fw',
+      os: 'windows',
+      osType: 'windows',
+      asic: 'Lancer G6',
+      inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
+      appDevIdCfgName: 'Lancer G6 FW'
+    },
     fwLancerLinux: {
       name: 'Linux Lancer Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_linux',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp16\-[0-9\.]+\-[0-9]+)_linux',
       type: 'fw',
       os: 'linux',
       osType: 'linux',
@@ -666,7 +715,7 @@ module.exports = {
     },
     fwLancerVMware: {
       name: 'VMware Lancer Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_vmware',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp16\-[0-9\.]+\-[0-9]+)_vmware',
       type: 'fw',
       os: 'vmware',
       osType: 'vmware',
@@ -676,7 +725,7 @@ module.exports = {
     },
     fwLancerWindows: {
       name: 'Windows Lancer Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-[0-9\.]+\-[0-9]+)_windows',
+      regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp16\-[0-9\.]+\-[0-9]+)_windows',
       type: 'fw',
       os: 'windows',
       osType: 'windows',
@@ -767,18 +816,6 @@ module.exports = {
     systemList: 'machine types',
     systemTypes: ['rack', 'flex', 'bladecenter'], // must match names in asicTypes.fwCfgNames & asicTypes.fwCfgNames
     adapterList: 'adapter models',
-    // The following are Applicable Device ID entries - This will be removed
-    ddWinNIC: 'win nic dd',
-    ddWinISCSI: 'win iscsi dd',
-    ddWinFC: 'win fc dd',
-    ddWinFCoE: 'win fcoe dd',
-    ddLinNIC: 'linux nic dd',
-    ddLinISCSI: 'linux iscsi dd',
-    ddLinFC: 'linux fc/fcoe dd',
-    fwSaturn: 'saturn fw',
-    fwLancer: 'lancer fw',
-    fwBE3: 'be fw',
-    fwSkyhawk: 'skyhawk fw',
   }
 
 };

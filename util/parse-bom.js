@@ -274,12 +274,14 @@ for (var i in worksheet) {
         } else {
           var validASIC = false;
           // Check header for matching known ASIC types in config file
-          config.asicTypes.forEach(function (asic) {
+          for (var a = 0; a < config.asicTypes.length; a++) {
+            var asic = config.asicTypes[a];
             if (worksheet[adapterMTMCol + y].v.toString().toLowerCase().search(asic.name.toLowerCase()) > -1) {
               asicType = asic.name;
               validASIC = true;
+              break;
             }
-          });
+          }
           if (validASIC) {
             wasBlank = false;
           } else {
