@@ -46,7 +46,7 @@ module.exports = {
         bladecenter: 'A'
       },
       fwMatrixNames: {
-        rack: ['LPe31000', 'LPe31002'],
+        rack: ['LPe31000', 'LPe31002', 'LPe32000', 'LPe32002'],
         flex: [],
         bladecenter: [],
       }
@@ -680,6 +680,7 @@ module.exports = {
       os: 'linux',
       osType: 'linux',
       asic: 'Lancer G6',
+      preVersion: 'lp3x-',
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G6 FW'
     },
@@ -690,6 +691,7 @@ module.exports = {
       os: 'vmware',
       osType: 'vmware',
       asic: 'Lancer G6',
+      preVersion: 'lp3x-',
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G6 FW'
     },
@@ -700,6 +702,7 @@ module.exports = {
       os: 'windows',
       osType: 'windows',
       asic: 'Lancer G6',
+      preVersion: 'lp3x-',
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G6 FW'
     },
@@ -710,6 +713,7 @@ module.exports = {
       os: 'linux',
       osType: 'linux',
       asic: 'Lancer',
+      preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer FW'
     },
@@ -720,6 +724,7 @@ module.exports = {
       os: 'vmware',
       osType: 'vmware',
       asic: 'Lancer',
+      preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer FW'
     },
@@ -730,6 +735,7 @@ module.exports = {
       os: 'windows',
       osType: 'windows',
       asic: 'Lancer',
+      preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer FW'
     },
