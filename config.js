@@ -41,9 +41,9 @@ module.exports = {
         13: 'LANG6_AG-BOARDS'
       },
       fwCfgNames: {
-        rack: 'A',
-        flex: 'A',
-        bladecenter: 'A'
+        rack: 'A6',
+        flex: 'A6',
+        bladecenter: 'A6'
       },
       fwMatrixNames: {
         rack: ['LPe31000', 'LPe31002', 'LPe32000', 'LPe32002'],
@@ -52,15 +52,15 @@ module.exports = {
       }
     },
     {
-      name: 'Lancer',
+      name: 'Lancer G5',
       type: 'fc',
       agentlessCfgNames: {
-        13: 'LAN_AG-BOARDS'
+        13: 'LANG5_AG-BOARDS'
       },
       fwCfgNames: {
-        rack: 'A',
-        flex: 'A',
-        bladecenter: 'A'
+        rack: 'A5',
+        flex: 'A5',
+        bladecenter: 'A5'
       },
       fwMatrixNames: {
         rack: ['LPe16000', 'LPe16002'],
@@ -320,11 +320,13 @@ module.exports = {
     {name: 'elx_Penguin_F',         value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E71710DF', type: 'fcoe'},
     {name: 'elx_Eagle_F',           value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E71910DF', type: 'fcoe'},
 
-    // Lancer
+    // Lancer G5
     {name: 'elx_Vanguard_FC',       value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E20210DF', type: 'fc'},
     {name: 'elx_VanguardDL_FC',     value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E28210DF', type: 'fc'},
     {name: 'elx_Chameleon1P_FC',    value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E20310DF', type: 'fc'},
     {name: 'elx_Chameleon2P_FC',    value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E20410DF', type: 'fc'},
+
+    // Lancer G6
     {name: 'elx_Croydon1P_FC',      value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33310DF', type: 'fc'},
     {name: 'elx_Croydon2P_FC',      value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33210DF', type: 'fc'},
 
@@ -706,38 +708,38 @@ module.exports = {
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G6 FW'
     },
-    fwLancerLinux: {
-      name: 'Linux Lancer Firmware',
+    fwLancerG5Linux: {
+      name: 'Linux Lancer G5 Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp16\-[0-9\.]+\-[0-9]+)_linux',
       type: 'fw',
       os: 'linux',
       osType: 'linux',
-      asic: 'Lancer',
+      asic: 'Lancer G5',
       preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer FW'
+      appDevIdCfgName: 'Lancer G5 FW'
     },
-    fwLancerVMware: {
-      name: 'VMware Lancer Firmware',
+    fwLancerG5VMware: {
+      name: 'VMware Lancer G5 Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp16\-[0-9\.]+\-[0-9]+)_vmware',
       type: 'fw',
       os: 'vmware',
       osType: 'vmware',
-      asic: 'Lancer',
+      asic: 'Lancer G5',
       preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer FW'
+      appDevIdCfgName: 'Lancer G5 FW'
     },
-    fwLancerWindows: {
-      name: 'Windows Lancer Firmware',
+    fwLancerG5Windows: {
+      name: 'Windows Lancer G5 Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_fc_([A-Za-z0-9]+\-lp16\-[0-9\.]+\-[0-9]+)_windows',
       type: 'fw',
       os: 'windows',
       osType: 'windows',
-      asic: 'Lancer',
+      asic: 'Lancer G5',
       preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer FW'
+      appDevIdCfgName: 'Lancer G5 FW'
     },
     fwSaturnLinux: {
       name: 'Linux Saturn Firmware',

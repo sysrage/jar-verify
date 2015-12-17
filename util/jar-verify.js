@@ -197,7 +197,12 @@ function verifyInputXML(jarContent) {
   if (! jarContent.inputFile || ! jarContent.inputFile.version) {
     util.log("[ERROR] Parameter 'version' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
   } else {
-    // Verify version
+    // Verify input XML version matches JAR file name
+    if (workingBOM.release.toLowerCase() + '-' + jarContent.inputFile.version !== jarFiles[jarContent.jarType].jarVersion) {
+      util.log("[ERROR] Parameter 'version' from input XML file does not match JAR file name for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+    }
+
+    // Gather individual version components
     var verMatch = jarContent.inputFile.version.match(/(.+)\-([0-9]+)$/);
     var jarVersion = verMatch[1];
     var jarSubversion = verMatch[2];
@@ -211,6 +216,10 @@ function verifyInputXML(jarContent) {
         jarVersion = verSubMatch[1];
       }
     }
+
+    // Save package version and subversion
+    jarData[jarContent.jarType].version = jarVersion;
+    jarData[jarContent.jarType].subVersion = jarSubversion;
 
     // Build list of expected operating systems for this package (based on BOM)
     var bomOSList = [];
@@ -526,6 +535,7 @@ function verifyInputXML(jarContent) {
                       } else {
                         if (! jarBootVersion) {
                           jarBootVersion = driverFileEntry.version;
+                          jarData[jarContent.jarType].bootVersion = jarBootVersion;
                         } else if (jarBootVersion !== driverFileEntry.version) {
                           util.log("[ERROR] Multiple boot BIOS versions specified in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                         }
@@ -860,6 +870,9 @@ function verifyPayloadFile(jarContent) {
   var payloadFile = tempPath + jarContent.jarType + '/' + jarContent.binFileName;
   // console.log(payloadFile);
 
+  console.log('Verifying Payload for ' + jarContent.jarType);
+  console.dir(jarData[jarContent.jarType]);
+
 }
 
 /**************************************************************/
@@ -1012,10 +1025,11 @@ for (jarType in jarFiles) {
   }
 }
 
-util.log("[STATUS] Verifying content of " + Object.keys(jarFiles).length + " JAR files...\n");
-
 // All items in jarFiles should now be valid - begin verification
+util.log("[STATUS] Verifying content of " + Object.keys(jarFiles).length + " JAR files...\n");
+var jarData = [];
 for (jarType in jarFiles) {
+  jarData[jarType] = {};
   getJarContent(jarType).then(function(jarContent) {
     // Verify input XML data
     // util.log("[STATUS] Verifying input XML for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
@@ -1060,6 +1074,8 @@ for (jarType in jarFiles) {
 
 process.on('exit', function() {
   util.log("[STATUS] Finished all verification steps. Cleaning up...\n");
+
+  // console.dir(jarData);
 
   // Clean up temporary files
   rmdir.sync(tempPath, {gently: tempPath}, function(err) {

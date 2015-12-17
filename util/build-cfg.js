@@ -318,7 +318,7 @@ if (! workingBOM.osList) {
   baseAsics.forEach(function(asic) {
     if (! first) baseDump += ",";
     first = false;
-    baseDump += asic.toLowerCase();
+    baseDump += asic.toLowerCase().replace(' ', '');
   });
 
   baseDump += "\nlinux_drivers = ";
@@ -406,7 +406,7 @@ if (! workingBOM.osList) {
 
   // Format firmware section data as expected for base.cfg file
   for (var asic in fwData) {
-    baseDump += "\n\n[" + asic.toUpperCase() + "]\nfw = ";
+    baseDump += "\n\n[" + asic.toUpperCase().replace(' ', '') + "]\nfw = ";
     var firstFW = true;
     var firstBoot = true;
     var bootList = '';
