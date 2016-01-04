@@ -14,6 +14,7 @@
  * Requres:
  *  - Node.js
  *  - mkdirp
+ *  - node-minizip
  *  - rimraf
  *  - xml2object
  *  - yauzl
@@ -26,8 +27,10 @@
 var util        = require('util');
 var path        = require('path');
 var fs          = require('fs');
+var crypto      = require('crypto');
 
 var mkdirp      = require('mkdirp');
+var minizip     = require('node-minizip');
 var rmdir       = require('rimraf');
 var xml2object  = require('xml2object');
 var yauzl       = require('yauzl');
@@ -85,16 +88,20 @@ function getJarContent(jarType) {
       if (err) {
         reject(err);
       } else {
-        var errorMsg = null;
         var inputFileName = null;
         var inputFile = null;
+        var inputFileChecksum = null;
         var changeFileName = null;
         var changeFile = '';
+        var changeFileChecksum = null;
         var readmeFileName = null;
         var readmeFile = '';
+        var readmeFileChecksum = null;
         var xmlFileName = null;
         var xmlFile = null;
+        var xmlFileChecksum = null;
         var binFileName = null;
+        var binFileChecksum = null;
         zipfile.on("error", function(error) {
           reject(error);
         });
@@ -102,8 +109,17 @@ function getJarContent(jarType) {
           if (entry.fileName.search(/input\/.+\.xml$/) > -1) {
             // Read input XML file data
             inputFileName = entry.fileName;
+            var inputFileHash = crypto.createHash('md5');
             zipfile.openReadStream(entry, function(err, readStream) {
               if (err) reject(err);
+              // Add data to checksum hash
+              readStream.on('data', function(data) {
+                inputFileHash.update(data);
+              });
+              readStream.on('end', function() {
+                inputFileChecksum = inputFileHash.digest('hex');
+              });
+              // Parse XML data
               var parser = new xml2object(['ibmUpdateData'], readStream);
               parser.on('object', function(name, obj) {
                   inputFile = obj;
@@ -113,26 +129,45 @@ function getJarContent(jarType) {
           } else if (entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.chg$')) > -1) {
             // Read change history file data
             changeFileName = entry.fileName;
+            var changeFileHash = crypto.createHash('md5');
             zipfile.openReadStream(entry, function(err, readStream) {
               if (err) reject(err);
-              readStream.on("data", function(data) {
+              readStream.on('data', function(data) {
                 changeFile += data;
+                changeFileHash.update(data);
+              });
+              readStream.on('end', function() {
+                changeFileChecksum = changeFileHash.digest('hex');
               });
             });
           } else if (entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.txt$')) > -1) {
             // Read readme file data
             readmeFileName = entry.fileName;
+            var readmeFileHash = crypto.createHash('md5');
             zipfile.openReadStream(entry, function(err, readStream) {
               if (err) reject(err);
-              readStream.on("data", function(data) {
+              readStream.on('data', function(data) {
                 readmeFile += data;
+                readmeFileHash.update(data);
+              });
+              readStream.on('end', function() {
+                readmeFileChecksum = readmeFileHash.digest('hex');
               });
             });
           } else if (entry.fileName.search(RegExp(config.pkgTypes[jarType].regex + '.+\.xml$')) > -1) {
             // Read XML file data
             xmlFileName = entry.fileName;
+            var xmlFileHash = crypto.createHash('md5');
             zipfile.openReadStream(entry, function(err, readStream) {
               if (err) reject(err);
+              // Add data to checksum hash
+              readStream.on('data', function(data) {
+                xmlFileHash.update(data);
+              });
+              readStream.on('end', function() {
+                xmlFileChecksum = xmlFileHash.digest('hex');
+              });
+              // Parse XML data
               var parser = new xml2object(['INSTANCE'], readStream);
               parser.on('object', function(name, obj) {
                   xmlFile = obj;
@@ -152,8 +187,34 @@ function getJarContent(jarType) {
           if (binFileName && entry.fileName === binFileName) {
             mkdirp(tempPath + jarType + '/', function(err) {
               if (err) reject(err);
+              var binFileHash = crypto.createHash('md5');
               zipfile.openReadStream(entry, function(err, readStream) {
                 if (err) reject(err);
+                // Add data to checksum hash
+                readStream.on('data', function(data) {
+                  binFileHash.update(data);
+                });
+                readStream.on('end', function() {
+                  binFileChecksum = binFileHash.digest('hex');
+                  fulfill({
+                    jarType: jarType,
+                    inputFileName: inputFileName,
+                    inputFile: inputFile,
+                    inputFileChecksum: inputFileChecksum,
+                    changeFileName: changeFileName,
+                    changeFile: changeFile,
+                    changeFileChecksum: changeFileChecksum,
+                    readmeFileName: readmeFileName,
+                    readmeFile: readmeFile,
+                    readmeFileChecksum: readmeFileChecksum,
+                    xmlFileName: xmlFileName,
+                    xmlFile: xmlFile,
+                    xmlFileChecksum: xmlFileChecksum,
+                    binFileName: binFileName,
+                    binFileChecksum: binFileChecksum
+                  });
+                });
+                // Write payload binary to disk for further verification
                 readStream.pipe(fs.createWriteStream(tempPath + jarType + '/' + entry.fileName));
               });
             });
@@ -170,19 +231,6 @@ function getJarContent(jarType) {
             reject({jarType: jarType, code: 'NOXMLFILE'});
           } else if (! binFileName) {
             reject({jarType: jarType, code: 'NOBINFILE'});
-          } else {
-            fulfill({
-              jarType: jarType,
-              inputFileName: inputFileName,
-              inputFile: inputFile,
-              changeFileName: changeFileName,
-              changeFile: changeFile,
-              readmeFileName: readmeFileName,
-              readmeFile: readmeFile,
-              xmlFileName: xmlFileName,
-              xmlFile: xmlFile,
-              binFileName: binFileName
-            });
           }
         });
       }
@@ -867,12 +915,27 @@ function verifyChangeFile(jarContent) {
 }
 
 function verifyPayloadFile(jarContent) {
-  var payloadFile = tempPath + jarContent.jarType + '/' + jarContent.binFileName;
+  var payloadDir = tempPath + jarContent.jarType + '/';
+  var payloadFile = payloadDir + jarContent.binFileName;
   // console.log(payloadFile);
 
-  console.log('Verifying Payload for ' + jarContent.jarType);
-  console.dir(jarData[jarContent.jarType]);
+  if (payloadFile.match(/\.(?:tgz)|(?:tar\.gz)$/)) {
+    // Payload is a tar.gz archive
 
+  } else if (payloadFile.match(/\.(?:exe)|(?:bin)$/)) {
+    // Payload is a zip archive -- Extract it
+    // console.log('extracting to: ' + payloadDir + 'extract');
+    minizip.unzip(payloadFile, jarContent.jarType, function(err) {
+      if (err) {
+        util.log("[ERROR] Unexpected error opening payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+      } else {
+        // Check content
+      }
+    });
+
+  } else {
+    console.log('unexepcted payload type');
+  }
 }
 
 /**************************************************************/
@@ -1031,6 +1094,13 @@ var jarData = [];
 for (jarType in jarFiles) {
   jarData[jarType] = {};
   getJarContent(jarType).then(function(jarContent) {
+    // Save checksum data
+    jarData[jarContent.jarType].inputFileChecksum = jarContent.inputFileChecksum;
+    jarData[jarContent.jarType].changeFileChecksum = jarContent.changeFileChecksum;
+    jarData[jarContent.jarType].readmeFileChecksum = jarContent.readmeFileChecksum;
+    jarData[jarContent.jarType].xmlFileChecksum = jarContent.xmlFileChecksum;
+    jarData[jarContent.jarType].binFileChecksum = jarContent.binFileChecksum;
+
     // Verify input XML data
     // util.log("[STATUS] Verifying input XML for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
     verifyInputXML(jarContent);
@@ -1075,10 +1145,8 @@ for (jarType in jarFiles) {
 process.on('exit', function() {
   util.log("[STATUS] Finished all verification steps. Cleaning up...\n");
 
-  // console.dir(jarData);
-
   // Clean up temporary files
-  rmdir.sync(tempPath, {gently: tempPath}, function(err) {
-    if (err) util.log("[ERROR] Unable to delete temporary files: " + err);
-  });
+  // rmdir.sync(tempPath, {gently: tempPath}, function(err) {
+  //   if (err) util.log("[ERROR] Unable to delete temporary files: " + err);
+  // });
 });
