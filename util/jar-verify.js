@@ -14,7 +14,6 @@
  * Requres:
  *  - Node.js
  *  - mkdirp
- *  - node-minizip
  *  - rimraf
  *  - xml2object
  *  - yauzl
@@ -24,13 +23,13 @@
  *    which don't contain Promise support.
  */
 
-var util        = require('util');
-var path        = require('path');
-var fs          = require('fs');
 var crypto      = require('crypto');
+var exec        = require('child_process').exec;
+var fs          = require('fs');
+var path        = require('path');
+var util        = require('util');
 
 var mkdirp      = require('mkdirp');
-var minizip     = require('node-minizip');
 var rmdir       = require('rimraf');
 var xml2object  = require('xml2object');
 var yauzl       = require('yauzl');
@@ -403,7 +402,7 @@ function verifyInputXML(jarContent) {
                 if (bomDriverFileEntries[agent.type].indexOf(agent.id) < 0) bomDriverFileEntries[agent.type].push(agent.id);
               }
 
-              // Workaround to match existing buggy JARs -- This will be removed
+              // TODO: Workaround to match existing buggy JARs -- This will be removed
               if (agent.type === '13') {
                 if (! bomDriverFileEntries[config.classMap['10']]) bomDriverFileEntries[config.classMap['10']] = [];
                 adapter.v2.forEach(function(v2) {
@@ -557,7 +556,7 @@ function verifyInputXML(jarContent) {
                   uniqueEntries[driverFileEntry.classification] = [driverFileEntry.name];
                 } else {
                   if (uniqueEntries[driverFileEntry.classification].indexOf(driverFileEntry.name) > -1) {
-                    // Commented out to avoid errors due to bad JARs -- This will be removed
+                    // TODO: Commented out to avoid errors due to bad JARs -- This will be removed
                     // util.log("[ERROR] Duplicate entry (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                   } else {
                     uniqueEntries[driverFileEntry.classification].push(driverFileEntry.name);
@@ -603,7 +602,7 @@ function verifyInputXML(jarContent) {
                 util.log("[ERROR] Missing entry for classification '" + dfClass + "' in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
               } else {
                 bomDriverFileEntries[dfClass].forEach(function(entry) {
-                  // Workaround to match existing buggy JARs -- This will be removed
+                  // TODO: Workaround to match existing buggy JARs -- This will be removed
                   if (dfClass === '13' && ! entry.match(/^10DF/)) {
                     // ignore
                   } else {
@@ -917,24 +916,85 @@ function verifyChangeFile(jarContent) {
 function verifyPayloadFile(jarContent) {
   var payloadDir = tempPath + jarContent.jarType + '/';
   var payloadFile = payloadDir + jarContent.binFileName;
+  var payloadExtract = payloadDir + 'e/';
+  var payloadContentDir = payloadExtract + 'image/';
   // console.log(payloadFile);
 
   if (payloadFile.match(/\.(?:tgz)|(?:tar\.gz)$/)) {
-    // Payload is a tar.gz archive
+    // Payload is a tar.gz archive (Linux drivers) -- Extract it
+
+      // Validate content of Linux driver package payload binary
+
 
   } else if (payloadFile.match(/\.(?:exe)|(?:bin)$/)) {
-    // Payload is a zip archive -- Extract it
-    // console.log('extracting to: ' + payloadDir + 'extract');
-    minizip.unzip(payloadFile, jarContent.jarType, function(err) {
-      if (err) {
-        util.log("[ERROR] Unexpected error opening payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+    // Payload is a self-extracting zip archive (firmware & Windows drivers) -- Extract it
+    exec('unzip \"' + payloadFile + '\" -d \"' + payloadExtract + '\"', function(error, stdout, stderr) {
+      if (stderr !== null && stderr.search('extra bytes at beginning or within zipfile') < 0) {
+        util.log("[ERROR] Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + stderr);
       } else {
-        // Check content
+        if (config.pkgTypes[jarContent.jarType].type === 'fw') {
+          // Validate content of firmware package payload binary
+
+          if (config.pkgTypes[jarContent.jarType].osType === 'windows') {
+            // Validate presence of elxflash
+
+            // Validate presence and content of fwmatrix.txt
+
+            // Validate presence of Update script
+
+          }
+
+          if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
+            // Validate presence of elxflash
+
+            // Validate presence and content of fwmatrix.txt
+
+            // Validate presence of Update script
+
+              // Validate device IDs inside Update script for xClarity workaround
+
+          }
+
+          // Validate firmware/* images are present and of the correct version(s)
+
+          if (config.pkgTypes[jarContent.jarType].bootRegex) {
+            // Validate boot/* images are present and of the correct version(s)
+
+          }
+
+          // Validate presence and content of payload.xml
+          var payloadXmlFileStream = fs.createReadStream(payloadContentDir + 'payload.xml');
+          payloadXmlFileStream.on('error', function(err) {
+            if (err.code === 'ENOENT') {
+              return util.log("[ERROR] The payload.xml file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            } else if (err.code === 'EACCES') {
+              return util.log("[ERROR] Permission denied trying to open payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            } else {
+              return util.log("[ERROR] Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+            }
+          });
+          var payloadXmlFile = null;
+          var parser = new xml2object(['payload'], payloadXmlFileStream);
+          parser.on('object', function(name, obj) { payloadXmlFile = obj; });
+          parser.on('end', function(){
+            // Match payload.xml to BOM and package version
+            console.log('payload.xml for ' + jarContent.jarType + ':');
+            console.dir(payloadXmlFile);
+          });
+          parser.start();
+
+        } else {
+          // Validate content of Windows driver package payload binary
+
+        }
       }
     });
 
+    // Node.js unzip libraries seem to have issues with Lenovo's self-extracting archives.
+    // TODO: Find a working library to make this work cross-platform or bundle unzip.exe
+
   } else {
-    console.log('unexepcted payload type');
+    util.log("[ERROR] Unexpected payload file name extension for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   }
 }
 
@@ -1146,7 +1206,7 @@ process.on('exit', function() {
   util.log("[STATUS] Finished all verification steps. Cleaning up...\n");
 
   // Clean up temporary files
-  // rmdir.sync(tempPath, {gently: tempPath}, function(err) {
-  //   if (err) util.log("[ERROR] Unable to delete temporary files: " + err);
-  // });
+  rmdir.sync(tempPath, {gently: tempPath}, function(err) {
+    if (err) util.log("[ERROR] Unable to delete temporary files: " + err);
+  });
 });

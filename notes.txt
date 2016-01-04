@@ -1,3 +1,21 @@
+
+ - open bug to get Update.sh, fwmatrix.txt, and elxflash removed from all VMware firmware packages
+ - open bug to get 'VMware vSphere 2013' added to all VMware firmware packages
+ - open bug to get 32-bit Windows 2012 support removed from Windows FCoE driver package
+ - open bug to get duplicate OS entry removed from Windows NIC driver package
+ - open bug to get incorrect driverFiles classification corrected in all firmware packages ('13' instead of 'firmware')
+ - open bug to remove 'win32' directory from all Windows firmware packages?
+ - open bug to remove 'i386' directory from all Linux firmware packages?
+
+ - find out difference between elxflash and flash in Linux firmware packages
+
+ linux fw: elxflash, elxflash.sh, fwmatrix.txt, Update.sh, i386/*, x86_64/*
+ win fw: elxflash.bat, fwmatrix.txt, Update.cmd, win32/*, x64/*
+ saturn fw: boot/?
+ all fw: payload.xml, firmware/?
+
+=====================================
+
 bom-parse <BOM file>                        = parse BOM XLS and store as JSON
 jar-verify -r <release> -b <build number>   = verify JARs
 jar-verify -s                               = save last run data as an official release
