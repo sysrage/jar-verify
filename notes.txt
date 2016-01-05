@@ -9,6 +9,11 @@
 
  - find out difference between elxflash and flash in Linux firmware packages
 
+ * figure out how to convert version into firmware image file name (add replace regex to config.asicTypes?)
+ * add fw version replace regex to config.pkgTypes
+
+ - add list of expected files to config.pkgTypes?
+
  linux fw: elxflash, elxflash.sh, fwmatrix.txt, Update.sh, i386/*, x86_64/*
  win fw: elxflash.bat, fwmatrix.txt, Update.cmd, win32/*, x64/*
  saturn fw: boot/?

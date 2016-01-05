@@ -973,13 +973,16 @@ function verifyPayloadFile(jarContent) {
               return util.log("[ERROR] Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
             }
           });
-          var payloadXmlFile = null;
+          var payloadXmlFile = [];
           var parser = new xml2object(['payload'], payloadXmlFileStream);
-          parser.on('object', function(name, obj) { payloadXmlFile = obj; });
+          parser.on('object', function(name, obj) { payloadXmlFile.push(obj); });
           parser.on('end', function(){
             // Match payload.xml to BOM and package version
             console.log('payload.xml for ' + jarContent.jarType + ':');
             console.dir(payloadXmlFile);
+
+            console.log('jarData for ' + jarContent.jarType + ':');
+            console.dir(jarData[jarContent.jarType]);
           });
           parser.start();
 
