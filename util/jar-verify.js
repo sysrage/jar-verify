@@ -986,9 +986,9 @@ function verifyPayloadFile(jarContent) {
           var payloadXmlFileStream = fs.createReadStream(payloadContentDir + 'payload.xml');
           payloadXmlFileStream.on('error', function(err) {
             if (err.code === 'ENOENT') {
-              return util.log("[ERROR] The payload.xml file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              return util.log("[ERROR] The payload.xml file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             } else if (err.code === 'EACCES') {
-              return util.log("[ERROR] Permission denied trying to open payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              return util.log("[ERROR] Permission denied trying to open payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             } else {
               return util.log("[ERROR] Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
             }
@@ -1014,10 +1014,10 @@ function verifyPayloadFile(jarContent) {
                 }
               }
               if (! fwImageVersion) {
-                util.log("[ERROR] Unexpected firmware image file (" + fwImageName + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                util.log("[ERROR] Unexpected firmware image file (" + fwImageName + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
               } else {
                 if (fwImageVersion !== fwPkgVersion) {
-                  util.log("[ERROR] Firmware image file name (" + fwImageName + ") in payload.xml doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
+                  util.log("[ERROR] Firmware image file name (" + fwImageName + ") in payload.xml doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
                 }
               }
 
@@ -1049,7 +1049,7 @@ function verifyPayloadFile(jarContent) {
               payload.applicability.forEach(function(appDID) {
                 var payloadEntry = appDID.$t;
                 if (bomV2Entries.indexOf(payloadEntry) < 0) {
-                  util.log("[ERROR] Unexpected " + fwImageType + " device (" + payloadEntry + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  util.log("[ERROR] Unexpected " + fwImageType + " device (" + payloadEntry + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                 } else {
                   validEntries.push(payloadEntry);
                 }
@@ -1058,7 +1058,7 @@ function verifyPayloadFile(jarContent) {
               // Verify no expected device IDs are missing from payload.xml
               bomV2Entries.forEach(function(appDID) {
                 if (validEntries.indexOf(appDID) < 0) {
-                  util.log("[ERROR] Missing " + fwImageType + " device (" + appDID + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  util.log("[ERROR] Missing " + fwImageType + " device (" + appDID + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                 }
               });
             });
@@ -1073,7 +1073,7 @@ function verifyPayloadFile(jarContent) {
       }
     });
   } else {
-    util.log("[ERROR] Unexpected payload file name extension for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    util.log("[ERROR] Unexpected payload file name extension for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
   }
 }
 
@@ -1146,7 +1146,7 @@ try {
   } else if (err.code === 'EACCES') {
     return util.log("[ERROR] Permission denied trying to open BOM file.\n");
   } else {
-    return util.log("[ERROR] Unexpected error: " + err);
+    return util.log("[ERROR] Unexpected error:\n" + err);
   }
 }
 
@@ -1161,7 +1161,7 @@ try {
   } else if (err.code === 'EACCES') {
     return util.log("[ERROR] Permission denied trying to open JAR file directory.\n");
   } else {
-    return util.log("[ERROR] Unexpected error: " + err);
+    return util.log("[ERROR] Unexpected error:\n" + err);
   }
 }
 
@@ -1284,7 +1284,7 @@ for (jarType in jarFiles) {
     } else if (err.code === 'NOBINFILE') {
       util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a payload file. No further verification will be performed with this JAR file.\n");
     } else {
-      util.log("[ERROR] Unexpected error: " + err);
+      util.log("[ERROR] Unexpected error:\n" + err);
     }
   }).catch(function(err) {
     console.dir(err);
@@ -1296,6 +1296,6 @@ process.on('exit', function() {
 
   // Clean up temporary files
   rmdir.sync(tempPath, {gently: tempPath}, function(err) {
-    if (err) util.log("[ERROR] Unable to delete temporary files: " + err);
+    if (err) util.log("[ERROR] Unable to delete temporary files:\n" + err);
   });
 });
