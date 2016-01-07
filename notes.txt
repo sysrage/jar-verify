@@ -1,4 +1,6 @@
 
+ - Only fulfill getJarContent() on zipfile close but ensure binFile writing is complete first
+
  - open bug to get Update.sh, fwmatrix.txt, and elxflash removed from all VMware firmware packages
  - open bug to get 'VMware vSphere 2013' added to all VMware firmware packages
  - open bug to get 32-bit Windows 2012 support removed from Windows FCoE driver package

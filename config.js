@@ -651,7 +651,9 @@ module.exports = {
       asic: 'BE3',
       preVersion: 'oc11-',
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'BE FW'
+      appDevIdCfgName: 'BE FW',
+      fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
+      fwImageFileReplace: '$1'
     },
     fwBE3VMware: {
       name: 'VMware BE Firmware',
@@ -662,7 +664,9 @@ module.exports = {
       asic: 'BE3',
       preVersion: 'oc11-',
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'BE FW'
+      appDevIdCfgName: 'BE FW',
+      fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
+      fwImageFileReplace: '$1'
     },
     fwBE3Windows: {
       name: 'Windows BE Firmware',
@@ -673,7 +677,9 @@ module.exports = {
       asic: 'BE3',
       preVersion: 'oc11-',
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'BE FW'
+      appDevIdCfgName: 'BE FW',
+      fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
+      fwImageFileReplace: '$1'
     },
     fwLancerG6Linux: {
       name: 'Linux Lancer G6 Firmware',
@@ -684,7 +690,9 @@ module.exports = {
       asic: 'Lancer G6',
       preVersion: 'lp3x-',
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer G6 FW'
+      appDevIdCfgName: 'Lancer G6 FW',
+      fwImageFileSearch: 'lancerg6_A([0-9\.]+)\.grp',
+      fwImageFileReplace: '$1'
     },
     fwLancerG6VMware: {
       name: 'VMware Lancer G6 Firmware',
@@ -695,7 +703,9 @@ module.exports = {
       asic: 'Lancer G6',
       preVersion: 'lp3x-',
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer G6 FW'
+      appDevIdCfgName: 'Lancer G6 FW',
+      fwImageFileSearch: 'lancerg6_A([0-9\.]+)\.grp',
+      fwImageFileReplace: '$1'
     },
     fwLancerG6Windows: {
       name: 'Windows Lancer G6 Firmware',
@@ -706,7 +716,9 @@ module.exports = {
       asic: 'Lancer G6',
       preVersion: 'lp3x-',
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer G6 FW'
+      appDevIdCfgName: 'Lancer G6 FW',
+      fwImageFileSearch: 'lancerg6_A([0-9\.]+)\.grp',
+      fwImageFileReplace: '$1'
     },
     fwLancerG5Linux: {
       name: 'Linux Lancer G5 Firmware',
@@ -717,7 +729,9 @@ module.exports = {
       asic: 'Lancer G5',
       preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer G5 FW'
+      appDevIdCfgName: 'Lancer G5 FW',
+      fwImageFileSearch: 'lancer_A([0-9\.]+)\.grp',
+      fwImageFileReplace: '$1'
     },
     fwLancerG5VMware: {
       name: 'VMware Lancer G5 Firmware',
@@ -728,7 +742,9 @@ module.exports = {
       asic: 'Lancer G5',
       preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer G5 FW'
+      appDevIdCfgName: 'Lancer G5 FW',
+      fwImageFileSearch: 'lancer_A([0-9\.]+)\.grp',
+      fwImageFileReplace: '$1'
     },
     fwLancerG5Windows: {
       name: 'Windows Lancer G5 Firmware',
@@ -739,7 +755,9 @@ module.exports = {
       asic: 'Lancer G5',
       preVersion: 'lp16-',
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Lancer G5 FW'
+      appDevIdCfgName: 'Lancer G5 FW',
+      fwImageFileSearch: 'lancer_A([0-9\.]+)\.grp',
+      fwImageFileReplace: '$1'
     },
     fwSaturnLinux: {
       name: 'Linux Saturn Firmware',
@@ -750,7 +768,21 @@ module.exports = {
       asic: 'Saturn',
       bootRegex: '([0-9\.]+[xa][0-9]+)',
       inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Saturn FW'
+      appDevIdCfgName: 'Saturn FW',
+      fwImageFileSearch: '(u[df])([0-9])([0-9][0-9])([xa])([0-9]+)\.all',
+      fwImageFileReplace: '$2.$3$4$5',
+      bootImageFileSearch: 'UU([0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
+      bootImageFileReplace: '$1.$2$3$4',
+      fwImageFileNames: {
+        rack: 'ud',
+        flex: 'uf',
+        bladecenter: 'uf'
+      },
+      bootImageNames: {
+        rack: 'UU',
+        flex: 'UU',
+        bladecenter: 'UU'
+      }
     },
     fwSaturnVMware: {
       name: 'VMware Saturn Firmware',
@@ -761,7 +793,21 @@ module.exports = {
       asic: 'Saturn',
       bootRegex: '([0-9\.]+[xa][0-9]+)',
       inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Saturn FW'
+      appDevIdCfgName: 'Saturn FW',
+      fwImageFileSearch: '(u[df])([0-9])([0-9][0-9])([xa])([0-9]+)\.all',
+      fwImageFileReplace: '$2.$3$4$5',
+      bootImageFileSearch: 'UU([0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
+      bootImageFileReplace: '$1.$2$3$4',
+      fwImageFileNames: {
+        rack: 'ud',
+        flex: 'uf',
+        bladecenter: 'uf'
+      },
+      bootImageNames: {
+        rack: 'UU',
+        flex: 'UU',
+        bladecenter: 'UU'
+      }
     },
     fwSaturnWindows: {
       name: 'Windows Saturn Firmware',
@@ -772,7 +818,21 @@ module.exports = {
       asic: 'Saturn',
       bootRegex: '([0-9\.]+[xa][0-9]+)',
       inputDesc: 'Emulex HBA (LPe1205/LPe1200x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Saturn FW'
+      appDevIdCfgName: 'Saturn FW',
+      fwImageFileSearch: '(u[df])([0-9])([0-9][0-9])([xa])([0-9]+)\.all',
+      fwImageFileReplace: '$2.$3$4$5',
+      bootImageFileSearch: 'UU([0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
+      bootImageFileReplace: '$1.$2$3$4',
+      fwImageFileNames: {
+        rack: 'ud',
+        flex: 'uf',
+        bladecenter: 'uf'
+      },
+      bootImageNames: {
+        rack: 'UU',
+        flex: 'UU',
+        bladecenter: 'UU'
+      }
     },
     fwSkyhawkLinux: {
       name: 'Linux Skyhawk Firmware',
@@ -783,7 +843,9 @@ module.exports = {
       asic: 'Skyhawk',
       preVersion: 'oc14-',
       inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Skyhawk FW'
+      appDevIdCfgName: 'Skyhawk FW',
+      fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
+      fwImageFileReplace: '$1'
     },
     fwSkyhawkVMware: {
       name: 'VMware Skyhawk Firmware',
@@ -794,7 +856,9 @@ module.exports = {
       asic: 'Skyhawk',
       preVersion: 'oc14-',
       inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Skyhawk FW'
+      appDevIdCfgName: 'Skyhawk FW',
+      fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
+      fwImageFileReplace: '$1'
     },
     fwSkyhawkWindows: {
       name: 'Windows Skyhawk Firmware',
@@ -805,7 +869,9 @@ module.exports = {
       asic: 'Skyhawk',
       preVersion: 'oc14-',
       inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Skyhawk FW'
+      appDevIdCfgName: 'Skyhawk FW',
+      fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
+      fwImageFileReplace: '$1'
     },
   },
 

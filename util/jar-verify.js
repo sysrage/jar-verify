@@ -184,6 +184,7 @@ function getJarContent(jarType) {
           }
 
           if (binFileName && entry.fileName === binFileName) {
+
             mkdirp(tempPath + jarType + '/', function(err) {
               if (err) reject(err);
               var binFileHash = crypto.createHash('md5');
@@ -195,6 +196,15 @@ function getJarContent(jarType) {
                 });
                 readStream.on('end', function() {
                   binFileChecksum = binFileHash.digest('hex');
+                });
+                // Write payload binary to disk for further verification
+                var binWriteStream = fs.createWriteStream(tempPath + jarType + '/' + entry.fileName);
+                readStream.pipe(binWriteStream);
+
+                // TODO: Does this need to be moved? Can writing of the binary file ever finish before
+                // zipfile is closed (all other files are parsed)? If it's in the zipfile.on('close')
+                // section, verifyPayloadFile() is called before binary has finished writing to disk.
+                binWriteStream.on('finish', function() {
                   fulfill({
                     jarType: jarType,
                     inputFileName: inputFileName,
@@ -213,8 +223,6 @@ function getJarContent(jarType) {
                     binFileChecksum: binFileChecksum
                   });
                 });
-                // Write payload binary to disk for further verification
-                readStream.pipe(fs.createWriteStream(tempPath + jarType + '/' + entry.fileName));
               });
             });
           }
@@ -927,6 +935,9 @@ function verifyPayloadFile(jarContent) {
 
 
   } else if (payloadFile.match(/\.(?:exe)|(?:bin)$/)) {
+    // Node.js unzip libraries seem to have issues with Lenovo's self-extracting archives.
+    // TODO: Find a working library to make this work cross-platform or bundle unzip.exe
+
     // Payload is a self-extracting zip archive (firmware & Windows drivers) -- Extract it
     exec('unzip \"' + payloadFile + '\" -d \"' + payloadExtract + '\"', function(error, stdout, stderr) {
       if (stderr !== null && stderr.search('extra bytes at beginning or within zipfile') < 0) {
@@ -937,28 +948,37 @@ function verifyPayloadFile(jarContent) {
 
           if (config.pkgTypes[jarContent.jarType].osType === 'windows') {
             // Validate presence of elxflash
+            // TODO:
 
             // Validate presence and content of fwmatrix.txt
+            // TODO:
 
             // Validate presence of Update script
+            // TODO:
 
           }
 
           if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
             // Validate presence of elxflash
+            // TODO:
 
             // Validate presence and content of fwmatrix.txt
+            // TODO:
 
             // Validate presence of Update script
+            // TODO:
 
               // Validate device IDs inside Update script for xClarity workaround
+              // TODO:
 
           }
 
           // Validate firmware/* images are present and of the correct version(s)
+          // TODO:
 
           if (config.pkgTypes[jarContent.jarType].bootRegex) {
             // Validate boot/* images are present and of the correct version(s)
+            // TODO:
 
           }
 
@@ -977,25 +997,81 @@ function verifyPayloadFile(jarContent) {
           var parser = new xml2object(['payload'], payloadXmlFileStream);
           parser.on('object', function(name, obj) { payloadXmlFile.push(obj); });
           parser.on('end', function(){
-            // Match payload.xml to BOM and package version
-            console.log('payload.xml for ' + jarContent.jarType + ':');
-            console.dir(payloadXmlFile);
+            // Validate payload.xml against BOM and package version
+            payloadXmlFile.forEach(function(payload) {
+              // Validate that the firmware image file name matches the package version (FixID)
+              var fwImageType = payload.$t.match(/\/([^\/]+)\/([^\/]+)$/)[1];
+              var fwImageName = payload.$t.match(/\/([^\/]+)\/([^\/]+)$/)[2];
+              if (fwImageType === 'firmware') {
+                if (config.pkgTypes[jarContent.jarType].fwImageFileSearch) {
+                  var fwImageVersion = fwImageName.replace(RegExp(config.pkgTypes[jarContent.jarType].fwImageFileSearch), config.pkgTypes[jarContent.jarType].fwImageFileReplace);
+                  var fwPkgVersion = jarData[jarContent.jarType].version;
+                }
+              } else if (fwImageType === 'boot') {
+                if (config.pkgTypes[jarContent.jarType].bootImageFileSearch) {
+                  var fwImageVersion = fwImageName.replace(RegExp(config.pkgTypes[jarContent.jarType].bootImageFileSearch), config.pkgTypes[jarContent.jarType].bootImageFileReplace);
+                  var fwPkgVersion = jarData[jarContent.jarType].bootVersion;
+                }
+              }
+              if (! fwImageVersion) {
+                util.log("[ERROR] Unexpected firmware image file (" + fwImageName + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              } else {
+                if (fwImageVersion !== fwPkgVersion) {
+                  util.log("[ERROR] Firmware image file name (" + fwImageName + ") in payload.xml doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
+                }
+              }
 
-            console.log('jarData for ' + jarContent.jarType + ':');
-            console.dir(jarData[jarContent.jarType]);
+              // Build list of expected device IDs based on BOM
+              var bomAdapterList = [];
+              workingBOM.adapterList.forEach(function(adapter) {
+                if (adapter.asic === config.pkgTypes[jarContent.jarType].asic) bomAdapterList.push(adapter);
+              });
+              var bomV2Entries = [];
+              bomAdapterList.forEach(function(adapter) {
+                adapter.v2.forEach(function(v2) {
+                  if (fwImageType === 'firmware') {
+                    if (config.pkgTypes[jarContent.jarType].fwImageFileNames && config.pkgTypes[jarContent.jarType].fwImageFileNames[adapter.type]) {
+                      var fwNameString = fwImageName.match(config.pkgTypes[jarContent.jarType].fwImageFileSearch)[1];
+                      if (fwNameString === config.pkgTypes[jarContent.jarType].fwImageFileNames[adapter.type]) {
+                        if (bomV2Entries.indexOf(v2) < 0) bomV2Entries.push(v2);
+                      }
+                    } else {
+                      if (bomV2Entries.indexOf(v2) < 0) bomV2Entries.push(v2);
+                    }
+                  } else if (fwImageType === 'boot') {
+                    if (bomV2Entries.indexOf(v2) < 0) bomV2Entries.push(v2);
+                  }
+                });
+              });
+
+              // Verify all payload.xml device IDs are expected
+              var validEntries = [];
+              payload.applicability.forEach(function(appDID) {
+                var payloadEntry = appDID.$t;
+                if (bomV2Entries.indexOf(payloadEntry) < 0) {
+                  util.log("[ERROR] Unexpected " + fwImageType + " device (" + payloadEntry + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                } else {
+                  validEntries.push(payloadEntry);
+                }
+              });
+
+              // Verify no expected device IDs are missing from payload.xml
+              bomV2Entries.forEach(function(appDID) {
+                if (validEntries.indexOf(appDID) < 0) {
+                  util.log("[ERROR] Missing " + fwImageType + " device (" + appDID + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                }
+              });
+            });
           });
           parser.start();
 
         } else {
           // Validate content of Windows driver package payload binary
+          // TODO:
 
         }
       }
     });
-
-    // Node.js unzip libraries seem to have issues with Lenovo's self-extracting archives.
-    // TODO: Find a working library to make this work cross-platform or bundle unzip.exe
-
   } else {
     util.log("[ERROR] Unexpected payload file name extension for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   }
@@ -1166,23 +1242,33 @@ for (jarType in jarFiles) {
 
     // Verify input XML data
     // util.log("[STATUS] Verifying input XML for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
-    verifyInputXML(jarContent);
+    if (jarContent.inputFile !== null) {
+      verifyInputXML(jarContent);
+    }
 
     // Verify package XML data
     // util.log("[STATUS] Verifying package XML for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
-    verifyPackageXML(jarContent);
+    if (jarContent.xmlFile !== null) {
+      verifyPackageXML(jarContent);
+    }
 
     // Verify readme data
     // util.log("[STATUS] Verifying README file for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
-    verifyReadmeFile(jarContent);
+    if (jarContent.readmeFile !== null) {
+      verifyReadmeFile(jarContent);
+    }
 
     // Verify change history data
     // util.log("[STATUS] Verifying Change History file for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
-    verifyChangeFile(jarContent);
+    if (jarContent.changeFile !== null) {
+      verifyChangeFile(jarContent);
+    }
 
     // Verify payload
     // util.log("[STATUS] Verifying payload for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
-    verifyPayloadFile(jarContent);
+    if (jarContent.binFileName !== null) {
+      verifyPayloadFile(jarContent);
+    }
 
   }, function(err) {
     if (err.code === 'EACCES') {
