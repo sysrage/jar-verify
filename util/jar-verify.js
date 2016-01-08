@@ -922,6 +922,9 @@ function verifyChangeFile(jarContent) {
 }
 
 function verifyPayloadFile(jarContent) {
+  // Node.js unzip libraries seem to have issues with Lenovo's self-extracting archives.
+  // TODO: Find a working library to make this work cross-platform or bundle unzip.exe
+
   var payloadDir = tempPath + jarContent.jarType + '/';
   var payloadFile = payloadDir + jarContent.binFileName;
   var payloadExtract = payloadDir + 'e/';
@@ -939,9 +942,6 @@ function verifyPayloadFile(jarContent) {
 
 
   } else if (payloadFile.match(/\.(?:exe)|(?:bin)$/)) {
-    // Node.js unzip libraries seem to have issues with Lenovo's self-extracting archives.
-    // TODO: Find a working library to make this work cross-platform or bundle unzip.exe
-
     // Payload is a self-extracting zip archive (firmware & Windows drivers) -- Extract it
     exec('unzip \"' + payloadFile + '\" -d \"' + payloadExtract + '\"', function(error, stdout, stderr) {
       if (stderr !== null && stderr.search('extra bytes at beginning or within zipfile') < 0) {
@@ -981,7 +981,6 @@ function verifyPayloadFile(jarContent) {
                 });
 
                 // Verify all fwmatrix.txt entries are expected
-                console.log(jarContent.jarType);
                 var validMatrixEntries = [];
                 var fwMatrix = data.split('\n');
                 fwMatrix.forEach(function(fwMatrixEntry, matrixIndex) {
@@ -1075,24 +1074,15 @@ function verifyPayloadFile(jarContent) {
 
           }
 
-          // Validate firmware/* images are present and of the correct version(s)
-          // TODO:
-
-          if (config.pkgTypes[jarContent.jarType].bootRegex) {
-            // Validate boot/* images are present and of the correct version(s)
-            // TODO:
-
-          }
-
           // Validate presence and content of payload.xml
           var payloadXmlFileStream = fs.createReadStream(payloadContentDir + 'payload.xml');
           payloadXmlFileStream.on('error', function(err) {
             if (err.code === 'ENOENT') {
-              return util.log("[ERROR] The payload.xml file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              util.log("[ERROR] The payload.xml file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             } else if (err.code === 'EACCES') {
-              return util.log("[ERROR] Permission denied trying to open payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              util.log("[ERROR] Permission denied trying to open payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             } else {
-              return util.log("[ERROR] Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+              util.log("[ERROR] Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
             }
           });
           var payloadXmlFile = [];
@@ -1162,6 +1152,116 @@ function verifyPayloadFile(jarContent) {
             });
           });
           parser.start();
+
+          // Validate firmware/* images are present and of the correct version(s)
+          try {
+            var fwDirFiles = fs.readdirSync(payloadContentDir + 'firmware/');
+          } catch (err) {
+            if (err.code === 'ENOENT') {
+              util.log("[ERROR] The firmware directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (err.code === 'EACCES') {
+              util.log("[ERROR] Permission denied trying to open firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else {
+              util.log("[ERROR] Unexpected error opening firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+            }
+          }
+          if (fwDirFiles && fwDirFiles.length < 1) {
+            util.log("[ERROR] No firmware files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          } else if (fwDirFiles) {
+            var fwPkgVersion = jarData[jarContent.jarType].version;
+            var bomAdapterTypes = [];
+            if (config.pkgTypes[jarContent.jarType].fwImageFileNames) {
+              bomAdapterList.forEach(function(adapter) {
+                if (bomAdapterTypes.indexOf(adapter.type) < 0) bomAdapterTypes.push(adapter.type);
+              });
+            } else {
+              bomAdapterTypes.push('any');
+            }
+            fwDirFiles.forEach(function(fwFile) {
+              var fwFileVersion = fwFile.replace(RegExp(config.pkgTypes[jarContent.jarType].fwImageFileSearch), config.pkgTypes[jarContent.jarType].fwImageFileReplace);
+              if (fwFileVersion !== fwPkgVersion) {
+                util.log("[ERROR] Firmware image file name (" + fwFile + ") in firmware directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+              } else {
+                var adapterTypeFound = false;
+                for (var i=0; i < bomAdapterTypes.length; i++) {
+                  if (config.pkgTypes[jarContent.jarType].fwImageFileNames) {
+                    if (fwFile.substring(0,2) === config.pkgTypes[jarContent.jarType].fwImageFileNames[bomAdapterTypes[i]]) {
+                      adapterTypeFound = true;
+                      bomAdapterTypes.splice(i,1);
+                      i--;
+                    }
+                  } else {
+                    adapterTypeFound = true;
+                    bomAdapterTypes.splice(i,1);
+                  }
+                }
+                if (! adapterTypeFound) {
+                  util.log("[ERROR] Unexpected firmware image file (" + fwFile + ") in firmware directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                }
+              }
+            });
+            if (bomAdapterTypes.length > 0) {
+              bomAdapterTypes.forEach(function(adapterType) {
+                util.log("[ERROR] Missing firmware image file type (" + adapterType + ") in firmware directory for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              });
+            }
+          }
+
+          if (jarData[jarContent.jarType].bootVersion) {
+            // Validate boot/* images are present and of the correct version(s)
+            try {
+              var bootDirFiles = fs.readdirSync(payloadContentDir + 'boot/');
+            } catch (err) {
+              if (err.code === 'ENOENT') {
+                util.log("[ERROR] The boot directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else if (err.code === 'EACCES') {
+                util.log("[ERROR] Permission denied trying to open boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                util.log("[ERROR] Unexpected error opening boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+              }
+            }
+            if (bootDirFiles && bootDirFiles.length < 1) {
+              util.log("[ERROR] No boot code files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (bootDirFiles) {
+              var fwPkgBootVersion = jarData[jarContent.jarType].bootVersion;
+              var bomAdapterTypes = [];
+              if (config.pkgTypes[jarContent.jarType].bootImageNames) {
+                bomAdapterList.forEach(function(adapter) {
+                  if (bomAdapterTypes.indexOf(adapter.type) < 0) bomAdapterTypes.push(adapter.type);
+                });
+              } else {
+                bomAdapterTypes.push('any');
+              }
+              bootDirFiles.forEach(function(bootFile) {
+                var bootFileVersion = bootFile.replace(RegExp(config.pkgTypes[jarContent.jarType].bootImageFileSearch), config.pkgTypes[jarContent.jarType].bootImageFileReplace);
+                if (bootFileVersion !== fwPkgBootVersion) {
+                  util.log("[ERROR] Boot image file name (" + bootFile + ") in boot directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                } else {
+                  var adapterTypeFound = false;
+                  for (var i=0; i < bomAdapterTypes.length; i++) {
+                    if (config.pkgTypes[jarContent.jarType].bootImageNames) {
+                      if (bootFile.substring(0,2) === config.pkgTypes[jarContent.jarType].bootImageNames[bomAdapterTypes[i]]) {
+                        adapterTypeFound = true;
+                        bomAdapterTypes.splice(i,1);
+                        i--;
+                      }
+                    } else {
+                      adapterTypeFound = true;
+                      bomAdapterTypes.splice(i,1);
+                    }
+                  }
+                  if (! adapterTypeFound) {
+                    util.log("[ERROR] Unexpected boot image file (" + bootFile + ") in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  }
+                }
+              });
+              if (bomAdapterTypes.length > 0) {
+                bomAdapterTypes.forEach(function(adapterType) {
+                  util.log("[ERROR] Missing boot image file type (" + adapterType + ") in boot directory for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                });
+              }
+            }
+          }
 
           // Verify no unexpected files are included in firmware package payload binary
           // TODO:
