@@ -82,7 +82,7 @@ function getParams() {
 
 // Function to gather all expected data from a JAR file
 function getJarContent(jarType) {
-  return new Promise(function (fulfill, reject) {
+  return new Promise(function(fulfill, reject) {
     yauzl.open(jarDir + jarFiles[jarType].fileName, function(err, zipfile) {
       if (err) {
         reject(err);
@@ -1050,28 +1050,94 @@ function verifyPayloadFile(jarContent) {
                 });
               }
             });
-          }
 
-          if (config.pkgTypes[jarContent.jarType].osType === 'windows') {
-            // Validate presence of elxflash
-            // TODO:
+            // Determine supported architectures
+            var elxflashArch = [];
+            workingBOM.osList.forEach(function(os) {
+              if (os.type === config.pkgTypes[jarContent.jarType].osType) {
+                if (elxflashArch.indexOf(os.arch) < 0) elxflashArch.push(os.arch);
+              }
+            });
 
+            // Validate presence of elxflash script and verify it's not 0 bytes
+            if (config.pkgTypes[jarContent.jarType].osType === 'windows') var flashScript = 'elxflash.bat';
+            if (config.pkgTypes[jarContent.jarType].osType === 'linux') var flashScript = 'elxflash.sh';
+            try {
+              var elxflashFileStats = fs.statSync(payloadContentDir + flashScript);
+            } catch (err) {
+              if (err.code === 'ENOENT') {
+                util.log("[ERROR] The file " + flashScript + " does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else if (err.code === 'EACCES') {
+                util.log("[ERROR] Permission denied trying to open " + flashScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                util.log("[ERROR] Unexpected error opening " + flashScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              }
+            }
+            if (elxflashFileStats && elxflashFileStats.size < 1) {
+              util.log("[ERROR] The file " + flashScript + " is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            }
 
-            // Validate presence of Update script
-            // TODO:
+            // Validate presence of elxflash binary files
+            elxflashArch.forEach(function(arch) {
+              if (arch === 'x86') {
+                if (config.pkgTypes[jarContent.jarType].osType === 'windows') var flashDir = 'win32/';
+                if (config.pkgTypes[jarContent.jarType].osType === 'linux') var flashDir = 'i386/';
+              } else if (arch === 'x64') {
+                if (config.pkgTypes[jarContent.jarType].osType === 'windows') var flashDir = 'x64/';
+                if (config.pkgTypes[jarContent.jarType].osType === 'linux') var flashDir = 'x86_64/';
+              }
+              try {
+                var flashDirFiles = fs.readdirSync(payloadContentDir + flashDir);
+              } catch (err) {
+                if (err.code === 'ENOENT') {
+                  util.log("[ERROR] The directory '" + flashDir + "' does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else if (err.code === 'EACCES') {
+                  util.log("[ERROR] Permission denied trying to open '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else {
+                  util.log("[ERROR] Unexpected error opening '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+                }
+              }
+              if (flashDirFiles) {
+                if (flashDirFiles.length < 1) {
+                  util.log("[ERROR] No files found in '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else {
+                  flashDirFiles.forEach(function(flashFile) {
+                    try {
+                      var elxflashBinFileStats = fs.statSync(payloadContentDir + flashDir + flashFile);
+                    } catch (err) {
+                      util.log("[ERROR] Unexpected error opening '" + flashDir + flashFile + "' in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                    }
+                    if (elxflashBinFileStats && elxflashBinFileStats.size < 1) {
+                      util.log("[ERROR] The file '" + flashDir + flashFile + "' is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    }
+                  });
+                }
+              }
+            });
 
-          }
+            // Validate presence of Update script and verify it's not 0 bytes
+            if (config.pkgTypes[jarContent.jarType].osType === 'windows') var updateScript = 'Update.cmd';
+            if (config.pkgTypes[jarContent.jarType].osType === 'linux') var updateScript = 'Update.sh';
+            try {
+              var updateScriptStats = fs.statSync(payloadContentDir + updateScript);
+            } catch (err) {
+              if (err.code === 'ENOENT') {
+                util.log("[ERROR] The file " + updateScript + " does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else if (err.code === 'EACCES') {
+                util.log("[ERROR] Permission denied trying to open " + updateScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                util.log("[ERROR] Unexpected error opening " + updateScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              }
+            }
+            if (updateScriptStats && updateScriptStats.size < 1) {
+              util.log("[ERROR] The " + updateScript + " file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            }
 
-          if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
-            // Validate presence of elxflash
-            // TODO:
-
-            // Validate presence of Update script
-            // TODO:
-
+            if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
               // Validate device IDs inside Update script for xClarity workaround
               // TODO:
 
+            }
           }
 
           // Validate presence and content of payload.xml
@@ -1197,6 +1263,12 @@ function verifyPayloadFile(jarContent) {
                 }
                 if (! adapterTypeFound) {
                   util.log("[ERROR] Unexpected firmware image file (" + fwFile + ") in firmware directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else {
+                  // Verify image file isn't 0 bytes
+                  var fwFileStats = fs.statSync(payloadContentDir + 'firmware/' + fwFile);
+                  if (fwFileStats.size < 1) {
+                    util.log("[ERROR] Firmware image file (" + fwFile + ") is 0 bytes in firmware directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  }
                 }
               }
             });
@@ -1252,6 +1324,12 @@ function verifyPayloadFile(jarContent) {
                   }
                   if (! adapterTypeFound) {
                     util.log("[ERROR] Unexpected boot image file (" + bootFile + ") in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  } else {
+                    // Verify image file isn't 0 bytes
+                    var bootFileStats = fs.statSync(payloadContentDir + 'boot/' + bootFile);
+                    if (bootFileStats.size < 1) {
+                      util.log("[ERROR] Boot code image file (" + bootFile + ") is 0 bytes in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    }
                   }
                 }
               });
@@ -1382,7 +1460,7 @@ if (jarDirFiles.length < 1) return util.log("[ERROR] No JAR files found in '" + 
 
 // Match each JAR file to the expected package types
 var jarFiles = {};
-jarDirFiles.forEach(function (jar) {
+jarDirFiles.forEach(function(jar) {
   var matched = false;
   for (i in config.pkgTypes) {
     var matchResult = jar.match(config.pkgTypes[i].regex);
@@ -1419,7 +1497,7 @@ for (var bomOS in workingBOM.appDIDList['dd']) {
 }
 
 // Show error if expected JAR file is missing (as compared to BOM)
-bomJarTypes.forEach(function (jarType) {
+bomJarTypes.forEach(function(jarType) {
   if (! jarFiles[jarType]) util.log("[ERROR] The " + config.pkgTypes[jarType].name + " JAR file cannot be found.\n");
 });
 
