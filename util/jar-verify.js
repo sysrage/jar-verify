@@ -932,6 +932,10 @@ function verifyPayloadFile(jarContent) {
     // Payload is a tar.gz archive (Linux drivers) -- Extract it
 
       // Validate content of Linux driver package payload binary
+      // TODO:
+
+      // Verify no unexpected files are included in Linux driver package payload binary
+      // TODO:
 
 
   } else if (payloadFile.match(/\.(?:exe)|(?:bin)$/)) {
@@ -943,15 +947,116 @@ function verifyPayloadFile(jarContent) {
       if (stderr !== null && stderr.search('extra bytes at beginning or within zipfile') < 0) {
         util.log("[ERROR] Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + stderr);
       } else {
+        // Build list of supported adapters based on BOM
+        var bomAdapterList = [];
+        workingBOM.adapterList.forEach(function(adapter) {
+          if (adapter.asic === config.pkgTypes[jarContent.jarType].asic) bomAdapterList.push(adapter);
+        });
+
         if (config.pkgTypes[jarContent.jarType].type === 'fw') {
           // Validate content of firmware package payload binary
+
+          if (config.pkgTypes[jarContent.jarType].osType === 'windows' || config.pkgTypes[jarContent.jarType].osType === 'linux') {
+            // Validate presence and content of fwmatrix.txt
+            fs.readFile(payloadContentDir + 'fwmatrix.txt', 'utf8', function(err, data) {
+              if (err) {
+                if (err.code === 'ENOENT') {
+                  util.log("[ERROR] The fwmatrix.txt file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else if (err.code === 'EACCES') {
+                  util.log("[ERROR] Permission denied trying to open fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else {
+                  util.log("[ERROR] Unexpected error opening fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+                }
+              } else {
+                // Build list of expected device types based on BOM and configuration file
+                var bomDeviceNames = [];
+                bomAdapterList.forEach(function(adapter) {
+                  config.asicTypes.forEach(function(asic) {
+                    if (asic.name === config.pkgTypes[jarContent.jarType].asic) {
+                      asic.fwMatrixNames[adapter.type].forEach(function(name) {
+                        if (bomDeviceNames.indexOf(name) < 0) bomDeviceNames.push(name);
+                      });
+                    }
+                  });
+                });
+
+                // Verify all fwmatrix.txt entries are expected
+                console.log(jarContent.jarType);
+                var validMatrixEntries = [];
+                var fwMatrix = data.split('\n');
+                fwMatrix.forEach(function(fwMatrixEntry, matrixIndex) {
+                  if (fwMatrixEntry !== '') {
+                    var fwMatrixMatch = fwMatrixEntry.match(/^(\S+)\s+(\S+)(?:\s*(\S+))?/);
+                    if (fwMatrixMatch[1].substring(0,2) !== '//') {
+                      var fwMatrixDevice = fwMatrixMatch[1];
+                      var fwMatrixFirmware = fwMatrixMatch[2];
+                      var fwMatrixBoot = fwMatrixMatch[3];
+
+                      // Compare device type
+                      if (bomDeviceNames.indexOf(fwMatrixDevice) < 0) {
+                        util.log("[ERROR] Unexpected device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      } else {
+                        if (validMatrixEntries.indexOf(fwMatrixDevice) > -1) {
+                          util.log("[ERROR] Duplicate device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        } else {
+                          validMatrixEntries.push(fwMatrixDevice);
+                        }
+                      }
+
+                      // Compare firmware image name with package firmware version
+                      if (! fwMatrixFirmware) {
+                        util.log("[ERROR] Invalid entry on line " + (matrixIndex + 1) + " of fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      } else {
+                        var fwMatrixVersion = fwMatrixFirmware.replace(RegExp(config.pkgTypes[jarContent.jarType].fwImageFileSearch), config.pkgTypes[jarContent.jarType].fwImageFileReplace);
+                        var fwPkgVersion = jarData[jarContent.jarType].version;
+                        if (! fwMatrixVersion) {
+                          util.log("[ERROR] Unexpected firmware image file (" + fwMatrixFirmware + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        } else {
+                          if (fwMatrixVersion !== fwPkgVersion) {
+                            util.log("[ERROR] Firmware image file name (" + fwMatrixFirmware + ") in fwmatrix.txt doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                          }
+                        }
+                      }
+
+                      if (jarData[jarContent.jarType].bootVersion) {
+                        // Package contains boot code -- Compare boot code image name to package boot code version
+                        if (! fwMatrixBoot) {
+                          util.log("[ERROR] Missing boot image on line " + (matrixIndex + 1) + " of fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        } else {
+                          var fwMatrixBootVersion = fwMatrixBoot.replace(RegExp(config.pkgTypes[jarContent.jarType].bootImageFileSearch), config.pkgTypes[jarContent.jarType].bootImageFileReplace);
+                          var fwPkgBootVersion = jarData[jarContent.jarType].bootVersion;
+                          if (! fwMatrixBootVersion) {
+                            util.log("[ERROR] Unexpected boot code image file (" + fwMatrixBoot + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          } else {
+                            if (fwMatrixBootVersion !== fwPkgBootVersion) {
+                              util.log("[ERROR] Boot code image file name (" + fwMatrixBoot + ") in fwmatrix.txt doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                            }
+                          }
+                        }
+                      } else {
+                        // Package should not contain boot code -- Verify that it doesn't
+                        if (fwMatrixBoot) {
+                          util.log("[ERROR] Unexpected boot code image file (" + fwMatrixBoot + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        }
+                      }
+                    }
+                  }
+                });
+
+                // Verify no expected device types are missing from fwmatrix.txt
+                bomDeviceNames.forEach(function(expectedEntry) {
+                  if (validMatrixEntries.indexOf(expectedEntry) < 0) {
+                    util.log("[ERROR] Expected device type (" + expectedEntry + ") missing in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  }
+                });
+              }
+            });
+          }
 
           if (config.pkgTypes[jarContent.jarType].osType === 'windows') {
             // Validate presence of elxflash
             // TODO:
 
-            // Validate presence and content of fwmatrix.txt
-            // TODO:
 
             // Validate presence of Update script
             // TODO:
@@ -960,9 +1065,6 @@ function verifyPayloadFile(jarContent) {
 
           if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
             // Validate presence of elxflash
-            // TODO:
-
-            // Validate presence and content of fwmatrix.txt
             // TODO:
 
             // Validate presence of Update script
@@ -996,7 +1098,7 @@ function verifyPayloadFile(jarContent) {
           var payloadXmlFile = [];
           var parser = new xml2object(['payload'], payloadXmlFileStream);
           parser.on('object', function(name, obj) { payloadXmlFile.push(obj); });
-          parser.on('end', function(){
+          parser.on('end', function() {
             // Validate payload.xml against BOM and package version
             payloadXmlFile.forEach(function(payload) {
               // Validate that the firmware image file name matches the package version (FixID)
@@ -1022,10 +1124,6 @@ function verifyPayloadFile(jarContent) {
               }
 
               // Build list of expected device IDs based on BOM
-              var bomAdapterList = [];
-              workingBOM.adapterList.forEach(function(adapter) {
-                if (adapter.asic === config.pkgTypes[jarContent.jarType].asic) bomAdapterList.push(adapter);
-              });
               var bomV2Entries = [];
               bomAdapterList.forEach(function(adapter) {
                 adapter.v2.forEach(function(v2) {
@@ -1045,19 +1143,19 @@ function verifyPayloadFile(jarContent) {
               });
 
               // Verify all payload.xml device IDs are expected
-              var validEntries = [];
+              var validPayloadEntries = [];
               payload.applicability.forEach(function(appDID) {
                 var payloadEntry = appDID.$t;
                 if (bomV2Entries.indexOf(payloadEntry) < 0) {
                   util.log("[ERROR] Unexpected " + fwImageType + " device (" + payloadEntry + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                 } else {
-                  validEntries.push(payloadEntry);
+                  validPayloadEntries.push(payloadEntry);
                 }
               });
 
               // Verify no expected device IDs are missing from payload.xml
               bomV2Entries.forEach(function(appDID) {
-                if (validEntries.indexOf(appDID) < 0) {
+                if (validPayloadEntries.indexOf(appDID) < 0) {
                   util.log("[ERROR] Missing " + fwImageType + " device (" + appDID + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                 }
               });
@@ -1065,8 +1163,14 @@ function verifyPayloadFile(jarContent) {
           });
           parser.start();
 
+          // Verify no unexpected files are included in firmware package payload binary
+          // TODO:
+
         } else {
           // Validate content of Windows driver package payload binary
+          // TODO:
+
+          // Verify no unexpected files are included in Windows driver package payload binary
           // TODO:
 
         }
