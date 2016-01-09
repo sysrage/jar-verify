@@ -388,7 +388,11 @@ module.exports = {
       inputDesc: 'Emulex NIC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['ocnd63.sys', 'ocnd64.sys'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Win NIC DD'
+      appDevIdCfgName: 'Win NIC DD',
+      ddImageFileSearch: 'elxdrvr\-nic\-([0-9\.]+)\-([0-9]+)\.exe',
+      ddImageFileReplace: '$1',
+      ocmImageFileSearch: 'elxocmcore\-windows\-(x86|x64)\-([0-9\.]+)\-([0-9]+)\.exe',
+      ocmImageFileReplace: '$2'
     },
     ddWinISCSI: {
       name: 'Windows iSCSI Driver',
@@ -400,7 +404,9 @@ module.exports = {
       inputDesc: 'Emulex iSCSI Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.sys'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Win iSCSI DD'
+      appDevIdCfgName: 'Win iSCSI DD',
+      ddImageFileSearch: 'elxdrvr\-iscsi\-([0-9\.]+)\-([0-9]+)\.exe',
+      ddImageFileReplace: '$1'
     },
     ddWinFC: {
       name: 'Windows FC Driver',
@@ -412,7 +418,9 @@ module.exports = {
       inputDesc: 'Emulex FC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['elxfc.sys'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Win FC DD'
+      appDevIdCfgName: 'Win FC DD',
+      ddImageFileSearch: 'elxdrvr\-fc\-([0-9\.]+)\-([0-9]+)\.exe',
+      ddImageFileReplace: '$1'
     },
     ddWinFCoE: {
       name: 'Windows FCoE Driver',
@@ -424,7 +432,9 @@ module.exports = {
       inputDesc: 'Emulex FCoE Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['elxcna.sys'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Win FCoE DD'
+      appDevIdCfgName: 'Win FCoE DD',
+      ddImageFileSearch: 'elxdrvr\-fcoe\-([0-9\.]+)\-([0-9]+)\.exe',
+      ddImageFileReplace: '$1'
     },
     ddRHEL5NIC: {
       name: 'RHEL 5.x NIC Driver',

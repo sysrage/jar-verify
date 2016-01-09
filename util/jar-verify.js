@@ -1346,7 +1346,98 @@ function verifyPayloadFile(jarContent) {
 
         } else {
           // Validate content of Windows driver package payload binary
-          // TODO:
+          if (config.pkgTypes[jarContent.jarType].osType !== 'windows') {
+            util.log("[ERROR] Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          } else {
+            // Validate presence of Update script and verify it's not 0 bytes
+            try {
+              var installScriptStats = fs.statSync(payloadContentDir + 'Install.cmd');
+            } catch (err) {
+              if (err.code === 'ENOENT') {
+                util.log("[ERROR] The file Install.cmd does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else if (err.code === 'EACCES') {
+                util.log("[ERROR] Permission denied trying to open Install.cmd in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                util.log("[ERROR] Unexpected error opening Install.cmd in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              }
+            }
+            if (updateScriptStats && updateScriptStats.size < 1) {
+              util.log("[ERROR] The Install.cmd file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            }
+
+            // Validate content of Installer directory
+            try {
+              var installDirFiles = fs.readdirSync(payloadContentDir + 'Installer/');
+            } catch (err) {
+              if (err.code === 'ENOENT') {
+                util.log("[ERROR] The Installer directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else if (err.code === 'EACCES') {
+                util.log("[ERROR] Permission denied trying to open Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                util.log("[ERROR] Unexpected error opening Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+              }
+            }
+            if (installDirFiles && installDirFiles.length < 1) {
+              util.log("[ERROR] No installer files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (installDirFiles) {
+              // Build list of expected OCM architectures
+              var ocmArch = [];
+              if (config.pkgTypes[jarContent.jarType].ocmImageFileSearch) {
+                workingBOM.osList.forEach(function(os) {
+                  if (os.type === config.pkgTypes[jarContent.jarType].osType) {
+                    if (ocmArch.indexOf(os.arch) < 0) ocmArch.push(os.arch);
+                  }
+                });
+              }
+
+              var ddPkgVersion = jarData[jarContent.jarType].version;
+              var ddFound = false;
+              installDirFiles.forEach(function(installFile) {
+                if (installFile.match(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch))) {
+                  // Driver installer is present - Validate version and size
+                  ddFound = true;
+                  var ddFileVersion = installFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileReplace);
+                  if (ddFileVersion && ddFileVersion !== ddPkgVersion) {
+                    util.log("[ERROR] Driver installer file name (" + installFile + ") in Installer directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                  } else {
+                    var ddFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
+                    if (ddFileStats.size < 1) {
+                      util.log("[ERROR] Driver installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    }
+                  }
+
+                }
+
+                if (config.pkgTypes[jarContent.jarType].ocmImageFileSearch) {
+                  var installMatch = installFile.match(RegExp(config.pkgTypes[jarContent.jarType].ocmImageFileSearch));
+                  if (installMatch !== null) {
+                    // OCM installer is present - Validate architecture and size
+                    var installArch = installMatch[1];
+                    var archIndex = ocmArch.indexOf(installArch);
+                    if (archIndex < 0) {
+                      util.log("[ERROR] OCM installer found for unexpected architecture (" + installArch + ") in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                    } else {
+                      ocmArch.splice(archIndex, 1);
+                      var ocmFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
+                      if (ocmFileStats.size < 1) {
+                        util.log("[ERROR] OCM installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      }
+                    }
+                  }
+                }
+              });
+
+              // Display error if driver installer was not found
+              if (! ddFound) {
+                util.log("[ERROR] Driver installer file missing from Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              }
+
+              // Display error if OCM installer was expected but not found
+              ocmArch.forEach(function(arch) {
+                util.log("[ERROR] OCM installer for architecture (" + arch + ") missing from Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              });
+            }
+          }
 
           // Verify no unexpected files are included in Windows driver package payload binary
           // TODO:
