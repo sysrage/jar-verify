@@ -446,7 +446,9 @@ module.exports = {
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux NIC DD'
+      appDevIdCfgName: 'Linux NIC DD',
+      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileReplace: '$1'
     },
     ddRHEL5ISCSI: {
       name: 'RHEL 5.x iSCSI Driver',
@@ -482,7 +484,9 @@ module.exports = {
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux NIC DD'
+      appDevIdCfgName: 'Linux NIC DD',
+      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileReplace: '$1'
     },
     ddRHEL6ISCSI: {
       name: 'RHEL 6.x iSCSI Driver',
@@ -518,7 +522,9 @@ module.exports = {
       inputDesc: 'Emulex NIC (be2net) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux NIC DD'
+      appDevIdCfgName: 'Linux NIC DD',
+      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileReplace: '$1'
     },
     ddRHEL7ISCSI: {
       name: 'RHEL 7.x iSCSI Driver',
@@ -554,7 +560,9 @@ module.exports = {
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux NIC DD'
+      appDevIdCfgName: 'Linux NIC DD',
+      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileReplace: '$1'
     },
     ddSLES10ISCSI: {
       name: 'SLES 10.x iSCSI Driver',
@@ -590,7 +598,9 @@ module.exports = {
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux NIC DD'
+      appDevIdCfgName: 'Linux NIC DD',
+      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileReplace: '$1'
     },
     ddSLES11ISCSI: {
       name: 'SLES 11.x iSCSI Driver',
@@ -626,7 +636,13 @@ module.exports = {
       inputDesc: 'Emulex NIC (be2net) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux NIC DD'
+      appDevIdCfgName: 'Linux NIC DD',
+      ocmImageFileSearch: [
+        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmclibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
+      ],
+      ocmImageFileReplace: '$1'
     },
     ddSLES12ISCSI: {
       name: 'SLES 12.x iSCSI Driver',

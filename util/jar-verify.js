@@ -13,6 +13,7 @@
  *
  * Requres:
  *  - Node.js
+ *  - decompress
  *  - mkdirp
  *  - rimraf
  *  - xml2object
@@ -29,6 +30,7 @@ var fs          = require('fs');
 var path        = require('path');
 var util        = require('util');
 
+var Decompress  = require('decompress');
 var mkdirp      = require('mkdirp');
 var rmdir       = require('rimraf');
 var xml2object  = require('xml2object');
@@ -933,19 +935,161 @@ function verifyPayloadFile(jarContent) {
 
   if (payloadFile.match(/\.(?:tgz)|(?:tar\.gz)$/)) {
     // Payload is a tar.gz archive (Linux drivers) -- Extract it
+    new Decompress().src(payloadFile).dest(payloadExtract).use(Decompress.targz()).run(function(err) {
+      if(err) {
+        util.log("[ERROR] Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+      } else {
+        // Validate content of Linux driver package payload binary
+        if (config.pkgTypes[jarContent.jarType].osType !== 'linux') {
+          util.log("[ERROR] Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        } else {
+          // Validate presence of install script and verify it's not 0 bytes
+          try {
+            var installScriptStats = fs.statSync(payloadExtract + 'install.sh');
+          } catch (err) {
+            if (err.code === 'ENOENT') {
+              util.log("[ERROR] The file install.sh does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (err.code === 'EACCES') {
+              util.log("[ERROR] Permission denied trying to open install.sh in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else {
+              util.log("[ERROR] Unexpected error opening install.sh in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+            }
+          }
+          if (installScriptStats && installScriptStats.size < 1) {
+            util.log("[ERROR] The install.sh file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          }
 
-      // Validate content of Linux driver package payload binary
-      // TODO:
+          // Validate presence of ibm-driver-tool.pl and verify it's not 0 bytes
+          try {
+            var ddToolStats = fs.statSync(payloadExtract + 'tools/ibm-driver-tool.pl');
+          } catch (err) {
+            if (err.code === 'ENOENT') {
+              util.log("[ERROR] The file ibm-driver-tool.pl does not exist in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (err.code === 'EACCES') {
+              util.log("[ERROR] Permission denied trying to open ibm-driver-tool.pl in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else {
+              util.log("[ERROR] Unexpected error opening ibm-driver-tool.pl in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+            }
+          }
+          if (ddToolStats && ddToolStats.size < 1) {
+            util.log("[ERROR] The ibm-driver-tool.pl file is 0 bytes in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          }
 
-      // Verify no unexpected files are included in Linux driver package payload binary
-      // TODO:
+          var ddPkgVersion = jarData[jarContent.jarType].version;
 
+          // Validate content of driver RPM directory
+          // try {
+          //   var rpmDirFiles = fs.readdirSync(payloadContentDir + config.pkgTypes[jarContent.jarType].os + '/');
+          // } catch (err) {
+          //   if (err.code === 'ENOENT') {
+          //     util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + ") does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          //   } else if (err.code === 'EACCES') {
+          //     util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + ") in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          //   } else {
+          //     util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + ") in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+          //   }
+          // }
+          // if (rpmDirFiles && rpmDirFiles.length < 1) {
+          //   util.log("[ERROR] No driver RPM files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          // } else if (rpmDirFiles) {
+
+          // }
+
+          // Validate content of disks directory
+
+          // Validate content of SRPM directory
+
+
+          if (config.pkgTypes[jarContent.jarType].ocmImageFileSearch) {
+            // Build list of expected OCM architectures
+            var ocmArch = [];
+            workingBOM.osList.forEach(function(os) {
+              if (os.type === config.pkgTypes[jarContent.jarType].osType) {
+                if (ocmArch.indexOf(os.arch) < 0) ocmArch.push(os.arch);
+              }
+            });
+
+            // Validate content of apps directory
+            try {
+              var appsDirFiles = fs.readdirSync(payloadExtract + 'apps/');
+            } catch (err) {
+              if (err.code === 'ENOENT') {
+                util.log("[ERROR] The apps directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else if (err.code === 'EACCES') {
+                util.log("[ERROR] Permission denied trying to open apps directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                util.log("[ERROR] Unexpected error opening apps directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              }
+            }
+            if (appsDirFiles && appsDirFiles.length < 1) {
+              util.log("[ERROR] No files found in the apps directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (appsDirFiles) {
+              console.log(jarContent.jarType);
+              console.dir(appsDirFiles);
+            }
+          }
+
+
+          //   var ddFound = false;
+          //   installDirFiles.forEach(function(installFile) {
+          //     if (installFile.match(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch))) {
+          //       // Driver installer is present - Validate version and size
+          //       ddFound = true;
+          //       var ddFileVersion = installFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileReplace);
+          //       if (ddFileVersion && ddFileVersion !== ddPkgVersion) {
+          //         util.log("[ERROR] Driver installer file name (" + installFile + ") in Installer directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+          //       } else {
+          //         var ddFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
+          //         if (ddFileStats.size < 1) {
+          //           util.log("[ERROR] Driver installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          //         }
+          //       }
+
+          //     }
+
+          //     if (config.pkgTypes[jarContent.jarType].ocmImageFileSearch) {
+          //       var installMatch = installFile.match(RegExp(config.pkgTypes[jarContent.jarType].ocmImageFileSearch));
+          //       if (installMatch !== null) {
+          //         // OCM installer is present - Validate architecture and size
+          //         var installArch = installMatch[1];
+          //         var archIndex = ocmArch.indexOf(installArch);
+          //         if (archIndex < 0) {
+          //           util.log("[ERROR] OCM installer found for unexpected architecture (" + installArch + ") in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+          //         } else {
+          //           ocmArch.splice(archIndex, 1);
+          //           var ocmFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
+          //           if (ocmFileStats.size < 1) {
+          //             util.log("[ERROR] OCM installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          //           }
+          //         }
+          //       }
+          //     }
+          //   });
+
+          //   // Display error if driver installer was not found
+          //   if (! ddFound) {
+          //     util.log("[ERROR] Driver installer file missing from Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          //   }
+
+          //   // Display error if OCM installer was expected but not found
+          //   ocmArch.forEach(function(arch) {
+          //     util.log("[ERROR] OCM installer for architecture (" + arch + ") missing from Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          //   });
+          // }
+        }
+
+
+        // Verify no unexpected files are included in Linux driver package payload binary
+        // TODO:
+
+      }
+    });
 
   } else if (payloadFile.match(/\.(?:exe)|(?:bin)$/)) {
     // Payload is a self-extracting zip archive (firmware & Windows drivers) -- Extract it
-    exec('unzip \"' + payloadFile + '\" -d \"' + payloadExtract + '\"', function(error, stdout, stderr) {
+    exec('unzip \"' + payloadFile + '\" -d \"' + payloadExtract + '\"', function(err, stdout, stderr) {
       if (stderr !== null && stderr.search('extra bytes at beginning or within zipfile') < 0) {
-        util.log("[ERROR] Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + stderr);
+        util.log("[ERROR] Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + stderr + "\n");
       } else {
         // Build list of supported adapters based on BOM
         var bomAdapterList = [];
@@ -965,7 +1109,7 @@ function verifyPayloadFile(jarContent) {
                 } else if (err.code === 'EACCES') {
                   util.log("[ERROR] Permission denied trying to open fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                 } else {
-                  util.log("[ERROR] Unexpected error opening fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+                  util.log("[ERROR] Unexpected error opening fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
                 }
               } else {
                 // Build list of expected device types based on BOM and configuration file
@@ -1094,7 +1238,7 @@ function verifyPayloadFile(jarContent) {
                 } else if (err.code === 'EACCES') {
                   util.log("[ERROR] Permission denied trying to open '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                 } else {
-                  util.log("[ERROR] Unexpected error opening '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+                  util.log("[ERROR] Unexpected error opening '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
                 }
               }
               if (flashDirFiles) {
@@ -1148,7 +1292,7 @@ function verifyPayloadFile(jarContent) {
             } else if (err.code === 'EACCES') {
               util.log("[ERROR] Permission denied trying to open payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             } else {
-              util.log("[ERROR] Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+              util.log("[ERROR] Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
             }
           });
           var payloadXmlFile = [];
@@ -1228,7 +1372,7 @@ function verifyPayloadFile(jarContent) {
             } else if (err.code === 'EACCES') {
               util.log("[ERROR] Permission denied trying to open firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             } else {
-              util.log("[ERROR] Unexpected error opening firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+              util.log("[ERROR] Unexpected error opening firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
             }
           }
           if (fwDirFiles && fwDirFiles.length < 1) {
@@ -1289,7 +1433,7 @@ function verifyPayloadFile(jarContent) {
               } else if (err.code === 'EACCES') {
                 util.log("[ERROR] Permission denied trying to open boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
               } else {
-                util.log("[ERROR] Unexpected error opening boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+                util.log("[ERROR] Unexpected error opening boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
               }
             }
             if (bootDirFiles && bootDirFiles.length < 1) {
@@ -1349,7 +1493,7 @@ function verifyPayloadFile(jarContent) {
           if (config.pkgTypes[jarContent.jarType].osType !== 'windows') {
             util.log("[ERROR] Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
           } else {
-            // Validate presence of Update script and verify it's not 0 bytes
+            // Validate presence of install script and verify it's not 0 bytes
             try {
               var installScriptStats = fs.statSync(payloadContentDir + 'Install.cmd');
             } catch (err) {
@@ -1361,7 +1505,7 @@ function verifyPayloadFile(jarContent) {
                 util.log("[ERROR] Unexpected error opening Install.cmd in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
               }
             }
-            if (updateScriptStats && updateScriptStats.size < 1) {
+            if (installScriptStats && installScriptStats.size < 1) {
               util.log("[ERROR] The Install.cmd file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             }
 
@@ -1374,7 +1518,7 @@ function verifyPayloadFile(jarContent) {
               } else if (err.code === 'EACCES') {
                 util.log("[ERROR] Permission denied trying to open Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
               } else {
-                util.log("[ERROR] Unexpected error opening Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err);
+                util.log("[ERROR] Unexpected error opening Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
               }
             }
             if (installDirFiles && installDirFiles.length < 1) {
@@ -1645,7 +1789,7 @@ for (jarType in jarFiles) {
 
   }, function(err) {
     if (err.code === 'EACCES') {
-      util.log("[ERROR] Permission denied trying to open JAR file: " + err.path);
+      util.log("[ERROR] Permission denied trying to open JAR file: " + err.path + "\n");
     } else if (err.code === 'NOINPUTFILE') {
       util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain an input XML file. No further verification will be performed with this JAR file.\n");
     } else if (err.code === 'NOCHANGEFILE') {
@@ -1657,7 +1801,7 @@ for (jarType in jarFiles) {
     } else if (err.code === 'NOBINFILE') {
       util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a payload file. No further verification will be performed with this JAR file.\n");
     } else {
-      util.log("[ERROR] Unexpected error:\n" + err);
+      util.log("[ERROR] Unexpected error:\n" + err + "\n");
     }
   }).catch(function(err) {
     console.dir(err);

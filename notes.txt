@@ -9,6 +9,7 @@
  - open bug to remove 'win32' directory from all Windows firmware packages
  - open bug to remove 'LPe1205-CIOv' from fwmatrix.txt in all Saturn firmware packages
 
+ - is ko_version.txt required in linux driver packages?
  - add list of expected files to config.pkgTypes?
 
 =====================================
