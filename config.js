@@ -447,7 +447,11 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
-      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileSearch: [
+        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
+      ],
       ocmImageFileReplace: '$1'
     },
     ddRHEL5ISCSI: {
@@ -485,7 +489,11 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
-      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileSearch: [
+        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
+      ],
       ocmImageFileReplace: '$1'
     },
     ddRHEL6ISCSI: {
@@ -523,7 +531,11 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
-      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileSearch: [
+        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
+      ],
       ocmImageFileReplace: '$1'
     },
     ddRHEL7ISCSI: {
@@ -561,7 +573,11 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
-      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileSearch: [
+        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
+      ],
       ocmImageFileReplace: '$1'
     },
     ddSLES10ISCSI: {
@@ -599,7 +615,11 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
-      ocmImageFileSearch: 'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+      ocmImageFileSearch: [
+        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
+        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
+      ],
       ocmImageFileReplace: '$1'
     },
     ddSLES11ISCSI: {
@@ -640,7 +660,7 @@ module.exports = {
       ocmImageFileSearch: [
         'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmclibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
+        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
       ocmImageFileReplace: '$1'
     },
