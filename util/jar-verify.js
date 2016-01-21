@@ -943,6 +943,14 @@ function verifyPayloadFile(jarContent) {
         if (config.pkgTypes[jarContent.jarType].osType !== 'linux') {
           util.log("[ERROR] Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
         } else {
+          // Build list of expected architectures
+          var pkgArch = [];
+          workingBOM.osList.forEach(function(os) {
+            if (os.ddName === config.pkgTypes[jarContent.jarType].os) {
+              if (pkgArch.indexOf(os.arch) < 0) pkgArch.push(os.arch);
+            }
+          });
+
           // Validate presence of install script and verify it's not 0 bytes
           try {
             var installScriptStats = fs.statSync(payloadExtract + 'install.sh');
@@ -979,6 +987,7 @@ function verifyPayloadFile(jarContent) {
 
           // Validate content of driver RPM directory
           // TODO:
+          var ddArch = pkgArch.slice(0);
           // try {
           //   var rpmDirFiles = fs.readdirSync(payloadContentDir + config.pkgTypes[jarContent.jarType].os + '/');
           // } catch (err) {
@@ -996,25 +1005,34 @@ function verifyPayloadFile(jarContent) {
 
           // }
 
-          // Validate content of disks directory
-          // TODO:
-
           // Validate content of SRPM directory
           // TODO:
 
+          // Validate content of disks directory
+          var dudArch = pkgArch.slice(0);
+          try {
+            var disksDirFiles = fs.readdirSync(payloadExtract + 'disks/');
+          } catch (err) {
+            if (err.code === 'ENOENT') {
+              util.log("[ERROR] The disks directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (err.code === 'EACCES') {
+              util.log("[ERROR] Permission denied trying to open disks directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else {
+              util.log("[ERROR] Unexpected error opening disks directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+            }
+          }
+          if (disksDirFiles && disksDirFiles.length < 1) {
+            util.log("[ERROR] No files found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          } else if (disksDirFiles) {
+            // Verify the correct DUD images are present
+            // TODO:
+
+          }
 
           if (config.pkgTypes[jarContent.jarType].ocmImageFileSearch) {
-            // Build list of expected OCM architectures
-            var ocmArch = [];
-            var ocmDirName = null;
-            workingBOM.osList.forEach(function(os) {
-              if (os.ddName === config.pkgTypes[jarContent.jarType].os) {
-                if (ocmArch.indexOf(os.arch) < 0) ocmArch.push(os.arch);
-                ocmDirName = os.name.replace(' ', '-').toLowerCase() + '/';
-              }
-            });
-
             // Validate content of apps directory
+            var ocmArch = pkgArch.slice(0);
+            var ocmDirName = config.pkgTypes[jarContent.jarType].os.toLowerCase().replace(/([a-z]+)([0-9])/, '$1-$2') + '/';
             try {
               var appsDirFiles = fs.readdirSync(payloadExtract + 'apps/');
             } catch (err) {
@@ -1029,8 +1047,6 @@ function verifyPayloadFile(jarContent) {
             if (appsDirFiles && appsDirFiles.length < 1) {
               util.log("[ERROR] No files found in the apps directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             } else if (appsDirFiles) {
-              console.log(jarContent.jarType);
-
               // Verify elx_install.sh and uninstall.sh are included and not 0 bytes
               ['elx_install.sh', 'uninstall.sh'].forEach(function(installFile) {
                 if (appsDirFiles.indexOf(installFile) < 0) {
@@ -1044,11 +1060,14 @@ function verifyPayloadFile(jarContent) {
               });
 
               // Verify the correct OCM binary RPMs are included
+              var ocmArchAll = [];
               for (var i = 0; i < ocmArch.length; i++) {
                 if (ocmArch[i] === 'x86') {
                   var ocmDir = 'i386/' + ocmDirName;
+                  ocmArchAll.push('i386');
                 } else if (ocmArch[i] === 'x64') {
                   var ocmDir = 'x86_64/' + ocmDirName;
+                  ocmArchAll.push('x86_64');
                 }
                 try {
                   var ocmDirFiles = fs.readdirSync(payloadExtract + 'apps/' + ocmDir);
@@ -1066,13 +1085,16 @@ function verifyPayloadFile(jarContent) {
                     util.log("[ERROR] No files found in 'apps/" + ocmDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                   } else {
                     var ocmExists = true;
+                    var ocmArchFound = [];
                     config.pkgTypes[jarContent.jarType].ocmImageFileSearch.forEach(function(ocmSearch) {
                       var ocmFileExists = false;
                       ocmDirFiles.forEach(function(ocmFile) {
                         var ocmMatch = ocmFile.match(RegExp(ocmSearch));
                         if (ocmMatch !== null) {
+                          var ocmFileArch = ocmFile.replace(RegExp(ocmSearch), config.pkgTypes[jarContent.jarType].ocmImageFileArch);
+                          if (ocmArchFound.indexOf(ocmFileArch) < 0) ocmArchFound.push(ocmFileArch);
                           // Verify file is of the correct architecture
-                          if (ocmMatch[3] === ocmDir.split('/')[0]) {
+                          if (ocmFileArch === ocmDir.split('/')[0]) {
                             var ocmFileStats = fs.statSync(payloadExtract + 'apps/' + ocmDir + ocmFile);
                             if (ocmFileStats.size < 1) {
                               util.log("[ERROR] OCM installer file (" + ocmDir + ocmFile + ") is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
@@ -1101,8 +1123,11 @@ function verifyPayloadFile(jarContent) {
               });
 
               // Display error if OCM installer for unexpected architecture was found
-              // TODO:
-
+              ocmArchFound.forEach(function(arch) {
+                if (ocmArchAll.indexOf(arch) < 0) {
+                  util.log("[ERROR] OCM installer found for unexpected architecture (" + arch + ") in apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                }
+              });
             }
           }
         }
@@ -1127,7 +1152,6 @@ function verifyPayloadFile(jarContent) {
 
         if (config.pkgTypes[jarContent.jarType].type === 'fw') {
           // Validate content of firmware package payload binary
-
           if (config.pkgTypes[jarContent.jarType].osType === 'windows' || config.pkgTypes[jarContent.jarType].osType === 'linux') {
             // Validate presence and content of fwmatrix.txt
             fs.readFile(payloadContentDir + 'fwmatrix.txt', 'utf8', function(err, data) {

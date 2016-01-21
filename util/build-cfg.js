@@ -372,7 +372,7 @@ if (! workingBOM.osList) {
     workingBOM.adapterList.forEach(function(adapter) {
       if (adapter.asic === asic) {
         if (! fwData[asic][cASIC.fwCfgNames[adapter.type]]) {
-          fwData[asic][cASIC.fwCfgNames[adapter.type]] = {type: 'fw', names: cASIC.fwMatrixNames[adapter.type].concat(), boards: adapter.v2.concat()}
+          fwData[asic][cASIC.fwCfgNames[adapter.type]] = {type: 'fw', names: cASIC.fwMatrixNames[adapter.type].slice(0), boards: adapter.v2.slice(0)}
         } else {
           cASIC.fwMatrixNames[adapter.type].forEach(function(name) {
             if (fwData[asic][cASIC.fwCfgNames[adapter.type]].names.indexOf(name) < 0) fwData[asic][cASIC.fwCfgNames[adapter.type]].names.push(name);
@@ -383,7 +383,7 @@ if (! workingBOM.osList) {
         }
         if (cASIC.bootCfgNames) {
           if (! fwData[asic][cASIC.bootCfgNames[adapter.type]]) {
-            fwData[asic][cASIC.bootCfgNames[adapter.type]] = {type: 'boot', names: cASIC.fwMatrixNames[adapter.type].concat(), boards: adapter.v2.concat()}
+            fwData[asic][cASIC.bootCfgNames[adapter.type]] = {type: 'boot', names: cASIC.fwMatrixNames[adapter.type].slice(0), boards: adapter.v2.slice(0)}
           } else {
             cASIC.fwMatrixNames[adapter.type].forEach(function(name) {
               if (fwData[asic][cASIC.bootCfgNames[adapter.type]].names.indexOf(name) < 0) fwData[asic][cASIC.bootCfgNames[adapter.type]].names.push(name);
@@ -394,7 +394,7 @@ if (! workingBOM.osList) {
           }
         }
         if (! fwData[asic].mtmList) {
-          fwData[asic].mtmList = adapter.mtm.concat();
+          fwData[asic].mtmList = adapter.mtm.slice(0);
         } else {
           adapter.mtm.forEach(function(mtm) {
             if (fwData[asic].mtmList.indexOf(mtm) < 0) fwData[asic].mtmList.push(mtm);

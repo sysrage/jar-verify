@@ -447,12 +447,17 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
+      dudImageFileSearch: 'elx\-be2net_([0-9\.]+)\-rhel5u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
       ocmImageFileSearch: [
         'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
-      ocmImageFileReplace: '$1'
+      ocmImageFileVersion: '$1',
+      ocmImageFileArch: '$3'
     },
     ddRHEL5ISCSI: {
       name: 'RHEL 5.x iSCSI Driver',
@@ -464,7 +469,11 @@ module.exports = {
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux iSCSI DD'
+      appDevIdCfgName: 'Linux iSCSI DD',
+      dudImageFileSearch: 'elx\-be2iscsi_([0-9\.]+)\-rhel5u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddRHEL5FC: {
       name: 'RHEL 5.x FC/FCoE Driver',
@@ -476,7 +485,11 @@ module.exports = {
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
-      appDevIdCfgName: 'Linux FC/FCoE DD'
+      appDevIdCfgName: 'Linux FC/FCoE DD',
+      dudImageFileSearch: 'elx\-lpfc_([0-9\.]+)\-rhel5u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddRHEL6NIC: {
       name: 'RHEL 6.x NIC Driver',
@@ -489,12 +502,17 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
+      dudImageFileSearch: 'elx\-be2net_([0-9\.]+)\-rhel6u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
       ocmImageFileSearch: [
         'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
-      ocmImageFileReplace: '$1'
+      ocmImageFileVersion: '$1',
+      ocmImageFileArch: '$3'
     },
     ddRHEL6ISCSI: {
       name: 'RHEL 6.x iSCSI Driver',
@@ -506,7 +524,11 @@ module.exports = {
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux iSCSI DD'
+      appDevIdCfgName: 'Linux iSCSI DD',
+      dudImageFileSearch: 'elx\-be2iscsi_([0-9\.]+)\-rhel6u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddRHEL6FC: {
       name: 'RHEL 6.x FC/FCoE Driver',
@@ -518,7 +540,11 @@ module.exports = {
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
-      appDevIdCfgName: 'Linux FC/FCoE DD'
+      appDevIdCfgName: 'Linux FC/FCoE DD',
+      dudImageFileSearch: 'elx\-lpfc_([0-9\.]+)\-rhel6u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddRHEL7NIC: {
       name: 'RHEL 7.x NIC Driver',
@@ -531,12 +557,17 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
+      dudImageFileSearch: 'elx\-be2net_([0-9\.]+)\-rhel7u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
       ocmImageFileSearch: [
         'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
-      ocmImageFileReplace: '$1'
+      ocmImageFileVersion: '$1',
+      ocmImageFileArch: '$3'
     },
     ddRHEL7ISCSI: {
       name: 'RHEL 7.x iSCSI Driver',
@@ -548,7 +579,11 @@ module.exports = {
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux iSCSI DD'
+      appDevIdCfgName: 'Linux iSCSI DD',
+      dudImageFileSearch: 'elx\-be2iscsi_([0-9\.]+)\-rhel7u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddRHEL7FC: {
       name: 'RHEL 7.x FC/FCoE Driver',
@@ -560,7 +595,11 @@ module.exports = {
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
-      appDevIdCfgName: 'Linux FC/FCoE DD'
+      appDevIdCfgName: 'Linux FC/FCoE DD',
+      dudImageFileSearch: 'elx\-lpfc_([0-9\.]+)\-rhel7u([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddSLES10NIC: {
       name: 'SLES 10.x NIC Driver',
@@ -573,12 +612,17 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
+      dudImageFileSearch: 'elx\-be2net_([0-9\.]+)\-sles10sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
       ocmImageFileSearch: [
         'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
-      ocmImageFileReplace: '$1'
+      ocmImageFileVersion: '$1',
+      ocmImageFileArch: '$3'
     },
     ddSLES10ISCSI: {
       name: 'SLES 10.x iSCSI Driver',
@@ -590,7 +634,11 @@ module.exports = {
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux iSCSI DD'
+      appDevIdCfgName: 'Linux iSCSI DD',
+      dudImageFileSearch: 'elx\-be2iscsi_([0-9\.]+)\-sles10sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddSLES10FC: {
       name: 'SLES 10.x FC/FCoE Driver',
@@ -602,7 +650,11 @@ module.exports = {
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
-      appDevIdCfgName: 'Linux FC/FCoE DD'
+      appDevIdCfgName: 'Linux FC/FCoE DD',
+      dudImageFileSearch: 'elx\-lpfc_([0-9\.]+)\-sles10sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddSLES11NIC: {
       name: 'SLES 11.x NIC Driver',
@@ -615,12 +667,17 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
+      dudImageFileSearch: 'elx\-be2net_([0-9\.]+)\-sles11sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
       ocmImageFileSearch: [
         'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
-      ocmImageFileReplace: '$1'
+      ocmImageFileVersion: '$1',
+      ocmImageFileArch: '$3'
     },
     ddSLES11ISCSI: {
       name: 'SLES 11.x iSCSI Driver',
@@ -632,7 +689,11 @@ module.exports = {
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux iSCSI DD'
+      appDevIdCfgName: 'Linux iSCSI DD',
+      dudImageFileSearch: 'elx\-be2iscsi_([0-9\.]+)\-sles11sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddSLES11FC: {
       name: 'SLES 11.x FC/FCoE Driver',
@@ -644,7 +705,11 @@ module.exports = {
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
-      appDevIdCfgName: 'Linux FC/FCoE DD'
+      appDevIdCfgName: 'Linux FC/FCoE DD',
+      dudImageFileSearch: 'elx\-lpfc_([0-9\.]+)\-sles11sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddSLES12NIC: {
       name: 'SLES 12.x NIC Driver',
@@ -657,12 +722,17 @@ module.exports = {
       ddFileName: ['be2net.ko'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Linux NIC DD',
+      dudImageFileSearch: 'elx\-be2net_([0-9\.]+)\-sles12sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
       ocmImageFileSearch: [
         'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
-      ocmImageFileReplace: '$1'
+      ocmImageFileVersion: '$1',
+      ocmImageFileArch: '$3'
     },
     ddSLES12ISCSI: {
       name: 'SLES 12.x iSCSI Driver',
@@ -674,7 +744,11 @@ module.exports = {
       inputDesc: 'Emulex iSCSI (be2iscsi) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['be2iscsi.ko'],
       ddVerFormat: '##VERSION##',
-      appDevIdCfgName: 'Linux iSCSI DD'
+      appDevIdCfgName: 'Linux iSCSI DD',
+      dudImageFileSearch: 'elx\-be2iscsi_([0-9\.]+)\-sles12sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     ddSLES12FC: {
       name: 'SLES 12.x FC/FCoE Driver',
@@ -686,7 +760,11 @@ module.exports = {
       inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
-      appDevIdCfgName: 'Linux FC/FCoE DD'
+      appDevIdCfgName: 'Linux FC/FCoE DD',
+      dudImageFileSearch: 'elx\-lpfc_([0-9\.]+)\-sles12sp([0-9])\-(i386|x86_64)\-[0-9]+\.iso',
+      dudImageFileVersion: '$1',
+      dudImageFileSP: '$2',
+      dudImageFileArch: '$3',
     },
     fwBE3Linux: {
       name: 'Linux BE Firmware',
