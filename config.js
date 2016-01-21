@@ -87,8 +87,8 @@ module.exports = {
       },
       fwMatrixNames: {
         rack: ['LPe12000', 'LPe12002'],
-        flex: ['LPe1205', 'LPe1205a'],
-        bladecenter: ['LPe1205-CIOv'],
+        flex: ['LPe1205'],
+        bladecenter: ['LPe1205'],
       }
     },
     {
