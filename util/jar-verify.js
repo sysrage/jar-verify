@@ -946,11 +946,25 @@ function verifyPayloadFile(jarContent) {
         if (config.pkgTypes[jarContent.jarType].osType !== 'linux') {
           util.log("[ERROR] Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
         } else {
-          // Build list of expected architectures
+          // Build list of expected operating systems and architectures
           var pkgArch = [];
+          var pkgOS = [];
           workingBOM.osList.forEach(function(os) {
             if (os.ddName === config.pkgTypes[jarContent.jarType].os) {
               if (pkgArch.indexOf(os.arch) < 0) pkgArch.push(os.arch);
+              for (var i = 0; i < config.osMappings.length; i++) {
+                if (config.osMappings[i].ddName === os.ddName) {
+                  var osKernel = config.osMappings[i].kernel[os.subVersion];
+                  break;
+                }
+              }
+              pkgOS.push({
+                name: os.ddName,
+                subVersion: os.subVersion,
+                kernel: osKernel,
+                arch: os.arch,
+                extras: os.extras
+              });
             }
           });
 
@@ -1012,7 +1026,6 @@ function verifyPayloadFile(jarContent) {
           // TODO:
 
           // Validate content of disks directory
-          var dudArch = pkgArch.slice(0);
           try {
             var disksDirFiles = fs.readdirSync(payloadExtract + 'disks/');
           } catch (err) {
@@ -1027,9 +1040,49 @@ function verifyPayloadFile(jarContent) {
           if (disksDirFiles && disksDirFiles.length < 1) {
             util.log("[ERROR] No files found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
           } else if (disksDirFiles) {
-            // Verify the correct DUD images are present
-            // TODO:
+            // Build list of expected DUD images
+            var expectedDUD = [];
+            pkgOS.forEach(function(os) {
+              var osExists = false;
+              for (var i = 0; i < expectedDUD.length; i++) {
+                if (expectedDUD[i].subVersion === os.subVersion && expectedDUD[i].arch === os.arch) {
+                  osExists = true;
+                  break;
+                }
+              }
+              if (! osExists) expectedDUD.push({ subVersion: os.subVersion, arch: os.arch});
+            });
+            expectedDUD.forEach(function(dud) {
+              if (dud.arch === 'x86') dud.arch = 'i386';
+              if (dud.arch === 'x64') dud.arch = 'x86_64';
+            });
 
+            // Verify the correct DUD images are present
+            disksDirFiles.forEach(function(dudFile) {
+              if (dudFile.search(RegExp(config.pkgTypes[jarContent.jarType].dudImageFileSearch)) < 0) {
+                util.log("[ERROR] Unexpected file (" + dudFile + ") found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                var dudVersion = dudFile.replace(RegExp(config.pkgTypes[jarContent.jarType].dudImageFileSearch), config.pkgTypes[jarContent.jarType].dudImageFileVersion);
+                var dudSP = dudFile.replace(RegExp(config.pkgTypes[jarContent.jarType].dudImageFileSearch), config.pkgTypes[jarContent.jarType].dudImageFileSP);
+                var dudArch = dudFile.replace(RegExp(config.pkgTypes[jarContent.jarType].dudImageFileSearch), config.pkgTypes[jarContent.jarType].dudImageFileArch);
+                var matchingDUD = false;
+                for (var i = 0; i < expectedDUD.length; i++) {
+                  if (expectedDUD[i].subVersion === dudSP && expectedDUD[i].arch === dudArch && ddPkgVersion === dudVersion) {
+                    matchingDUD = true;
+                    expectedDUD.splice(i, 1);
+                    break;
+                  }
+                }
+                if (! matchingDUD) {
+                  util.log("[ERROR] Unexpected file (" + dudFile + ") found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                }
+              }
+            });
+
+            // Display error if DUD image was expected but not found
+            expectedDUD.forEach(function(dud) {
+              util.log("[ERROR] DUD image for service pack " + dud.subVersion + " and architecture '" + dud.arch + "' missing from the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            });
           }
 
           if (config.pkgTypes[jarContent.jarType].ocmImageFileSearch) {

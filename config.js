@@ -122,7 +122,12 @@ module.exports = {
       version: '5',
       arch: ['x86', 'x64'],
       type: 'linux',
-      ddName: 'rhel5'
+      ddName: 'rhel5',
+      kernel: {
+        9: '2.6.18-348',
+        10: '2.6.18-371',
+        11: '2.6.18-398'
+      }
     },
     {
       name: 'RHEL 6',
@@ -131,7 +136,12 @@ module.exports = {
       version: '6',
       arch: ['x86', 'x64'],
       type: 'linux',
-      ddName: 'rhel6'
+      ddName: 'rhel6',
+      kernel: {
+        5: '2.6.32-431',
+        6: '2.6.32-504',
+        7: '2.6.32-573'
+      }
     },
     {
       name: 'RHEL 7',
@@ -140,7 +150,12 @@ module.exports = {
       version: '7',
       arch: ['x64'],
       type: 'linux',
-      ddName: 'rhel7'
+      ddName: 'rhel7',
+      kernel: {
+        0: '3.10.0-123',
+        1: '3.10.0-229',
+        2: '3.10.0-327'
+      }
     },
     {
       name: 'SLES 10',
@@ -149,7 +164,12 @@ module.exports = {
       version: '10',
       arch: ['x86', 'x64'],
       type: 'linux',
-      ddName: 'sles10'
+      ddName: 'sles10',
+      kernel: {
+        2: '2.6.16.60_0.21',
+        3: '2.6.16.60_0.54',
+        4: '2.6.16.60_0.85'
+      }
     },
     {
       name: 'SLES 11',
@@ -158,7 +178,12 @@ module.exports = {
       version: '11',
       arch: ['x86', 'x64'],
       type: 'linux',
-      ddName: 'sles11'
+      ddName: 'sles11',
+      kernel: {
+        2: '3.0.13_0.27',
+        3: '3.0.76_0.11',
+        4: '3.0.101_63'
+      }
     },
     {
       name: 'SLES 12',
@@ -167,7 +192,11 @@ module.exports = {
       version: '12',
       arch: ['x64'],
       type: 'linux',
-      ddName: 'sles12'
+      ddName: 'sles12',
+      kernel: {
+        0: '3.12.28_4',
+        1: '3.12.49_11'
+      }
     },
     {
       name: 'Windows 2008',
