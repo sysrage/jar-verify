@@ -911,18 +911,21 @@ function verifyInputXML(jarContent) {
 function verifyPackageXML(jarContent) {
   // console.log(jarContent.xmlFileName);
   // console.log(JSON.stringify(jarContent.xmlFile, null, 2));
+  // TODO:
 
 }
 
 function verifyReadmeFile(jarContent) {
   // console.log(jarContent.readmeFileName);
   // console.log(jarContent.readmeFile);
+  // TODO:
 
 }
 
 function verifyChangeFile(jarContent) {
   // console.log(jarContent.changeFileName);
   // console.log(jarContent.changeFile);
+  // TODO:
 
 }
 
@@ -958,13 +961,15 @@ function verifyPayloadFile(jarContent) {
                   break;
                 }
               }
-              pkgOS.push({
-                name: os.ddName,
-                subVersion: os.subVersion,
-                kernel: osKernel,
-                arch: os.arch,
-                extras: os.extras
-              });
+              if (os.extras !== 'kvm') {
+                pkgOS.push({
+                  name: os.ddName,
+                  subVersion: os.subVersion,
+                  kernel: osKernel,
+                  arch: os.arch,
+                  extras: os.extras
+                });
+              }
             }
           });
 
@@ -1003,24 +1008,187 @@ function verifyPayloadFile(jarContent) {
           var ddPkgVersion = jarData[jarContent.jarType].version;
 
           // Validate content of driver RPM directory
-          // TODO:
-          var ddArch = pkgArch.slice(0);
-          // try {
-          //   var rpmDirFiles = fs.readdirSync(payloadContentDir + config.pkgTypes[jarContent.jarType].os + '/');
-          // } catch (err) {
-          //   if (err.code === 'ENOENT') {
-          //     util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + ") does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
-          //   } else if (err.code === 'EACCES') {
-          //     util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + ") in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
-          //   } else {
-          //     util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + ") in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
-          //   }
-          // }
-          // if (rpmDirFiles && rpmDirFiles.length < 1) {
-          //   util.log("[ERROR] No driver RPM files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
-          // } else if (rpmDirFiles) {
-
-          // }
+          var ddKernels = [];
+          var ddArches = [];
+          pkgOS.forEach(function(os) {
+            if (ddKernels.indexOf(os.kernel) < 0) ddKernels.push(os.kernel);
+            if (ddArches.indexOf(os.arch) < 0) ddArches.push(os.arch);
+          });
+          if (config.pkgTypes[jarContent.jarType].os.search('rhel') > -1) {
+            // Validate content of RHEL drivers
+            try {
+              var rpmDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/');
+            } catch (err) {
+              if (err.code === 'ENOENT') {
+                util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else if (err.code === 'EACCES') {
+                util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              }
+            }
+            if (rpmDirFiles && rpmDirFiles.length < 1) {
+              util.log("[ERROR] No driver RPM files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (rpmDirFiles) {
+              ddKernels.forEach(function(kernel) {
+                if (rpmDirFiles.indexOf(kernel) < 0) {
+                  pkgOS.forEach(function(os) {
+                    if (os.kernel === kernel) {
+                      util.log("[ERROR] Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    }
+                  });
+                } else {
+                  try {
+                    var kernelDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + "/");
+                  } catch (err) {
+                    if (err.code === 'ENOENT') {
+                      util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    } else if (err.code === 'EACCES') {
+                      util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    } else {
+                      util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                    }
+                  }
+                  if (kernelDirFiles && kernelDirFiles.length < 1) {
+                    pkgOS.forEach(function(os) {
+                      if (os.kernel === kernel) {
+                        util.log("[ERROR] Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      }
+                    });
+                  } else if (kernelDirFiles) {
+                    var matchingFiles = [];
+                    for (var i = 0; i < pkgOS.length; i++) {
+                      if (pkgOS[i].kernel === kernel) {
+                        if (pkgOS[i].arch === 'x86') var osArch = 'i686';
+                        if (pkgOS[i].arch === 'x64') var osArch = 'x86_64';
+                        var ddFound = null;
+                        kernelDirFiles.forEach(function(ddFile) {
+                          if (ddFile.search(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch)) > -1) {
+                            var ddVersion = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileVersion);
+                            var ddSP = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileSP);
+                            var ddArch = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileArch);
+                            if (ddVersion === ddPkgVersion && ddSP === pkgOS[i].subVersion && ddArch === osArch) ddFound = ddFile;
+                          }
+                        });
+                        if (! ddFound) {
+                          util.log("[ERROR] Missing driver RPM for " + pkgOS[i].name.toUpperCase() + "." + pkgOS[i].subVersion + " " + pkgOS[i].arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        } else {
+                          matchingFiles.push(ddFound);
+                          // Verify RPM is not 0 bytes
+                          var ddFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + "/" + ddFound);
+                          if (ddFileStats.size < 1) {
+                            util.log("[ERROR] Driver RPM (" + ddFound + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          }
+                        }
+                      }
+                    }
+                    // Display error for any unexpected driver RPMs
+                    kernelDirFiles.forEach(function(ddFile) {
+                      if (matchingFiles.indexOf(ddFile) < 0) {
+                        util.log("[ERROR] Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      }
+                    });
+                  }
+                }
+              });
+            }
+          } else if (config.pkgTypes[jarContent.jarType].os.search('sles') > -1) {
+            // Validate content of SLES drivers
+            try {
+              var rpmDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/');
+            } catch (err) {
+              if (err.code === 'ENOENT') {
+                util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else if (err.code === 'EACCES') {
+                util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              }
+            }
+            if (rpmDirFiles && rpmDirFiles.length < 1) {
+              util.log("[ERROR] No driver RPM files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (rpmDirFiles) {
+              ddArches.forEach(function(arch) {
+                if (arch === 'x86') var archDir = 'i386';
+                if (arch === 'x64') var archDir = 'x86_64';
+                if (rpmDirFiles.indexOf(archDir) < 0) {
+                  pkgOS.forEach(function(os) {
+                    if (os.arch === arch) {
+                      util.log("[ERROR] Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    }
+                  });
+                } else {
+                  var osVer = config.pkgTypes[jarContent.jarType].os.replace('sles', '');
+                  try {
+                    var archDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/' + archDir + '/update/SUSE-SLES/' + osVer + '/rpm/');
+                  } catch (err) {
+                    if (err.code === 'ENOENT') {
+                      util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    } else if (err.code === 'EACCES') {
+                      util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    } else {
+                      util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                    }
+                  }
+                  if (archDirFiles && archDirFiles.length < 1) {
+                    pkgOS.forEach(function(os) {
+                      if (os.arch === arch) {
+                        util.log("[ERROR] Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      }
+                    });
+                  } else if (archDirFiles) {
+                    var matchingFiles = [];
+                    for (var i = 0; i < pkgOS.length; i++) {
+                      if (pkgOS[i].arch === arch) {
+                        if (pkgOS[i].arch === 'x86') var osArch = 'i586';
+                        if (pkgOS[i].arch === 'x64') var osArch = 'x86_64';
+                        if (pkgOS[i].extras === 'xen') {
+                          var ddFileTypes = ['kmp-xen'];
+                        } else if (pkgOS[i].arch === 'x86') {
+                          var ddFileTypes = ['kmp-default', 'kmp-pae'];
+                        } else if (pkgOS[i].arch === 'x64') {
+                          var ddFileTypes = ['kmp-default'];
+                        }
+                        var ddFound = [];
+                        archDirFiles.forEach(function(ddFile) {
+                          if (ddFile.search(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch)) > -1) {
+                            var ddType = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileType);
+                            var ddVersion = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileVersion);
+                            var ddKernel = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileKernel);
+                            var ddSP = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileSP);
+                            var ddArch = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileArch);
+                            var ddTypeIndex = ddFileTypes.indexOf(ddType);
+                            if (ddTypeIndex > -1 && ddVersion === ddPkgVersion && ddSP === pkgOS[i].subVersion && ddArch === osArch) {
+                              ddFound.push(ddFile);
+                              ddFileTypes.splice(ddTypeIndex, 1);
+                            }
+                          }
+                        });
+                        ddFileTypes.forEach(function(type) {
+                          util.log("[ERROR] Missing driver RPM type '" + type + "' for " + pkgOS[i].name.toUpperCase() + "." + pkgOS[i].subVersion + " " + pkgOS[i].arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        });
+                        ddFound.forEach(function(ddName) {
+                          matchingFiles.push(ddName);
+                          // Verify RPM is not 0 bytes
+                          var ddFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/' + archDir + '/update/SUSE-SLES/' + osVer + '/rpm/' + ddName);
+                          if (ddFileStats.size < 1) {
+                            util.log("[ERROR] Driver RPM (" + ddName + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          }
+                        });
+                      }
+                    }
+                    // Display error for any unexpected driver RPMs
+                    archDirFiles.forEach(function(ddFile) {
+                      if (matchingFiles.indexOf(ddFile) < 0) {
+                        // TODO: Commented out to avoid errors for buggy jars -- This will be removed
+                        // util.log("[ERROR] Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      }
+                    });
+                  }
+                }
+              });
+            }
+          }
 
           // Validate content of SRPM directory
           // TODO:
