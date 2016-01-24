@@ -1191,7 +1191,55 @@ function verifyPayloadFile(jarContent) {
           }
 
           // Validate content of SRPM directory
-          // TODO:
+          try {
+            var srpmDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].srpmImageFileDir);
+          } catch (err) {
+            if (err.code === 'ENOENT') {
+              util.log("[ERROR] The SRPM directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else if (err.code === 'EACCES') {
+              util.log("[ERROR] Permission denied trying to open SRPM directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            } else {
+              util.log("[ERROR] Unexpected error opening SRPM directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+            }
+          }
+          if (srpmDirFiles && srpmDirFiles.length < 1) {
+            util.log("[ERROR] No files found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          } else if (srpmDirFiles) {
+            // Build list of expected SRPMs
+            var expectedSRPM = [];
+            pkgOS.forEach(function(os) {
+              if (expectedSRPM.indexOf(os.subVersion) < 0) expectedSRPM.push(os.subVersion);
+            });
+
+            // Verify all expected SRPMs are present
+            srpmDirFiles.forEach(function(srpmFile) {
+              if (srpmFile.search(RegExp(config.pkgTypes[jarContent.jarType].srpmImageFileSearch)) < 0) {
+                util.log("[ERROR] Unexpected file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                var srpmVersion = srpmFile.replace(RegExp(config.pkgTypes[jarContent.jarType].srpmImageFileSearch), config.pkgTypes[jarContent.jarType].srpmImageFileVersion);
+                var srpmSP = srpmFile.replace(RegExp(config.pkgTypes[jarContent.jarType].srpmImageFileSearch), config.pkgTypes[jarContent.jarType].srpmImageFileSP);
+                var srpmIndex = expectedSRPM.indexOf(srpmSP);
+
+                if (srpmIndex < 0) {
+                  util.log("[ERROR] Unexpected file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else if (srpmVersion !== ddPkgVersion) {
+                  util.log("[ERROR] Incorrect version for file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else {
+                  expectedSRPM.splice(srpmIndex, 1);
+                  // Verify SRPM file is not 0 bytes
+                  var srpmFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].srpmImageFileDir + srpmFile);
+                  if (srpmFileStats.size < 1) {
+                    util.log("[ERROR] SRPM file (" + srpmFile + ") is 0 bytes in the SRPM directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  }
+                }
+              }
+            });
+
+            // Display error if all expected SRPMs are not present
+            expectedSRPM.forEach(function(srpm) {
+              util.log("[ERROR] SRPM for " + config.pkgTypes[jarContent.jarType].os.toUpperCase() + "." + srpm + " missing from the SRPM directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            });
+          }
 
           // Validate content of disks directory
           try {
@@ -1243,6 +1291,12 @@ function verifyPayloadFile(jarContent) {
                 }
                 if (! matchingDUD) {
                   util.log("[ERROR] Unexpected file (" + dudFile + ") found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                } else {
+                  // Verify DUD file is not 0 bytes
+                  var dudFileStats = fs.statSync(payloadExtract + 'disks/' + dudFile);
+                  if (dudFileStats.size < 1) {
+                    util.log("[ERROR] DUD file (" + dudFile + ") is 0 bytes in the disks directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  }
                 }
               }
             });
