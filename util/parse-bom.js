@@ -482,7 +482,7 @@ var bomDump = {
   adapterList: adapterList,
   appDIDList: appDIDList
 };
-var bomFileJSON = releaseName + '-bom.json';
+var bomFileJSON = releaseName + '-BOM.json';
 
 // Back up old BOM for this release then save new BOM
 try {

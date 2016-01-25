@@ -8,10 +8,12 @@
  x open bug to get incorrect driverFiles classification corrected in all firmware packages ('13' instead of 'firmware')
  x open bug to remove 'win32' directory from all Windows firmware packages
  x open bug to remove 'LPe1205a' and 'LPe1205-CIOv' from fwmatrix.txt in all Saturn firmware packages
- - open bug to remove 32-bit Xen RPMs for all SLES11 driver packages
+ x open bug to remove 32-bit Xen RPMs from all SLES11 driver packages
 
  - is ko_version.txt required in linux driver packages?
  - add list of expected files to config.pkgTypes?
+
+ Architectures in [base] section: https://github.com/sysrage/jar-verify/commit/ac81fd063a400e6adb0709e7b0a5ca0b8a5027e1
 
 =====================================
 
