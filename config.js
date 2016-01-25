@@ -1,3 +1,5 @@
+var os = require('os'); // Not required and will break with older Node.js versions
+
 // Configuration file for jar-verify.
 module.exports = {
 
@@ -8,7 +10,7 @@ module.exports = {
   dataDir: __dirname + '/data/',
 
   // Base directory where JAR files should be located
-  jarDir: '/Users/sysrage/Downloads/jars/',
+  jarDir: os.homedir() + '/Downloads/jars/',
 
   // Regular Expression to match vendor string (matches elx or elx-lnvgy)
   vendor: 'elx(?:\-lnvgy)?',
