@@ -20,10 +20,10 @@ module.exports = {
   // entry (i.e. Lancer G6) must be listed first.
   asicTypes: [
     {
-      name: 'BE3',
+      name: 'BE',
       type: 'cna',
       agentlessCfgNames: {
-        13: 'BE3_AG-BOARDS'
+        13: 'BE_AG-BOARDS'
       },
       fwCfgNames: {
         rack: 'oc11',
@@ -959,39 +959,39 @@ module.exports = {
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
     },
-    fwBE3Linux: {
+    fwBELinux: {
       name: 'Linux BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_linux',
       type: 'fw',
       os: 'linux',
       osType: 'linux',
-      asic: 'BE3',
+      asic: 'BE',
       preVersion: 'oc11-',
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'BE FW',
       fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
       fwImageFileReplace: '$1'
     },
-    fwBE3VMware: {
+    fwBEVMware: {
       name: 'VMware BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_vmware',
       type: 'fw',
       os: 'vmware',
       osType: 'vmware',
-      asic: 'BE3',
+      asic: 'BE',
       preVersion: 'oc11-',
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'BE FW',
       fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
       fwImageFileReplace: '$1'
     },
-    fwBE3Windows: {
+    fwBEWindows: {
       name: 'Windows BE Firmware',
       regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_windows',
       type: 'fw',
       os: 'windows',
       osType: 'windows',
-      asic: 'BE3',
+      asic: 'BE',
       preVersion: 'oc11-',
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'BE FW',
