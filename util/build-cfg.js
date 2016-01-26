@@ -229,6 +229,7 @@ if (! workingBOM.osList) {
   util.log("[ERROR] No adapters found in BOM file.\n");
 } else {
   // Build entries for [BASE] section
+  var baseArchitectures = [];
   var baseLinux = {};
   var baseVmware = [];
   var baseWindows = [];
@@ -237,6 +238,7 @@ if (! workingBOM.osList) {
   var baseWinDrivers = [];
   var baseMTMs = [];
   workingBOM.osList.forEach(function(os) {
+    if (baseArchitectures.indexOf(os.arch) < 0) baseArchitectures.push(os.arch);
     if (os.type === 'linux') {
       os.pkgsdkName.forEach(function(sdkName) {
         if (! baseLinux[sdkName]) {
@@ -288,6 +290,15 @@ if (! workingBOM.osList) {
 
   // Format [BASE] data as expected for base.cfg file
   var baseDump = "[BASE]\nstaging = DESTDIR";
+
+  baseDump += "\narchitectures = ";
+  var first = true;
+  baseArchitectures.forEach(function(arch) {
+    if (! first) baseDump += ",";
+    first = false;
+    if (arch === 'x86') baseDump += 'i386';
+    if (arch === 'x64') baseDump += 'x86_64';
+  });
 
   baseDump += "\nlinux = ";
   var first = true;
