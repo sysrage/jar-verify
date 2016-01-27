@@ -449,8 +449,7 @@ function verifyInputXML(jarContent) {
                     util.log("[ERROR] Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                   } else {
                     if (! driverFileEntry.arch || uniqueEntries[driverFileEntry.os].indexOf(driverFileEntry.arch) > -1) {
-                      // TODO: commented out to avoid errors for buggy JARs -- this will be removed
-                      // util.log("[ERROR] Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      util.log("[ERROR] Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                     } else {
                       uniqueEntries[driverFileEntry.os].push(driverFileEntry.arch);
                     }
@@ -465,8 +464,7 @@ function verifyInputXML(jarContent) {
                 // Verify architecture is expected
                 if (driverFileEntry.arch) {
                   if (bomOSListUnique[driverFileEntry.os].indexOf(driverFileEntry.arch.replace('x32', 'x86')) < 0) {
-                    // TODO: commented out to avoid errors for buggy JARs -- this will be removed.
-                    // util.log("[ERROR] Unexpected architecture (" + driverFileEntry.arch + ") for " + driverFileEntry.os + " in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    util.log("[ERROR] Unexpected architecture (" + driverFileEntry.arch + ") for " + driverFileEntry.os + " in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                   }
                 }
 
@@ -653,8 +651,7 @@ function verifyInputXML(jarContent) {
 
         // Verify all expected operating systems were found
         for (var os in bomOSListUnique) {
-          // TODO: commented out to avoid errors for existing JARs -- this will be removed
-          // if (jarApplicableOSList.indexOf(os) < 0) util.log("[ERROR] Missing OS (" + os + ") in 'applicableOperatingSystems' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          if (jarApplicableOSList.indexOf(os) < 0) util.log("[ERROR] Missing OS (" + os + ") in 'applicableOperatingSystems' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
         }
       }
 
@@ -1467,8 +1464,7 @@ function verifyPayloadFile(jarContent) {
 
                       // Compare device type
                       if (bomDeviceNames.indexOf(fwMatrixDevice) < 0) {
-                        // TODO: Commented out to avoid errors for buggy jars -- This will be removed
-                        // util.log("[ERROR] Unexpected device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        util.log("[ERROR] Unexpected device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                       } else {
                         if (validMatrixEntries.indexOf(fwMatrixDevice) > -1) {
                           util.log("[ERROR] Duplicate device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
@@ -1890,8 +1886,7 @@ function verifyPayloadFile(jarContent) {
                     var installArch = installMatch[1];
                     var archIndex = ocmArch.indexOf(installArch);
                     if (archIndex < 0) {
-                      // TODO: Commented out to avoid errors for buggy jars -- this will be removed
-                      // util.log("[ERROR] OCM installer found for unexpected architecture (" + installArch + ") in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                      util.log("[ERROR] OCM installer found for unexpected architecture (" + installArch + ") in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
                     } else {
                       ocmArch.splice(archIndex, 1);
                       var ocmFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
