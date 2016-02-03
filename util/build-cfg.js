@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* Generate SCM CFG files based on BOM file using Node.js
- * Written by Brian Bothwell (brian.bothwell@avagotech.com)
+ * Written by Brian Bothwell (brian.bothwell@broadcom.com)
  *
  * To use, run: `node build-cfg.js <parameters>`
  *

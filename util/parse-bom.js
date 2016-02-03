@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* Parse Lenovo UX Package BOM file and generate JSON object using Node.js
- * Written by Brian Bothwell (brian.bothwell@avagotech.com)
+ * Written by Brian Bothwell (brian.bothwell@broadcom.com)
  *
  * To use, run: `node parse-bom.js <BOM file>` where <BOM file> is an XLSX BOM
  *

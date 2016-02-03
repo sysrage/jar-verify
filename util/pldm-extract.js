@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* Extract PLDM XML data and firmware image using Node.js
- * Written by Brian Bothwell (brian.bothwell@avagotech.com)
+ * Written by Brian Bothwell (brian.bothwell@broadcom.com)
  *
  * To use, run: `node pldm-extract.js <payload file>` where <payload file> is a
  * firmware UX package payload file (bin or exe).
