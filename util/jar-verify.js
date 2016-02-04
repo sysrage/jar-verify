@@ -412,14 +412,6 @@ function verifyInputXML(jarContent) {
                 if (bomDriverFileEntries[agent.type].indexOf(agent.id) < 0) bomDriverFileEntries[agent.type].push(agent.id);
               }
 
-              // TODO: Workaround to match existing buggy JARs -- This will be removed
-              if (agent.type === '13') {
-                if (! bomDriverFileEntries[config.classMap['10']]) bomDriverFileEntries[config.classMap['10']] = [];
-                adapter.v2.forEach(function(v2) {
-                  if (bomDriverFileEntries[config.classMap['10']].indexOf(v2) < 0) bomDriverFileEntries[config.classMap['10']].push(v2);
-                });
-              }
-
               if (! bomDriverFileEntries[config.classMap[agent.type]]) bomDriverFileEntries[config.classMap[agent.type]] = [];
               adapter.v2.forEach(function(v2) {
                 if (bomDriverFileEntries[config.classMap[agent.type]].indexOf(v2) < 0) bomDriverFileEntries[config.classMap[agent.type]].push(v2);
@@ -566,8 +558,7 @@ function verifyInputXML(jarContent) {
                   uniqueEntries[driverFileEntry.classification] = [driverFileEntry.name];
                 } else {
                   if (uniqueEntries[driverFileEntry.classification].indexOf(driverFileEntry.name) > -1) {
-                    // TODO: Commented out to avoid errors due to bad JARs -- This will be removed
-                    // util.log("[ERROR] Duplicate entry (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    util.log("[ERROR] Duplicate entry (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                   } else {
                     uniqueEntries[driverFileEntry.classification].push(driverFileEntry.name);
                   }
@@ -612,13 +603,8 @@ function verifyInputXML(jarContent) {
                 util.log("[ERROR] Missing entry for classification '" + dfClass + "' in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
               } else {
                 bomDriverFileEntries[dfClass].forEach(function(entry) {
-                  // TODO: Workaround to match existing buggy JARs -- This will be removed
-                  if (dfClass === '13' && ! entry.match(/^10DF/)) {
-                    // ignore
-                  } else {
-                    if (uniqueEntries[dfClass].indexOf(entry) < 0) {
-                      util.log("[ERROR] Missing entry (" + entry + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
-                    }
+                  if (uniqueEntries[dfClass].indexOf(entry) < 0) {
+                    util.log("[ERROR] Missing entry (" + entry + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                   }
                 });
               }
@@ -1177,8 +1163,7 @@ function verifyPayloadFile(jarContent) {
                     // Display error for any unexpected driver RPMs
                     archDirFiles.forEach(function(ddFile) {
                       if (matchingFiles.indexOf(ddFile) < 0) {
-                        // TODO: Commented out to avoid errors for buggy jars -- This will be removed
-                        // util.log("[ERROR] Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        util.log("[ERROR] Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                       }
                     });
                   }
