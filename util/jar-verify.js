@@ -1307,17 +1307,15 @@ function verifyPayloadFile(jarContent) {
             if (appsDirFiles && appsDirFiles.length < 1) {
               util.log("[ERROR] No files found in the apps directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
             } else if (appsDirFiles) {
-              // Verify elx_install.sh and uninstall.sh are included and not 0 bytes
-              ['elx_install.sh', 'uninstall.sh'].forEach(function(installFile) {
-                if (appsDirFiles.indexOf(installFile) < 0) {
-                  util.log("[ERROR] OCM installer file (" + installFile + ") is missing from the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
-                } else {
-                  var installFileStats = fs.statSync(payloadExtract + 'apps/' + installFile);
-                  if (installFileStats.size < 1) {
-                    util.log("[ERROR] OCM installer file (" + installFile + ") is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
-                  }
+              // Verify elx_install.sh is included and not 0 bytes
+              if (appsDirFiles.indexOf('elx_install.sh') < 0) {
+                util.log("[ERROR] OCM installer file (elx_install.sh) is missing from the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              } else {
+                var installFileStats = fs.statSync(payloadExtract + 'apps/' + 'elx_install.sh');
+                if (installFileStats.size < 1) {
+                  util.log("[ERROR] OCM installer file (elx_install.sh) is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
                 }
-              });
+              }
 
               // Verify the correct OCM binary RPMs are included
               var ocmArchAll = [];
