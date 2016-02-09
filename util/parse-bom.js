@@ -10,11 +10,12 @@
  *
  */
 
-var util    = require('util');
 var path    = require('path');
 var fs      = require('fs');
 
 var xlsx    = require('xlsx');
+
+var logger  = require('./logger.js');
 
 /**************************************************************/
 /* Function/Class Definitions                                 */
@@ -38,18 +39,18 @@ function validateOS(osName, cell) {
   }
 
   if (! validOS) {
-    util.log("[ERROR] Invalid Operating System Name specified in cell " + cell + ".");
+    logger.log('ERROR', "Invalid Operating System name specified in cell " + cell + ".");
   } else {
     // Determine architecture of OS
     if (osName.toLowerCase().search(/32(?:[\-\ ])?bit/) > -1 || osName.toLowerCase().search(/x86/) > -1) {
       if (osMapArch.indexOf('x86') < 0) {
-        util.log("[ERROR] Invalid architecture specified for OS in cell " + cell + ".");
+        logger.log('ERROR', "Invalid architecture specified for OS in cell " + cell + ".");
       } else {
         var osArch = 'x86';
       }
     } else if (osName.toLowerCase().search(/64(?:[\-\ ])?bit/) > -1 || osName.toLowerCase().search(/x64/) > -1) {
       if (osMapArch.indexOf('x64') < 0) {
-        util.log("[ERROR] Invalid architecture specified for OS in cell " + cell + ".");
+        logger.log('ERROR', "Invalid architecture specified for OS in cell " + cell + ".");
       } else {
         var osArch = 'x64';
       }
@@ -58,7 +59,7 @@ function validateOS(osName, cell) {
     }
 
     if (! osArch) {
-      util.log("[ERROR] Unable to determine architecture for OS in cell " + cell + ".");
+      logger.log('ERROR', "Unable to determine architecture for OS in cell " + cell + ".");
     } else {
       // Determine subversion (update/service pack/etc.) of OS
       var re = new RegExp('^' + osMapName + '[\.\ ](?:[Uu]|SP)?([0-9]+)');
@@ -71,7 +72,7 @@ function validateOS(osName, cell) {
       }
 
       if (! osSubVersion) {
-        util.log("[ERROR] Unable to determine point release for OS in cell " + cell + ".");
+        logger.log('ERROR', "Unable to determine point release for OS in cell " + cell + ".");
       } else {
         // Determine any extras (KVM, Xen, etc.)
         var extras = osName.toLowerCase().match(/((?:kvm)|(?:xen))/);
@@ -103,9 +104,8 @@ function validateOS(osName, cell) {
 try {
   var config = require('../config.js');
 } catch (err) {
-  util.log("[ERROR] Unable to open configuration file.");
-  console.log(err);
-  return 1;
+  logger.log('ERROR', "Unable to open configuration file.\n" + err);
+  return logger.errorCount;
 }
 
 if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
@@ -115,10 +115,10 @@ if (! fs.existsSync(config.dataDir)){
   try {
     fs.mkdirSync(config.dataDir);
   } catch (err) {
-    util.log("[ERROR] Unable to create data directory.\n" + err + "\n");
-    return 1;
+    logger.log('ERROR', "Unable to create data directory.\n" + err);
+    return logger.errorCount;
   }
-  util.log("[INFO] Data directory did not exist. Empty directory created.");
+  logger.log('INFO', "Data directory did not exist. Empty directory created.");
 }
 
 // Verify XLSX BOM file has been passed as an argument
@@ -130,18 +130,19 @@ if (! process.argv[2]) {
 
 // Read in the specified XLSX BOM file
 var bomFileXLS = process.argv[2];
+logger.log('INFO', "Parsing BOM file '" + bomFileXLS + "'.");
 try {
   var workbook = xlsx.readFile(bomFileXLS);
   var worksheet = workbook.Sheets[workbook.SheetNames[0]];
 } catch (err) {
   if (err.code === 'ENOENT') {
-    util.log("[ERROR] Specified BOM file does not exists.\n");
+    logger.log('ERROR', "Specified BOM file does not exists.");
   } else if (err.code === 'EACCES') {
-    util.log("[ERROR] Permission denied trying to open specified BOM file.\n");
+    logger.log('ERROR', "Permission denied trying to open specified BOM file.");
   } else {
-    util.log("[ERROR] Unexpected error: " + err);
+    logger.log('ERROR', "Unexpected error reading specified BOM file.\n" + err);
   }
-  return 1;
+  return logger.errorCount;
 }
 
 // Initialization
@@ -158,13 +159,13 @@ for (var i in worksheet) {
   // Gather release name
   if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.headerStr.relName)) > -1) {
     releaseName = worksheet[i].v.toString().toUpperCase().split(':')[1].replace(/\s+/g, '');
-    if (releaseName.search(/^[A-Z0-9]+$/) < 0) util.log("[ERROR] Invalid release name specified in cell " + i);
+    if (releaseName.search(/^[A-Z0-9]+$/) < 0) logger.log('ERROR', "Invalid release name specified in cell " + i + ".");
   }
 
   // Gather release type
   if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.headerStr.relType)) > -1) {
     releaseType = worksheet[i].v.toString().split(':')[1].replace(/\s+/g, '');
-    if (['Red', 'Blue'].indexOf(releaseType) < 0) util.log("[ERROR] Invalid release type specified in cell " + i);
+    if (['Red', 'Blue'].indexOf(releaseType) < 0) logger.log('ERROR', "Invalid release type specified in cell " + i + ".");
   }
 
   // Gather supported operating systems
@@ -210,7 +211,7 @@ for (var i in worksheet) {
             systemType = val;
             wasBlank = false;
           } else {
-            util.log("[ERROR] Invalid system type header in Machine Types section.");
+            logger.log('ERROR', "Invalid system type header (" + val + ") in Machine Types section.");
             moreRows = false;
           }
         }
@@ -220,9 +221,9 @@ for (var i in worksheet) {
         } else {
           // Verify all expected columns are present
           if (! worksheet[systemMTMCol + y]) {
-            util.log("[ERROR] Missing MTM value in cell " + systemMTMCol + y + ".");
+            logger.log('ERROR', "Missing MTM value in cell " + systemMTMCol + y + ".");
           } else if (! worksheet[systemItemCol + y] || worksheet[systemItemCol + y].v.toString().search(/[0-9]+/) < 0) {
-            util.log("[ERROR] Missing or invalid item ID in cell " + systemItemCol + y + ".");
+            logger.log('ERROR', "Missing or invalid item ID in cell " + systemItemCol + y + ".");
           } else {
             // Build list of supported machine types
             var mtmList = worksheet[systemMTMCol + y].v.toString().replace(' ', '').split(',');
@@ -273,10 +274,11 @@ for (var i in worksheet) {
           continue;
         } else {
           var validASIC = false;
+          var asicName = worksheet[adapterMTMCol + y].v.toString();
           // Check header for matching known ASIC types in config file
           for (var a = 0; a < config.asicTypes.length; a++) {
             var asic = config.asicTypes[a];
-            if (worksheet[adapterMTMCol + y].v.toString().toLowerCase().search(asic.name.toLowerCase()) > -1) {
+            if (asicName.toLowerCase().search(asic.name.toLowerCase()) > -1) {
               asicType = asic.name;
               validASIC = true;
               break;
@@ -285,7 +287,7 @@ for (var i in worksheet) {
           if (validASIC) {
             wasBlank = false;
           } else {
-            util.log("[ERROR] Invalid ASIC header in Adapter Models section.");
+            logger.log('ERROR', "Invalid ASIC type header (" + asicName + ") in Adapter Models section.");
             moreRows = false;
           }
         }
@@ -295,15 +297,15 @@ for (var i in worksheet) {
         } else {
           // Verify all expected columns are present
           if (! worksheet[adapterNameCol + y]) {
-            util.log("[ERROR] Missing code name in cell " + adapterNameCol + y + ".");
+            logger.log('ERROR', "Missing code name in cell " + adapterNameCol + y + ".");
           } else if (! worksheet[adapterModelCol + y]) {
-            util.log("[ERROR] Missing model name in cell " + adapterModelCol + y + ".");
+            logger.log('ERROR', "Missing model name in cell " + adapterModelCol + y + ".");
           } else if (! worksheet[adapterV2Col + y]) {
-            util.log("[ERROR] Missing DriverFiles entry (V2) in cell " + adapterV2Col + y + ".");
+            logger.log('ERROR', "Missing DriverFiles entry (V2) in cell " + adapterV2Col + y + ".");
           } else if (! worksheet[adapterAgentCol + y]) {
-            util.log("[ERROR] Missing Agentless entry in cell " + adapterAgentCol + y + ".");
+            logger.log('ERROR', "Missing Agentless entry in cell " + adapterAgentCol + y + ".");
           } else if (! worksheet[adapterPLDMCol + y]) {
-            util.log("[ERROR] Missing PLDM FW DL Data in cell " + adapterAgentCol + y + ".");
+            logger.log('ERROR', "Missing PLDM FW DL Data in cell " + adapterAgentCol + y + ".");
           } else {
             // Build list of supported machine types
             var mtmList = [];
@@ -319,12 +321,12 @@ for (var i in worksheet) {
                       mtmList.push(mtm);
                     });
                     if (adapterType && adapterType !== systemList[m].type) {
-                      util.log("[ERROR] Adapter matched to multiple system types (" + adapterType + " and " + systemList[m].type + ") in cell " + adapterMTMCol + y + ".");
+                      logger.log('ERROR', "Adapter matched to multiple system types (" + adapterType + " and " + systemList[m].type + ") in cell " + adapterMTMCol + y + ".");
                     } else {
                       adapterType = systemList[m].type;
                     }
                   } else {
-                    util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + m + ").");
+                    logger.log('ERROR', "Invalid MTM ID (" + m + ") in cell " + adapterMTMCol + y + ".");
                   }
                 }
               } else {
@@ -333,12 +335,12 @@ for (var i in worksheet) {
                     mtmList.push(mtm);
                   });
                   if (adapterType && adapterType !== systemList[entry].type) {
-                    util.log("[ERROR] Adapter matched to multiple system types (" + adapterType + " and " + systemList[entry].type + ") in cell " + adapterMTMCol + y + ".");
+                    logger.log('ERROR', "Adapter matched to multiple system types (" + adapterType + " and " + systemList[entry].type + ") in cell " + adapterMTMCol + y + ".");
                   } else {
                     adapterType = systemList[entry].type;
                   }
                 } else {
-                  util.log("[ERROR] Invalid MTM ID in cell " + adapterMTMCol + y + " (" + entry + ").");
+                  logger.log('ERROR', "Invalid MTM ID (" + entry + ") in cell " + adapterMTMCol + y + ".");
                 }
               }
             });
@@ -351,7 +353,7 @@ for (var i in worksheet) {
             var agentList = [];
             var tempList = worksheet[adapterAgentCol + y].v.toString().toUpperCase().match(/ENTRY:[\ ]*([A-F0-9]+)[^]*TYPE 1:[\ ]*([0-9]+)(?:[^]*TYPE 2:[\ ]*([0-9]+))?/m);
             if (! tempList) {
-              util.log("[ERROR] Missing or invalid Agentless entry in cell " + adapterAgentCol + y + ".");
+              logger.log('ERROR', "Missing or invalid Agentless entry in cell " + adapterAgentCol + y + ".");
             } else {
               var entryID = tempList[1];
               var typeOne = tempList[2];
@@ -449,31 +451,32 @@ adapterList.forEach(function(adapter) {
 });
 
 // Display an error if any expected data was not found.
-if (! releaseName) util.log("[ERROR] Release name was not specified.");
-if (! releaseType) util.log("[ERROR] Release type was not specified.");
-if (osList.length < 1) util.log("[ERROR] No supported operating systems were specified.");
-if (systemList.length < 1) util.log("[ERROR] No supported system types were specified.");
-if (adapterList.length < 1) util.log("[ERROR] No supported adapters were specified.");
+if (! releaseName) logger.log('ERROR', "Release name was not specified.");
+if (! releaseType) logger.log('ERROR', "Release type was not specified.");
+if (osList.length < 1) logger.log('ERROR', "No supported operating systems were specified.");
+if (systemList.length < 1) logger.log('ERROR', "No supported system types were specified.");
+if (adapterList.length < 1) logger.log('ERROR', "No supported adapters were specified.");
 osList.forEach(function(os) {
   if (Object.keys(appDIDList['fw'][os.type]).length < 1) {
-    util.log("[ERROR] No Applicable Device ID entries for any " + os.type + " firmware packages.");
+    logger.log('ERROR', "No Applicable Device ID entries for any " + os.type + " firmware packages.");
   } else {
     for (asic in appDIDList['fw'][os.type]) {
-      if (appDIDList['fw'][os.type][asic].length < 1) util.log("[ERROR] No Applicable Device ID entries for the " + os.type + " " + asic + " firmware package.");
+      if (appDIDList['fw'][os.type][asic].length < 1) logger.log('ERROR', "No Applicable Device ID entries for the " + os.type + " " + asic + " firmware package.");
     }
   }
   if (os.ddName !== 'none') {
     if (Object.keys(appDIDList['dd'][os.ddName]).length < 1) {
-      util.log("[ERROR] No Applicable Device ID entries for any " + os.ddName + " driver packages.");
+      logger.log('ERROR', "No Applicable Device ID entries for any " + os.ddName.toUpperCase() + " driver packages.");
     } else {
       for (proto in appDIDList['dd'][os.ddName]) {
-        if (appDIDList['dd'][os.ddName][proto].length < 1) util.log("[ERROR] No Applicable Device ID entries for the " + os.ddName + " " + proto + " driver package.");
+        if (appDIDList['dd'][os.ddName][proto].length < 1) logger.log('ERROR', "No Applicable Device ID entries for the " + os.ddName.toUpperCase() + " " + proto + " driver package.");
       }
     }
   }
 });
 
 // Add all data to a single object and write it to disk
+logger.log('INFO', "Finished parsing BOM file. Saving data.");
 var bomDump = {
   release: releaseName,
   type: releaseType,
@@ -490,14 +493,20 @@ try {
   var curDate = new Date();
   var buName = bomFileJSON + '-' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
   fs.writeFileSync(config.dataDir + buName, oldBOM);
-  util.log("[INFO] An existing BOM file for this release has been backed up.");
+  logger.log('INFO', "An existing BOM file for this release has been backed up.");
 } catch (err) {
-  if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old BOM data. New data will not be saved.\n" + err);
+  if (err.code !== 'ENOENT') {
+    logger.log('ERROR', "Problem backing up old BOM data. New data will not be saved.\n" + err);
+    return logger.errorCount;
+  }
 }
 
 fs.writeFile(config.dataDir + bomFileJSON, JSON.stringify(bomDump, null, 2), function(err) {
-  if (err) return util.log("[ERROR] Unable to write BOM data to disk.\n" + err);
-  util.log("[INFO] All BOM file data has been written to '" + config.dataDir + bomFileJSON + "'.");
+  if (err) {
+    logger.log('ERROR', "Unable to write BOM data to disk.\n" + err);
+    return logger.errorCount;
+  }
+  logger.log('INFO', "All BOM file data has been written to '" + config.dataDir + bomFileJSON + "'.");
 });
 
 // ***DEBUG***

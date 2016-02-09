@@ -8,6 +8,7 @@
  *  -b | --build    - (Required) Specifies the build number to verify.
  *  -r | --release  - (Required) Specifies the release name to verify.
  *  -s | --save     - Save the specified release/build as a delivered build.
+ *  -d | --debug    - Display and log additional debug messages.
  *
  * Note: The BOM file XLS must have already been parsed with parse-bom.js
  *
@@ -28,7 +29,6 @@ var crypto      = require('crypto');
 var exec        = require('child_process').exec;
 var fs          = require('fs');
 var path        = require('path');
-var util        = require('util');
 
 var Decompress  = require('decompress');
 var mkdirp      = require('mkdirp');
@@ -37,6 +37,8 @@ var xml2object  = require('xml2object');
 var yauzl       = require('yauzl');
 
 if (typeof Promise === 'undefined') Promise = require('bluebird');
+
+var logger      = require('./logger.js');
 
 /**************************************************************/
 /* Function/Class Definitions                                 */
@@ -252,11 +254,11 @@ function verifyInputXML(jarContent) {
   // console.log(JSON.stringify(jarContent.inputFile, null, 2));
 
   if (! jarContent.inputFile || ! jarContent.inputFile.version) {
-    util.log("[ERROR] Parameter 'version' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+    logger.log('ERROR', "Parameter 'version' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   } else {
     // Verify input XML version matches JAR file name
     if (workingBOM.release.toLowerCase() + '-' + jarContent.inputFile.version !== jarFiles[jarContent.jarType].jarVersion) {
-      util.log("[ERROR] Parameter 'version' from input XML file does not match JAR file name for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Parameter 'version' from input XML file does not match JAR file name for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     }
 
     // Gather individual version components
@@ -268,7 +270,7 @@ function verifyInputXML(jarContent) {
     if (config.pkgTypes[jarContent.jarType].type === 'fw' && config.pkgTypes[jarContent.jarType].preVersion) {
       var verSubMatch = jarVersion.match(new RegExp('^' + config.pkgTypes[jarContent.jarType].preVersion + '(.+)$'));
       if (! verSubMatch) {
-        util.log("[ERROR] Pre-version missing in 'version' parameter from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Pre-version missing in 'version' parameter from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       } else {
         jarVersion = verSubMatch[1];
       }
@@ -300,16 +302,16 @@ function verifyInputXML(jarContent) {
 
     // Verify category.type
     if (! jarContent.inputFile.category || ! jarContent.inputFile.category.type) {
-      util.log("[ERROR] Paramater 'category.type' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Paramater 'category.type' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       if (jarContent.inputFile.category.type !== workingBOM.release) {
-        util.log("[ERROR] Invalid value for 'category.type' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Invalid value for 'category.type' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
 
     // Verify category
     if (! jarContent.inputFile.category || ! jarContent.inputFile.category.$t) {
-      util.log("[ERROR] Paramater 'category' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Paramater 'category' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       if (config.pkgTypes[jarContent.jarType].type === 'dd') {
         var categoryMatch = config.pkgTypes[jarContent.jarType].proto;
@@ -320,50 +322,50 @@ function verifyInputXML(jarContent) {
         });
       }
       if (jarContent.inputFile.category.$t !== categoryMatch) {
-        util.log("[ERROR] Invalid value for 'category' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Invalid value for 'category' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
 
     // Verify vendor
     if (! jarContent.inputFile.vendor) {
-      util.log("[ERROR] Paramater 'vendor' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Paramater 'vendor' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       if (! jarContent.inputFile.vendor.match(new RegExp('^' + config.vendor + '$'))) {
-        util.log("[ERROR] Invalid value for 'vendor' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Invalid value for 'vendor' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
 
     // Verify rebootRequired
     if (! jarContent.inputFile.rebootRequired) {
-      util.log("[ERROR] Paramater 'rebootRequired' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Paramater 'rebootRequired' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       if (jarContent.inputFile.rebootRequired.toLowerCase() !== 'yes') {
-        util.log("[ERROR] Invalid value for 'rebootRequired' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Invalid value for 'rebootRequired' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
 
     // Verify updateType
     if (! jarContent.inputFile.updateType) {
-      util.log("[ERROR] Paramater 'updateType' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Paramater 'updateType' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       if ((config.pkgTypes[jarContent.jarType].type === 'fw' && jarContent.inputFile.updateType.toLowerCase() !== 'firmware') ||
           (config.pkgTypes[jarContent.jarType].type === 'dd' && jarContent.inputFile.updateType.toLowerCase() !== 'driver')) {
-        util.log("[ERROR] Invalid value for 'updateType' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Invalid value for 'updateType' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
 
     // Verify updateSelection
     if (! jarContent.inputFile.updateSelection) {
-      util.log("[ERROR] Paramater 'updateSelection' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Paramater 'updateSelection' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       if (jarContent.inputFile.updateSelection.toLowerCase() !== 'auto') {
-        util.log("[ERROR] Invalid value for 'updateSelection' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Invalid value for 'updateSelection' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
 
     // Verify applicableDeviceID entries
     if (! jarContent.inputFile.applicableDeviceIdLabel) {
-      util.log("[ERROR] Paramater 'applicableDeviceIdLabel' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Paramater 'applicableDeviceIdLabel' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       var jarDidList = jarContent.inputFile.applicableDeviceIdLabel;
       if (config.pkgTypes[jarContent.jarType].type === 'fw') {
@@ -372,26 +374,26 @@ function verifyInputXML(jarContent) {
         var bomDidList = workingBOM.appDIDList['dd'][config.pkgTypes[jarContent.jarType].os][config.pkgTypes[jarContent.jarType].proto];
       }
       bomDidList.forEach(function(did) {
-        if (jarDidList.indexOf(did) < 0) util.log("[ERROR] The ApplicableDeviceID '" + did + "' is missing from the input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        if (jarDidList.indexOf(did) < 0) logger.log('ERROR', "The ApplicableDeviceID '" + did + "' is missing from the input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       });
       jarDidList.forEach(function(did) {
-        if (bomDidList.indexOf(did) < 0) util.log("[ERROR] The ApplicableDeviceID '" + did + "' is incorrectly included in the input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        if (bomDidList.indexOf(did) < 0) logger.log('ERROR', "The ApplicableDeviceID '" + did + "' is incorrectly included in the input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       });
     }
 
     // Verify osUpdateData
     if (! jarContent.inputFile.osUpdateData || typeof jarContent.inputFile.osUpdateData !== 'object') {
-      util.log("[ERROR] Parameter 'osUpdateData' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Parameter 'osUpdateData' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       var osUpdateList = Object.keys(jarContent.inputFile.osUpdateData);
       if (! osUpdateList || osUpdateList.length > 1) {
-        util.log("[ERROR] Incorrect number of operating systems in parameter 'osUpdateData' from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Incorrect number of operating systems in parameter 'osUpdateData' from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       } else if (osUpdateList[0] !== config.pkgTypes[jarContent.jarType].osType) {
-        util.log("[ERROR] Incorrect OS in parameter 'osUpdateData' from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Incorrect OS in parameter 'osUpdateData' from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       } else if (! jarContent.inputFile.osUpdateData[osUpdateList[0]].driverFiles || typeof jarContent.inputFile.osUpdateData[osUpdateList[0]].driverFiles !== 'object') {
-        util.log("[ERROR] Missing 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Missing 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       } else if (! jarContent.inputFile.osUpdateData[osUpdateList[0]].driverFiles.driverFile) {
-        util.log("[ERROR] Incorrect format of 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Incorrect format of 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       } else {
         var inputDriverFile = jarContent.inputFile.osUpdateData[osUpdateList[0]].driverFiles.driverFile;
         if (! Array.isArray(inputDriverFile)) var jarDriverFileList = [inputDriverFile];
@@ -435,7 +437,7 @@ function verifyInputXML(jarContent) {
             var uniqueEntries = {};
             jarDriverFileList.forEach(function(driverFileEntry) {
               if (! driverFileEntry.os) {
-                util.log("[ERROR] Unspecified OS with multiple 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Unspecified OS with multiple 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 // Verify entry is not a duplicate
                 if (! uniqueEntries[driverFileEntry.os]) {
@@ -446,10 +448,10 @@ function verifyInputXML(jarContent) {
                   }
                 } else {
                   if (uniqueEntries[driverFileEntry.os].length === 0) {
-                    util.log("[ERROR] Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else {
                     if (! driverFileEntry.arch || uniqueEntries[driverFileEntry.os].indexOf(driverFileEntry.arch) > -1) {
-                      util.log("[ERROR] Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else {
                       uniqueEntries[driverFileEntry.os].push(driverFileEntry.arch);
                     }
@@ -458,29 +460,29 @@ function verifyInputXML(jarContent) {
 
                 // Verify OS is expected
                 if (! bomOSListUnique[driverFileEntry.os]) {
-                  util.log("[ERROR] Unexpected OS (" + driverFileEntry.os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected OS (" + driverFileEntry.os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
 
                 // Verify architecture is expected
                 if (driverFileEntry.arch) {
                   if (bomOSListUnique[driverFileEntry.os].indexOf(driverFileEntry.arch.replace('x32', 'x86')) < 0) {
-                    util.log("[ERROR] Unexpected architecture (" + driverFileEntry.arch + ") for " + driverFileEntry.os + " in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Unexpected architecture (" + driverFileEntry.arch + ") for " + driverFileEntry.os + " in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
 
                 // Verify driver file name
                 if (! driverFileEntry.name) {
-                  util.log("[ERROR] Missing driver name in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing driver name in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (config.pkgTypes[jarContent.jarType].ddFileName.indexOf(driverFileEntry.name) < 0) {
-                  util.log("[ERROR] Unexpected driver name (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected driver name (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
 
                 // Verify driver version
                 if (! driverFileEntry.version) {
-                  util.log("[ERROR] Missing driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   if (driverFileEntry.version !== config.pkgTypes[jarContent.jarType].ddVerFormat.replace('##VERSION##', jarVersion)) {
-                    util.log("[ERROR] Incorrect driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Incorrect driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               }
@@ -489,12 +491,12 @@ function verifyInputXML(jarContent) {
             // Verify all expected operating systems and architectures are included
             for (var os in bomOSListUnique) {
               if (! uniqueEntries[os]) {
-                util.log("[ERROR] Missing OS (" + os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing OS (" + os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 if (uniqueEntries[os].length > 0) {
                   bomOSListUnique[os].forEach(function(arch) {
                     if (uniqueEntries[os].indexOf(arch) < 0) {
-                      util.log("[ERROR] Missing architecture (" + arch + ") for " + os + " in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Missing architecture (" + arch + ") for " + os + " in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                   });
                 }
@@ -506,13 +508,13 @@ function verifyInputXML(jarContent) {
             if (jarDriverFileList[0].os) {
               // Verify that the one listed OS is expected
               if (! bomOSListUnique[jarDriverFileList[0].os]) {
-                util.log("[ERROR] Unexpected OS (" + jarDriverFileList[0].os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Unexpected OS (" + jarDriverFileList[0].os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               }
 
               // Verify that only one OS is expected
               if (Object.keys(bomOSListUnique).length > 1) {
                 for (var os in bomOSListUnique) {
-                  if (os !== jarDriverFileList[0].os) util.log("[ERROR] Missing OS (" + os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  if (os !== jarDriverFileList[0].os) logger.log('ERROR', "Missing OS (" + os + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
               }
             }
@@ -521,13 +523,13 @@ function verifyInputXML(jarContent) {
               for (var os in bomOSListUnique) {
                 // Verify that the one listed architecture is expected
                 if (bomOSListUnique[os].indexOf(jarDriverFileList[0].arch) < 0) {
-                  util.log("[ERROR] Unexpected architecture (" + jarDriverFileList[0].arch + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected architecture (" + jarDriverFileList[0].arch + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
 
                 // Verify that only one architecture is expected
                 if (bomOSListUnique[os].length > 1) {
                   for (var arch in bomOSListUnique[os]) {
-                    if (arch !== jarDriverFileList[0].arch) util.log("[ERROR] Missing architecture (" + arch + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    if (arch !== jarDriverFileList[0].arch) logger.log('ERROR', "Missing architecture (" + arch + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               }
@@ -535,17 +537,17 @@ function verifyInputXML(jarContent) {
 
             // Verify driver file name
             if (! jarDriverFileList[0].name) {
-              util.log("[ERROR] Missing driver name in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Missing driver name in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (config.pkgTypes[jarContent.jarType].ddFileName.indexOf(jarDriverFileList[0].name) < 0) {
-              util.log("[ERROR] Unexpected driver name (" + jarDriverFileList[0].name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Unexpected driver name (" + jarDriverFileList[0].name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             }
 
             // Verify driver version
             if (! jarDriverFileList[0].version) {
-              util.log("[ERROR] Missing driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Missing driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
               if (jarDriverFileList[0].version !== config.pkgTypes[jarContent.jarType].ddVerFormat.replace('##VERSION##', jarVersion)) {
-                util.log("[ERROR] Incorrect driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Incorrect driver version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               }
             }
           }
@@ -557,9 +559,9 @@ function verifyInputXML(jarContent) {
             jarDriverFileList.forEach(function(driverFileEntry) {
               // Verify name and classification are defined
               if (! driverFileEntry.classification) {
-                util.log("[ERROR] Missing classification in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing classification in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (! driverFileEntry.name) {
-                util.log("[ERROR] Missing name in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing name in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 // Verify entry is not a duplicate
                 if (! uniqueEntries[driverFileEntry.classification]) {
@@ -567,7 +569,7 @@ function verifyInputXML(jarContent) {
                 } else {
                   if (uniqueEntries[driverFileEntry.classification].indexOf(driverFileEntry.name) > -1) {
                     // TODO: Commented out to avoid errors due to bad JARs -- This will be removed
-                    // util.log("[ERROR] Duplicate entry (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    // logger.log('ERROR', "Duplicate entry (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else {
                     uniqueEntries[driverFileEntry.classification].push(driverFileEntry.name);
                   }
@@ -575,32 +577,32 @@ function verifyInputXML(jarContent) {
 
                 // Verify entry is expected
                 if (! bomDriverFileEntries[driverFileEntry.classification] || bomDriverFileEntries[driverFileEntry.classification].indexOf(driverFileEntry.name) < 0) {
-                  util.log("[ERROR] Unexpected entry (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected entry (" + driverFileEntry.name + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
 
                 // Verify version is correct
                 if (! driverFileEntry.version) {
-                  util.log("[ERROR] Missing version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   if (driverFileEntry.classification === '32773' || driverFileEntry.classification === config.classMap['32773']) {
                     // Handle bootcode entry
                     if (! config.pkgTypes[jarContent.jarType].bootRegex) {
-                      util.log("[ERROR] Unexpected boot BIOS version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Unexpected boot BIOS version in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else {
                       if (! driverFileEntry.version.match(config.pkgTypes[jarContent.jarType].bootRegex)) {
-                        util.log("[ERROR] Incorrect boot BIOS version (" + driverFileEntry.version + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        logger.log('ERROR', "Incorrect boot BIOS version (" + driverFileEntry.version + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       } else {
                         if (! jarBootVersion) {
                           jarBootVersion = driverFileEntry.version;
                           jarData[jarContent.jarType].bootVersion = jarBootVersion;
                         } else if (jarBootVersion !== driverFileEntry.version) {
-                          util.log("[ERROR] Multiple boot BIOS versions specified in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          logger.log('ERROR', "Multiple boot BIOS versions specified in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                         }
                       }
                     }
                   } else {
                     // The toUpperCase() is necessary to ensure Saturn FW is correct
-                    if (driverFileEntry.version !== jarVersion.toUpperCase()) util.log("[ERROR] Incorrect version (" + driverFileEntry.version + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    if (driverFileEntry.version !== jarVersion.toUpperCase()) logger.log('ERROR', "Incorrect version (" + driverFileEntry.version + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               }
@@ -609,7 +611,7 @@ function verifyInputXML(jarContent) {
             // Verify all expected entries were found
             for (var dfClass in bomDriverFileEntries) {
               if (! uniqueEntries[dfClass]) {
-                util.log("[ERROR] Missing entry for classification '" + dfClass + "' in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing entry for classification '" + dfClass + "' in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 bomDriverFileEntries[dfClass].forEach(function(entry) {
                   // TODO: Workaround to match existing buggy JARs -- This will be removed
@@ -617,7 +619,7 @@ function verifyInputXML(jarContent) {
                     // ignore
                   } else {
                     if (uniqueEntries[dfClass].indexOf(entry) < 0) {
-                      util.log("[ERROR] Missing entry (" + entry + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Missing entry (" + entry + ") in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                   }
                 });
@@ -626,7 +628,7 @@ function verifyInputXML(jarContent) {
 
           } else {
             // Firmware packages should always have multiple entries -- Show error
-            util.log("[ERROR] Insufficient number of entries in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "Insufficient number of entries in 'driverFiles' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           }
         }
       }
@@ -634,11 +636,11 @@ function verifyInputXML(jarContent) {
 
     // Verify updateTargetInformation section exists (includes applicableOperatingSystems and applicableMachineTypes)
     if (! jarContent.inputFile.updateTargetInformation) {
-      util.log("[ERROR] Section 'updateTargetInformation' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Section 'updateTargetInformation' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       // Verify applicableOperatingSystems
       if (! jarContent.inputFile.updateTargetInformation.applicableOperatingSystems || ! jarContent.inputFile.updateTargetInformation.applicableOperatingSystems.os) {
-        util.log("[ERROR] Parameter 'applicableOperatingSystems' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Parameter 'applicableOperatingSystems' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       } else {
         var inputApplicableOS = jarContent.inputFile.updateTargetInformation.applicableOperatingSystems.os;
         if (! Array.isArray(inputApplicableOS)) var jarApplicableOSList = [inputApplicableOS];
@@ -646,18 +648,18 @@ function verifyInputXML(jarContent) {
 
         // Verify operating systems are expected
         jarApplicableOSList.forEach(function(os) {
-          if (! bomOSListUnique[os]) util.log("[ERROR] Unexpected OS (" + os + ") in 'applicableOperatingSystems' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          if (! bomOSListUnique[os]) logger.log('ERROR', "Unexpected OS (" + os + ") in 'applicableOperatingSystems' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
         });
 
         // Verify all expected operating systems were found
         for (var os in bomOSListUnique) {
-          if (jarApplicableOSList.indexOf(os) < 0) util.log("[ERROR] Missing OS (" + os + ") in 'applicableOperatingSystems' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          if (jarApplicableOSList.indexOf(os) < 0) logger.log('ERROR', "Missing OS (" + os + ") in 'applicableOperatingSystems' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
         }
       }
 
       // Verify applicableMachineTypes
       if (! jarContent.inputFile.updateTargetInformation.applicableMachineTypes || ! jarContent.inputFile.updateTargetInformation.applicableMachineTypes.machineNumber) {
-        util.log("[ERROR] Parameter 'applicableMachineTypes' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Parameter 'applicableMachineTypes' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       } else {
         var inputApplicableMT = jarContent.inputFile.updateTargetInformation.applicableMachineTypes.machineNumber;
         if (! Array.isArray(inputApplicableMT)) var jarApplicableMTList = [inputApplicableMT];
@@ -697,7 +699,7 @@ function verifyInputXML(jarContent) {
         var uniqueMT = [];
         jarApplicableMTList.forEach(function(mt) {
           if (uniqueMT.indexOf(mt) > -1) {
-            util.log("[ERROR] Duplicate machine type entires (" + mt + ") in 'applicableMachineTypes' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "Duplicate machine type entires (" + mt + ") in 'applicableMachineTypes' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else {
             uniqueMT.push(mt);
           }
@@ -705,12 +707,12 @@ function verifyInputXML(jarContent) {
 
         // Verify machine types are expected
         uniqueMT.forEach(function(mt) {
-          if (jarMTList.indexOf(mt) < 0) util.log("[ERROR] Unexpected machine type (" + mt + ") in 'applicableMachineTypes' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          if (jarMTList.indexOf(mt) < 0) logger.log('ERROR', "Unexpected machine type (" + mt + ") in 'applicableMachineTypes' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
         });
 
         // Verify all expected machine types were found
         jarMTList.forEach(function(mt) {
-          if (uniqueMT.indexOf(mt) < 0) util.log("[ERROR] Missing machine type (" + mt + ") in 'applicableMachineTypes' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          if (uniqueMT.indexOf(mt) < 0) logger.log('ERROR', "Missing machine type (" + mt + ") in 'applicableMachineTypes' section from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
         });
       }
     }
@@ -718,7 +720,7 @@ function verifyInputXML(jarContent) {
     if (config.pkgTypes[jarContent.jarType].type !== 'fw') {
       // Verify driver package does *not* contain PLDM FW update data
       if (jarContent.inputFile.pldmFirmware) {
-        util.log("[ERROR] Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     } else {
       // Verify firmware package supports PLDM FW updates
@@ -729,25 +731,25 @@ function verifyInputXML(jarContent) {
       if (! pkgSupportsPLDM) {
         // Verify package does *not* contain PLDM FW update data
         if (jarContent.inputFile.pldmFirmware) {
-          util.log("[ERROR] Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          logger.log('ERROR', "Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
         }
       } else {
         // Package supports PLDM FW updates -- Verify pldmFirmware section
         if (! jarContent.inputFile.pldmFirmware) {
-          util.log("[ERROR] Section 'pldmFirmware' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          logger.log('ERROR', "Section 'pldmFirmware' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
         } else {
           // Verify pldmFileName
           if (! jarContent.inputFile.pldmFirmware.pldmFileName) {
-            util.log("[ERROR] Parameter 'pldmFileName' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "Parameter 'pldmFileName' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else {
             if (jarContent.inputFile.pldmFirmware.pldmFileName.indexOf(jarVersion) < 0) {
-              util.log("[WARNING] Package version not found in parameter 'pldmFileName' from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('WARN', "Package version not found in parameter 'pldmFileName' from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             }
           }
 
           // Verify deviceDescriptor entries
           if (! jarContent.inputFile.pldmFirmware.deviceDescriptor) {
-            util.log("[ERROR] Parameter 'deviceDescriptor' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "Parameter 'deviceDescriptor' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else {
             var inputDeviceDesc = jarContent.inputFile.pldmFirmware.deviceDescriptor;
             if (! Array.isArray(inputDeviceDesc)) var jarDeviceDescList = [inputDeviceDesc];
@@ -777,7 +779,7 @@ function verifyInputXML(jarContent) {
             var uniqueDevices = [];
             jarDeviceDescList.forEach(function(deviceEntry) {
               if (uniqueDevices.indexOf(deviceEntry) > -1) {
-                util.log("[ERROR] Duplicate 'deviceDescriptor' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Duplicate 'deviceDescriptor' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 uniqueDevices.push(deviceEntry);
               }
@@ -785,19 +787,19 @@ function verifyInputXML(jarContent) {
 
             // Verify the number of entries matches supported adapters in BOM
             if (uniqueDevices.length !== bomDeviceCount) {
-              util.log("[ERROR] Incorrect number of 'deviceDescriptor' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Incorrect number of 'deviceDescriptor' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             }
 
             uniqueDevices.forEach(function(devDescEntry) {
               // Verify vendorSpecifier, deviceSpecifier, imageId, and classification are defined
               if (! devDescEntry.vendorSpecifier) {
-                util.log("[ERROR] Missing 'deviceDescriptor.vendorSpecifier' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing 'deviceDescriptor.vendorSpecifier' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (! devDescEntry.deviceSpecifier) {
-                util.log("[ERROR] Missing 'deviceDescriptor.deviceSpecifier' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing 'deviceDescriptor.deviceSpecifier' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (! devDescEntry.imageId) {
-                util.log("[ERROR] Missing 'deviceDescriptor.imageId' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing 'deviceDescriptor.imageId' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (! devDescEntry.classification) {
-                util.log("[ERROR] Missing 'deviceDescriptor.classification' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing 'deviceDescriptor.classification' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 // Verify full entry matches an expected adapter from the BOM
                 var matchingEntry = false;
@@ -810,14 +812,14 @@ function verifyInputXML(jarContent) {
                   }
                 });
                 if (! matchingEntry) {
-                  util.log("[ERROR] Unexpected 'deviceDescriptor' entry in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected 'deviceDescriptor' entry in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
               }
             });
 
             // Verify file entries -- Only performed if deviceDescriptor entries are found
             if (! jarContent.inputFile.pldmFirmware.file) {
-              util.log("[ERROR] Parameter 'file' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Parameter 'file' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
               var inputPLDMFile = jarContent.inputFile.pldmFirmware.file;
               if (! Array.isArray(inputPLDMFile)) var jarFileList = [inputPLDMFile];
@@ -827,7 +829,7 @@ function verifyInputXML(jarContent) {
               var uniqueFiles = [];
               jarFileList.forEach(function(fileEntry) {
                 if (uniqueFiles.indexOf(fileEntry) > -1) {
-                  util.log("[ERROR] Duplicate 'file' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Duplicate 'file' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   uniqueFiles.push(fileEntry);
                 }
@@ -841,31 +843,31 @@ function verifyInputXML(jarContent) {
                 });
               });
               if (uniqueFiles.length !== uniqueTypes.length) {
-                util.log("[ERROR] Incorrect number of 'file' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Incorrect number of 'file' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               }
 
               var fileCount = 1;
               uniqueFiles.forEach(function(fileEntry) {
                 // Verify name, source, version, and offset are defined
                 if (! fileEntry.name) {
-                  util.log("[ERROR] Missing 'file.name' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing 'file.name' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (! fileEntry.source) {
-                  util.log("[ERROR] Missing 'file.source' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing 'file.source' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (! fileEntry.version) {
-                  util.log("[ERROR] Missing 'file.version' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing 'file.version' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (! fileEntry.offset) {
-                  util.log("[ERROR] Missing 'file.offset' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing 'file.offset' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   // Verify file.name
                   if (fileEntry.name !== fileCount.toString()) {
-                    util.log("[ERROR] Unexpected value (" + fileEntry.name + ") for 'file.name' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Unexpected value (" + fileEntry.name + ") for 'file.name' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                   fileCount++;
 
                   // Verify file.source
                   var typeIndex = uniqueTypes.indexOf(fileEntry.source);
                   if (typeIndex < 0) {
-                    util.log("[ERROR] Invalid value (" + fileEntry.source + ") for 'file.source' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Invalid value (" + fileEntry.source + ") for 'file.source' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else {
                     // There should only be one entry per classification type
                     uniqueTypes.slice(typeIndex, 1);
@@ -873,12 +875,12 @@ function verifyInputXML(jarContent) {
 
                   // Verify file.version
                   if (fileEntry.version !== jarVersion) {
-                    util.log("[ERROR] Invalid value (" + fileEntry.version + ") for 'file.version' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Invalid value (" + fileEntry.version + ") for 'file.version' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
 
                   // Verify file.offset
                   if (fileEntry.offset !== '0') {
-                    util.log("[ERROR] Invalid value (" + fileEntry.offset + ") for 'file.offset' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Invalid value (" + fileEntry.offset + ") for 'file.offset' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               });
@@ -891,7 +893,7 @@ function verifyInputXML(jarContent) {
     // Verify description
     // Note: verification of description must be last, due to pieces of the string being pulled from above checks
     if (! jarContent.inputFile.description) {
-      util.log("[ERROR] Parameter 'description' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+      logger.log('ERROR', "Parameter 'description' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
       if (config.pkgTypes[jarContent.jarType].bootRegex) {
         var jarDesc = config.pkgTypes[jarContent.jarType].inputDesc.replace('##VERSION##', jarVersion + '-' + jarBootVersion).replace('##RELEASE##', workingBOM.release);
@@ -899,7 +901,7 @@ function verifyInputXML(jarContent) {
         var jarDesc = config.pkgTypes[jarContent.jarType].inputDesc.replace('##VERSION##', jarVersion).replace('##RELEASE##', workingBOM.release);
       }
       if (jarContent.inputFile.description !== jarDesc) {
-        util.log("[ERROR] Invalid value for 'description' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+        logger.log('ERROR', "Invalid value for 'description' found in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
       }
     }
   }
@@ -940,11 +942,11 @@ function verifyPayloadFile(jarContent) {
     // Payload is a tar.gz archive (Linux drivers) -- Extract it
     new Decompress().src(payloadFile).dest(payloadExtract).use(Decompress.targz()).run(function(err) {
       if(err) {
-        util.log("[ERROR] Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+        logger.log('ERROR', "Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
       } else {
         // Validate content of Linux driver package payload binary
         if (config.pkgTypes[jarContent.jarType].osType !== 'linux') {
-          util.log("[ERROR] Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+          logger.log('ERROR', "Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.");
         } else {
           // Build list of expected operating systems and architectures
           var pkgArch = [];
@@ -975,15 +977,15 @@ function verifyPayloadFile(jarContent) {
             var installScriptStats = fs.statSync(payloadExtract + 'install.sh');
           } catch (err) {
             if (err.code === 'ENOENT') {
-              util.log("[ERROR] The file install.sh does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The file install.sh does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (err.code === 'EACCES') {
-              util.log("[ERROR] Permission denied trying to open install.sh in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Permission denied trying to open install.sh in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
-              util.log("[ERROR] Unexpected error opening install.sh in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              logger.log('ERROR', "Unexpected error opening install.sh in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
             }
           }
           if (installScriptStats && installScriptStats.size < 1) {
-            util.log("[ERROR] The install.sh file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "The install.sh file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           }
 
           // Validate presence of ibm-driver-tool.pl and verify it's not 0 bytes
@@ -991,15 +993,15 @@ function verifyPayloadFile(jarContent) {
             var ddToolStats = fs.statSync(payloadExtract + 'tools/ibm-driver-tool.pl');
           } catch (err) {
             if (err.code === 'ENOENT') {
-              util.log("[ERROR] The file ibm-driver-tool.pl does not exist in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The file ibm-driver-tool.pl does not exist in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (err.code === 'EACCES') {
-              util.log("[ERROR] Permission denied trying to open ibm-driver-tool.pl in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Permission denied trying to open ibm-driver-tool.pl in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
-              util.log("[ERROR] Unexpected error opening ibm-driver-tool.pl in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              logger.log('ERROR', "Unexpected error opening ibm-driver-tool.pl in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
             }
           }
           if (ddToolStats && ddToolStats.size < 1) {
-            util.log("[ERROR] The ibm-driver-tool.pl file is 0 bytes in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "The ibm-driver-tool.pl file is 0 bytes in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           }
 
           var ddPkgVersion = jarData[jarContent.jarType].version;
@@ -1017,21 +1019,21 @@ function verifyPayloadFile(jarContent) {
               var rpmDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/');
             } catch (err) {
               if (err.code === 'ENOENT') {
-                util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (err.code === 'EACCES') {
-                util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                logger.log('ERROR', "Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
               }
             }
             if (rpmDirFiles && rpmDirFiles.length < 1) {
-              util.log("[ERROR] No driver RPM files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "No driver RPM files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (rpmDirFiles) {
               ddKernels.forEach(function(kernel) {
                 if (rpmDirFiles.indexOf(kernel) < 0) {
                   pkgOS.forEach(function(os) {
                     if (os.kernel === kernel) {
-                      util.log("[ERROR] Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                   });
                 } else {
@@ -1039,17 +1041,17 @@ function verifyPayloadFile(jarContent) {
                     var kernelDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + "/");
                   } catch (err) {
                     if (err.code === 'ENOENT') {
-                      util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else if (err.code === 'EACCES') {
-                      util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else {
-                      util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                      logger.log('ERROR', "Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                     }
                   }
                   if (kernelDirFiles && kernelDirFiles.length < 1) {
                     pkgOS.forEach(function(os) {
                       if (os.kernel === kernel) {
-                        util.log("[ERROR] Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        logger.log('ERROR', "Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       }
                     });
                   } else if (kernelDirFiles) {
@@ -1068,13 +1070,13 @@ function verifyPayloadFile(jarContent) {
                           }
                         });
                         if (! ddFound) {
-                          util.log("[ERROR] Missing driver RPM for " + pkgOS[i].name.toUpperCase() + "." + pkgOS[i].subVersion + " " + pkgOS[i].arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          logger.log('ERROR', "Missing driver RPM for " + pkgOS[i].name.toUpperCase() + "." + pkgOS[i].subVersion + " " + pkgOS[i].arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                         } else {
                           matchingFiles.push(ddFound);
                           // Verify RPM is not 0 bytes
                           var ddFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + "/" + ddFound);
                           if (ddFileStats.size < 1) {
-                            util.log("[ERROR] Driver RPM (" + ddFound + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                            logger.log('ERROR', "Driver RPM (" + ddFound + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.");
                           }
                         }
                       }
@@ -1082,7 +1084,7 @@ function verifyPayloadFile(jarContent) {
                     // Display error for any unexpected driver RPMs
                     kernelDirFiles.forEach(function(ddFile) {
                       if (matchingFiles.indexOf(ddFile) < 0) {
-                        util.log("[ERROR] Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        logger.log('ERROR', "Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       }
                     });
                   }
@@ -1095,15 +1097,15 @@ function verifyPayloadFile(jarContent) {
               var rpmDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/');
             } catch (err) {
               if (err.code === 'ENOENT') {
-                util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (err.code === 'EACCES') {
-                util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                logger.log('ERROR', "Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
               }
             }
             if (rpmDirFiles && rpmDirFiles.length < 1) {
-              util.log("[ERROR] No driver RPM files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "No driver RPM files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (rpmDirFiles) {
               ddArches.forEach(function(arch) {
                 if (arch === 'x86') var archDir = 'i386';
@@ -1111,7 +1113,7 @@ function verifyPayloadFile(jarContent) {
                 if (rpmDirFiles.indexOf(archDir) < 0) {
                   pkgOS.forEach(function(os) {
                     if (os.arch === arch) {
-                      util.log("[ERROR] Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                   });
                 } else {
@@ -1120,17 +1122,17 @@ function verifyPayloadFile(jarContent) {
                     var archDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/' + archDir + '/update/SUSE-SLES/' + osVer + '/rpm/');
                   } catch (err) {
                     if (err.code === 'ENOENT') {
-                      util.log("[ERROR] The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else if (err.code === 'EACCES') {
-                      util.log("[ERROR] Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else {
-                      util.log("[ERROR] Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                      logger.log('ERROR', "Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                     }
                   }
                   if (archDirFiles && archDirFiles.length < 1) {
                     pkgOS.forEach(function(os) {
                       if (os.arch === arch) {
-                        util.log("[ERROR] Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        logger.log('ERROR', "Missing driver RPM for " + os.name.toUpperCase() + "." + os.subVersion + " " + os.arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       }
                     });
                   } else if (archDirFiles) {
@@ -1162,14 +1164,14 @@ function verifyPayloadFile(jarContent) {
                           }
                         });
                         ddFileTypes.forEach(function(type) {
-                          util.log("[ERROR] Missing driver RPM type '" + type + "' for " + pkgOS[i].name.toUpperCase() + "." + pkgOS[i].subVersion + " " + pkgOS[i].arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          logger.log('ERROR', "Missing driver RPM type '" + type + "' for " + pkgOS[i].name.toUpperCase() + "." + pkgOS[i].subVersion + " " + pkgOS[i].arch + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                         });
                         ddFound.forEach(function(ddName) {
                           matchingFiles.push(ddName);
                           // Verify RPM is not 0 bytes
                           var ddFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/' + archDir + '/update/SUSE-SLES/' + osVer + '/rpm/' + ddName);
                           if (ddFileStats.size < 1) {
-                            util.log("[ERROR] Driver RPM (" + ddName + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                            logger.log('ERROR', "Driver RPM (" + ddName + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.");
                           }
                         });
                       }
@@ -1178,7 +1180,7 @@ function verifyPayloadFile(jarContent) {
                     archDirFiles.forEach(function(ddFile) {
                       if (matchingFiles.indexOf(ddFile) < 0) {
                         // TODO: Commented out to avoid errors for buggy jars -- This will be removed
-                        // util.log("[ERROR] Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        // logger.log('ERROR', "Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/" + archDir + "/update/SUSE-SLES/" + osVer + "/rpm/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       }
                     });
                   }
@@ -1192,15 +1194,15 @@ function verifyPayloadFile(jarContent) {
             var srpmDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].srpmImageFileDir);
           } catch (err) {
             if (err.code === 'ENOENT') {
-              util.log("[ERROR] The SRPM directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The SRPM directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (err.code === 'EACCES') {
-              util.log("[ERROR] Permission denied trying to open SRPM directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Permission denied trying to open SRPM directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
-              util.log("[ERROR] Unexpected error opening SRPM directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              logger.log('ERROR', "Unexpected error opening SRPM directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
             }
           }
           if (srpmDirFiles && srpmDirFiles.length < 1) {
-            util.log("[ERROR] No files found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "No files found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else if (srpmDirFiles) {
             // Build list of expected SRPMs
             var expectedSRPM = [];
@@ -1211,22 +1213,22 @@ function verifyPayloadFile(jarContent) {
             // Verify all expected SRPMs are present
             srpmDirFiles.forEach(function(srpmFile) {
               if (srpmFile.search(RegExp(config.pkgTypes[jarContent.jarType].srpmImageFileSearch)) < 0) {
-                util.log("[ERROR] Unexpected file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Unexpected file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 var srpmVersion = srpmFile.replace(RegExp(config.pkgTypes[jarContent.jarType].srpmImageFileSearch), config.pkgTypes[jarContent.jarType].srpmImageFileVersion);
                 var srpmSP = srpmFile.replace(RegExp(config.pkgTypes[jarContent.jarType].srpmImageFileSearch), config.pkgTypes[jarContent.jarType].srpmImageFileSP);
                 var srpmIndex = expectedSRPM.indexOf(srpmSP);
 
                 if (srpmIndex < 0) {
-                  util.log("[ERROR] Unexpected file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (srpmVersion !== ddPkgVersion) {
-                  util.log("[ERROR] Incorrect version for file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Incorrect version for file (" + srpmFile + ") found in the SRPM directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   expectedSRPM.splice(srpmIndex, 1);
                   // Verify SRPM file is not 0 bytes
                   var srpmFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].srpmImageFileDir + srpmFile);
                   if (srpmFileStats.size < 1) {
-                    util.log("[ERROR] SRPM file (" + srpmFile + ") is 0 bytes in the SRPM directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "SRPM file (" + srpmFile + ") is 0 bytes in the SRPM directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               }
@@ -1234,7 +1236,7 @@ function verifyPayloadFile(jarContent) {
 
             // Display error if all expected SRPMs are not present
             expectedSRPM.forEach(function(srpm) {
-              util.log("[ERROR] SRPM for " + config.pkgTypes[jarContent.jarType].os.toUpperCase() + "." + srpm + " missing from the SRPM directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "SRPM for " + config.pkgTypes[jarContent.jarType].os.toUpperCase() + "." + srpm + " missing from the SRPM directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
             });
           }
 
@@ -1243,15 +1245,15 @@ function verifyPayloadFile(jarContent) {
             var disksDirFiles = fs.readdirSync(payloadExtract + 'disks/');
           } catch (err) {
             if (err.code === 'ENOENT') {
-              util.log("[ERROR] The disks directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The disks directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (err.code === 'EACCES') {
-              util.log("[ERROR] Permission denied trying to open disks directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Permission denied trying to open disks directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
-              util.log("[ERROR] Unexpected error opening disks directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              logger.log('ERROR', "Unexpected error opening disks directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
             }
           }
           if (disksDirFiles && disksDirFiles.length < 1) {
-            util.log("[ERROR] No files found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "No files found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else if (disksDirFiles) {
             // Build list of expected DUD images
             var expectedDUD = [];
@@ -1273,7 +1275,7 @@ function verifyPayloadFile(jarContent) {
             // Verify the correct DUD images are present
             disksDirFiles.forEach(function(dudFile) {
               if (dudFile.search(RegExp(config.pkgTypes[jarContent.jarType].dudImageFileSearch)) < 0) {
-                util.log("[ERROR] Unexpected file (" + dudFile + ") found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Unexpected file (" + dudFile + ") found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 var dudVersion = dudFile.replace(RegExp(config.pkgTypes[jarContent.jarType].dudImageFileSearch), config.pkgTypes[jarContent.jarType].dudImageFileVersion);
                 var dudSP = dudFile.replace(RegExp(config.pkgTypes[jarContent.jarType].dudImageFileSearch), config.pkgTypes[jarContent.jarType].dudImageFileSP);
@@ -1287,12 +1289,12 @@ function verifyPayloadFile(jarContent) {
                   }
                 }
                 if (! matchingDUD) {
-                  util.log("[ERROR] Unexpected file (" + dudFile + ") found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected file (" + dudFile + ") found in the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   // Verify DUD file is not 0 bytes
                   var dudFileStats = fs.statSync(payloadExtract + 'disks/' + dudFile);
                   if (dudFileStats.size < 1) {
-                    util.log("[ERROR] DUD file (" + dudFile + ") is 0 bytes in the disks directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "DUD file (" + dudFile + ") is 0 bytes in the disks directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               }
@@ -1300,7 +1302,7 @@ function verifyPayloadFile(jarContent) {
 
             // Display error if DUD image was expected but not found
             expectedDUD.forEach(function(dud) {
-              util.log("[ERROR] DUD image for service pack " + dud.subVersion + " and architecture '" + dud.arch + "' missing from the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "DUD image for service pack " + dud.subVersion + " and architecture '" + dud.arch + "' missing from the disks directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             });
           }
 
@@ -1312,24 +1314,24 @@ function verifyPayloadFile(jarContent) {
               var appsDirFiles = fs.readdirSync(payloadExtract + 'apps/');
             } catch (err) {
               if (err.code === 'ENOENT') {
-                util.log("[ERROR] The apps directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "The apps directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (err.code === 'EACCES') {
-                util.log("[ERROR] Permission denied trying to open apps directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Permission denied trying to open apps directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                util.log("[ERROR] Unexpected error opening apps directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                logger.log('ERROR', "Unexpected error opening apps directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
               }
             }
             if (appsDirFiles && appsDirFiles.length < 1) {
-              util.log("[ERROR] No files found in the apps directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "No files found in the apps directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (appsDirFiles) {
               // Verify elx_install.sh and uninstall.sh are included and not 0 bytes
               ['elx_install.sh', 'uninstall.sh'].forEach(function(installFile) {
                 if (appsDirFiles.indexOf(installFile) < 0) {
-                  util.log("[ERROR] OCM installer file (" + installFile + ") is missing from the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "OCM installer file (" + installFile + ") is missing from the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   var installFileStats = fs.statSync(payloadExtract + 'apps/' + installFile);
                   if (installFileStats.size < 1) {
-                    util.log("[ERROR] OCM installer file (" + installFile + ") is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "OCM installer file (" + installFile + ") is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               });
@@ -1348,16 +1350,16 @@ function verifyPayloadFile(jarContent) {
                   var ocmDirFiles = fs.readdirSync(payloadExtract + 'apps/' + ocmDir);
                 } catch (err) {
                   if (err.code === 'ENOENT') {
-                    util.log("[ERROR] The directory 'apps/" + ocmDir + "' does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "The directory 'apps/" + ocmDir + "' does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else if (err.code === 'EACCES') {
-                    util.log("[ERROR] Permission denied trying to open 'apps/" + ocmDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Permission denied trying to open 'apps/" + ocmDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else {
-                    util.log("[ERROR] Unexpected error opening 'apps/" + ocmDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                    logger.log('ERROR', "Unexpected error opening 'apps/" + ocmDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                   }
                 }
                 if (ocmDirFiles) {
                   if (ocmDirFiles.length < 1) {
-                    util.log("[ERROR] No files found in 'apps/" + ocmDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "No files found in 'apps/" + ocmDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else {
                     var ocmExists = true;
                     var ocmArchFound = [];
@@ -1372,7 +1374,7 @@ function verifyPayloadFile(jarContent) {
                           if (ocmFileArch === ocmDir.split('/')[0]) {
                             var ocmFileStats = fs.statSync(payloadExtract + 'apps/' + ocmDir + ocmFile);
                             if (ocmFileStats.size < 1) {
-                              util.log("[ERROR] OCM installer file (" + ocmDir + ocmFile + ") is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                              logger.log('ERROR', "OCM installer file (" + ocmDir + ocmFile + ") is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                             } else {
                               ocmFileExists = true;
                             }
@@ -1384,7 +1386,7 @@ function verifyPayloadFile(jarContent) {
                       }
                     });
                     if (! ocmExists) {
-                      util.log("[ERROR] One or more OCM installer files are missing from the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "One or more OCM installer files are missing from the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else {
                       ocmArch.splice(i, 1);
                       i--;
@@ -1394,13 +1396,13 @@ function verifyPayloadFile(jarContent) {
               }
               // Display error if OCM installer was expected but not found
               ocmArch.forEach(function(arch) {
-                util.log("[ERROR] OCM installer for architecture (" + arch + ") missing from the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "OCM installer for architecture (" + arch + ") missing from the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
               });
 
               // Display error if OCM installer for unexpected architecture was found
               ocmArchFound.forEach(function(arch) {
                 if (ocmArchAll.indexOf(arch) < 0) {
-                  util.log("[ERROR] OCM installer found for unexpected architecture (" + arch + ") in apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "OCM installer found for unexpected architecture (" + arch + ") in apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
               });
             }
@@ -1417,7 +1419,7 @@ function verifyPayloadFile(jarContent) {
     // Payload is a self-extracting zip archive (firmware & Windows drivers) -- Extract it
     exec('unzip \"' + payloadFile + '\" -d \"' + payloadExtract + '\"', function(err, stdout, stderr) {
       if (stderr !== null && stderr.search('extra bytes at beginning or within zipfile') < 0) {
-        util.log("[ERROR] Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + stderr + "\n");
+        logger.log('ERROR', "Unexpected error extracting payload file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + stderr);
       } else {
         // Build list of supported adapters based on BOM
         var bomAdapterList = [];
@@ -1432,11 +1434,11 @@ function verifyPayloadFile(jarContent) {
             fs.readFile(payloadContentDir + 'fwmatrix.txt', 'utf8', function(err, data) {
               if (err) {
                 if (err.code === 'ENOENT') {
-                  util.log("[ERROR] The fwmatrix.txt file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "The fwmatrix.txt file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (err.code === 'EACCES') {
-                  util.log("[ERROR] Permission denied trying to open fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Permission denied trying to open fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
-                  util.log("[ERROR] Unexpected error opening fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                  logger.log('ERROR', "Unexpected error opening fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                 }
               } else {
                 // Build list of expected device types based on BOM and configuration file
@@ -1464,10 +1466,10 @@ function verifyPayloadFile(jarContent) {
 
                       // Compare device type
                       if (bomDeviceNames.indexOf(fwMatrixDevice) < 0) {
-                        util.log("[ERROR] Unexpected device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        logger.log('ERROR', "Unexpected device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       } else {
                         if (validMatrixEntries.indexOf(fwMatrixDevice) > -1) {
-                          util.log("[ERROR] Duplicate device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          logger.log('ERROR', "Duplicate device type (" + fwMatrixDevice + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                         } else {
                           validMatrixEntries.push(fwMatrixDevice);
                         }
@@ -1475,15 +1477,15 @@ function verifyPayloadFile(jarContent) {
 
                       // Compare firmware image name with package firmware version
                       if (! fwMatrixFirmware) {
-                        util.log("[ERROR] Invalid entry on line " + (matrixIndex + 1) + " of fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        logger.log('ERROR', "Invalid entry on line " + (matrixIndex + 1) + " of fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       } else {
                         var fwMatrixVersion = fwMatrixFirmware.replace(RegExp(config.pkgTypes[jarContent.jarType].fwImageFileSearch), config.pkgTypes[jarContent.jarType].fwImageFileReplace);
                         var fwPkgVersion = jarData[jarContent.jarType].version;
                         if (! fwMatrixVersion) {
-                          util.log("[ERROR] Unexpected firmware image file (" + fwMatrixFirmware + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          logger.log('ERROR', "Unexpected firmware image file (" + fwMatrixFirmware + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                         } else {
                           if (fwMatrixVersion !== fwPkgVersion) {
-                            util.log("[ERROR] Firmware image file name (" + fwMatrixFirmware + ") in fwmatrix.txt doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                            logger.log('ERROR', "Firmware image file name (" + fwMatrixFirmware + ") in fwmatrix.txt doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
                           }
                         }
                       }
@@ -1491,22 +1493,22 @@ function verifyPayloadFile(jarContent) {
                       if (jarData[jarContent.jarType].bootVersion) {
                         // Package contains boot code -- Compare boot code image name to package boot code version
                         if (! fwMatrixBoot) {
-                          util.log("[ERROR] Missing boot image on line " + (matrixIndex + 1) + " of fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          logger.log('ERROR', "Missing boot image on line " + (matrixIndex + 1) + " of fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                         } else {
                           var fwMatrixBootVersion = fwMatrixBoot.replace(RegExp(config.pkgTypes[jarContent.jarType].bootImageFileSearch), config.pkgTypes[jarContent.jarType].bootImageFileReplace);
                           var fwPkgBootVersion = jarData[jarContent.jarType].bootVersion;
                           if (! fwMatrixBootVersion) {
-                            util.log("[ERROR] Unexpected boot code image file (" + fwMatrixBoot + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                            logger.log('ERROR', "Unexpected boot code image file (" + fwMatrixBoot + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                           } else {
                             if (fwMatrixBootVersion !== fwPkgBootVersion) {
-                              util.log("[ERROR] Boot code image file name (" + fwMatrixBoot + ") in fwmatrix.txt doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                              logger.log('ERROR', "Boot code image file name (" + fwMatrixBoot + ") in fwmatrix.txt doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
                             }
                           }
                         }
                       } else {
                         // Package should not contain boot code -- Verify that it doesn't
                         if (fwMatrixBoot) {
-                          util.log("[ERROR] Unexpected boot code image file (" + fwMatrixBoot + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                          logger.log('ERROR', "Unexpected boot code image file (" + fwMatrixBoot + ") in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                         }
                       }
                     }
@@ -1516,7 +1518,7 @@ function verifyPayloadFile(jarContent) {
                 // Verify no expected device types are missing from fwmatrix.txt
                 bomDeviceNames.forEach(function(expectedEntry) {
                   if (validMatrixEntries.indexOf(expectedEntry) < 0) {
-                    util.log("[ERROR] Expected device type (" + expectedEntry + ") missing in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Expected device type (" + expectedEntry + ") missing in fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 });
               }
@@ -1537,15 +1539,15 @@ function verifyPayloadFile(jarContent) {
               var elxflashFileStats = fs.statSync(payloadContentDir + flashScript);
             } catch (err) {
               if (err.code === 'ENOENT') {
-                util.log("[ERROR] The file " + flashScript + " does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "The file " + flashScript + " does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (err.code === 'EACCES') {
-                util.log("[ERROR] Permission denied trying to open " + flashScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Permission denied trying to open " + flashScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                util.log("[ERROR] Unexpected error opening " + flashScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                logger.log('ERROR', "Unexpected error opening " + flashScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
               }
             }
             if (elxflashFileStats && elxflashFileStats.size < 1) {
-              util.log("[ERROR] The file " + flashScript + " is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The file " + flashScript + " is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             }
 
             // Validate presence of elxflash binary files
@@ -1561,25 +1563,25 @@ function verifyPayloadFile(jarContent) {
                 var flashDirFiles = fs.readdirSync(payloadContentDir + flashDir);
               } catch (err) {
                 if (err.code === 'ENOENT') {
-                  util.log("[ERROR] The directory '" + flashDir + "' does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "The directory '" + flashDir + "' does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (err.code === 'EACCES') {
-                  util.log("[ERROR] Permission denied trying to open '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Permission denied trying to open '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
-                  util.log("[ERROR] Unexpected error opening '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                  logger.log('ERROR', "Unexpected error opening '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                 }
               }
               if (flashDirFiles) {
                 if (flashDirFiles.length < 1) {
-                  util.log("[ERROR] No files found in '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "No files found in '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   flashDirFiles.forEach(function(flashFile) {
                     try {
                       var elxflashBinFileStats = fs.statSync(payloadContentDir + flashDir + flashFile);
                     } catch (err) {
-                      util.log("[ERROR] Unexpected error opening '" + flashDir + flashFile + "' in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                      logger.log('ERROR', "Unexpected error opening '" + flashDir + flashFile + "' in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                     }
                     if (elxflashBinFileStats && elxflashBinFileStats.size < 1) {
-                      util.log("[ERROR] The file '" + flashDir + flashFile + "' is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "The file '" + flashDir + flashFile + "' is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                   });
                 }
@@ -1593,15 +1595,15 @@ function verifyPayloadFile(jarContent) {
               var updateScriptStats = fs.statSync(payloadContentDir + updateScript);
             } catch (err) {
               if (err.code === 'ENOENT') {
-                util.log("[ERROR] The file " + updateScript + " does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "The file " + updateScript + " does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (err.code === 'EACCES') {
-                util.log("[ERROR] Permission denied trying to open " + updateScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Permission denied trying to open " + updateScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                util.log("[ERROR] Unexpected error opening " + updateScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                logger.log('ERROR', "Unexpected error opening " + updateScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
               }
             }
             if (updateScriptStats && updateScriptStats.size < 1) {
-              util.log("[ERROR] The " + updateScript + " file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The " + updateScript + " file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             }
 
             if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
@@ -1615,11 +1617,11 @@ function verifyPayloadFile(jarContent) {
           var payloadXmlFileStream = fs.createReadStream(payloadContentDir + 'payload.xml');
           payloadXmlFileStream.on('error', function(err) {
             if (err.code === 'ENOENT') {
-              util.log("[ERROR] The payload.xml file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The payload.xml file does not exist for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (err.code === 'EACCES') {
-              util.log("[ERROR] Permission denied trying to open payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Permission denied trying to open payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
-              util.log("[ERROR] Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              logger.log('ERROR', "Unexpected error opening payload.xml for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
             }
           });
           var payloadXmlFile = [];
@@ -1643,10 +1645,10 @@ function verifyPayloadFile(jarContent) {
                 }
               }
               if (! fwImageVersion) {
-                util.log("[ERROR] Unexpected firmware image file (" + fwImageName + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Unexpected firmware image file (" + fwImageName + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 if (fwImageVersion !== fwPkgVersion) {
-                  util.log("[ERROR] Firmware image file name (" + fwImageName + ") in payload.xml doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                  logger.log('ERROR', "Firmware image file name (" + fwImageName + ") in payload.xml doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
                 }
               }
 
@@ -1674,7 +1676,7 @@ function verifyPayloadFile(jarContent) {
               payload.applicability.forEach(function(appDID) {
                 var payloadEntry = appDID.$t;
                 if (bomV2Entries.indexOf(payloadEntry) < 0) {
-                  util.log("[ERROR] Unexpected " + fwImageType + " device (" + payloadEntry + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected " + fwImageType + " device (" + payloadEntry + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   validPayloadEntries.push(payloadEntry);
                 }
@@ -1683,7 +1685,7 @@ function verifyPayloadFile(jarContent) {
               // Verify no expected device IDs are missing from payload.xml
               bomV2Entries.forEach(function(appDID) {
                 if (validPayloadEntries.indexOf(appDID) < 0) {
-                  util.log("[ERROR] Missing " + fwImageType + " device (" + appDID + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing " + fwImageType + " device (" + appDID + ") in payload.xml from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
               });
             });
@@ -1695,15 +1697,15 @@ function verifyPayloadFile(jarContent) {
             var fwDirFiles = fs.readdirSync(payloadContentDir + 'firmware/');
           } catch (err) {
             if (err.code === 'ENOENT') {
-              util.log("[ERROR] The firmware directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The firmware directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (err.code === 'EACCES') {
-              util.log("[ERROR] Permission denied trying to open firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "Permission denied trying to open firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
-              util.log("[ERROR] Unexpected error opening firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+              logger.log('ERROR', "Unexpected error opening firmware directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
             }
           }
           if (fwDirFiles && fwDirFiles.length < 1) {
-            util.log("[ERROR] No firmware files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "No firmware files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else if (fwDirFiles) {
             var fwPkgVersion = jarData[jarContent.jarType].version;
             var bomAdapterTypes = [];
@@ -1717,7 +1719,7 @@ function verifyPayloadFile(jarContent) {
             fwDirFiles.forEach(function(fwFile) {
               var fwFileVersion = fwFile.replace(RegExp(config.pkgTypes[jarContent.jarType].fwImageFileSearch), config.pkgTypes[jarContent.jarType].fwImageFileReplace);
               if (fwFileVersion !== fwPkgVersion) {
-                util.log("[ERROR] Firmware image file name (" + fwFile + ") in firmware directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                logger.log('ERROR', "Firmware image file name (" + fwFile + ") in firmware directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
               } else {
                 var adapterTypeFound = false;
                 for (var i=0; i < bomAdapterTypes.length; i++) {
@@ -1733,19 +1735,19 @@ function verifyPayloadFile(jarContent) {
                   }
                 }
                 if (! adapterTypeFound) {
-                  util.log("[ERROR] Unexpected firmware image file (" + fwFile + ") in firmware directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Unexpected firmware image file (" + fwFile + ") in firmware directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   // Verify image file isn't 0 bytes
                   var fwFileStats = fs.statSync(payloadContentDir + 'firmware/' + fwFile);
                   if (fwFileStats.size < 1) {
-                    util.log("[ERROR] Firmware image file (" + fwFile + ") is 0 bytes in firmware directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Firmware image file (" + fwFile + ") is 0 bytes in firmware directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               }
             });
             if (bomAdapterTypes.length > 0) {
               bomAdapterTypes.forEach(function(adapterType) {
-                util.log("[ERROR] Missing firmware image file type (" + adapterType + ") in firmware directory for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Missing firmware image file type (" + adapterType + ") in firmware directory for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               });
             }
           }
@@ -1756,15 +1758,15 @@ function verifyPayloadFile(jarContent) {
               var bootDirFiles = fs.readdirSync(payloadContentDir + 'boot/');
             } catch (err) {
               if (err.code === 'ENOENT') {
-                util.log("[ERROR] The boot directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "The boot directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (err.code === 'EACCES') {
-                util.log("[ERROR] Permission denied trying to open boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Permission denied trying to open boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                util.log("[ERROR] Unexpected error opening boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                logger.log('ERROR', "Unexpected error opening boot directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
               }
             }
             if (bootDirFiles && bootDirFiles.length < 1) {
-              util.log("[ERROR] No boot code files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "No boot code files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (bootDirFiles) {
               var fwPkgBootVersion = jarData[jarContent.jarType].bootVersion;
               var bomAdapterTypes = [];
@@ -1778,7 +1780,7 @@ function verifyPayloadFile(jarContent) {
               bootDirFiles.forEach(function(bootFile) {
                 var bootFileVersion = bootFile.replace(RegExp(config.pkgTypes[jarContent.jarType].bootImageFileSearch), config.pkgTypes[jarContent.jarType].bootImageFileReplace);
                 if (bootFileVersion !== fwPkgBootVersion) {
-                  util.log("[ERROR] Boot image file name (" + bootFile + ") in boot directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                  logger.log('ERROR', "Boot image file name (" + bootFile + ") in boot directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
                 } else {
                   var adapterTypeFound = false;
                   for (var i=0; i < bomAdapterTypes.length; i++) {
@@ -1794,19 +1796,19 @@ function verifyPayloadFile(jarContent) {
                     }
                   }
                   if (! adapterTypeFound) {
-                    util.log("[ERROR] Unexpected boot image file (" + bootFile + ") in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                    logger.log('ERROR', "Unexpected boot image file (" + bootFile + ") in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else {
                     // Verify image file isn't 0 bytes
                     var bootFileStats = fs.statSync(payloadContentDir + 'boot/' + bootFile);
                     if (bootFileStats.size < 1) {
-                      util.log("[ERROR] Boot code image file (" + bootFile + ") is 0 bytes in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Boot code image file (" + bootFile + ") is 0 bytes in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                   }
                 }
               });
               if (bomAdapterTypes.length > 0) {
                 bomAdapterTypes.forEach(function(adapterType) {
-                  util.log("[ERROR] Missing boot image file type (" + adapterType + ") in boot directory for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                  logger.log('ERROR', "Missing boot image file type (" + adapterType + ") in boot directory for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 });
               }
             }
@@ -1818,22 +1820,22 @@ function verifyPayloadFile(jarContent) {
         } else {
           // Validate content of Windows driver package payload binary
           if (config.pkgTypes[jarContent.jarType].osType !== 'windows') {
-            util.log("[ERROR] Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+            logger.log('ERROR', "Unexpected payload binary (" + payloadFile + ") for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else {
             // Validate presence of install script and verify it's not 0 bytes
             try {
               var installScriptStats = fs.statSync(payloadContentDir + 'Install.cmd');
             } catch (err) {
               if (err.code === 'ENOENT') {
-                util.log("[ERROR] The file Install.cmd does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "The file Install.cmd does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (err.code === 'EACCES') {
-                util.log("[ERROR] Permission denied trying to open Install.cmd in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Permission denied trying to open Install.cmd in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                util.log("[ERROR] Unexpected error opening Install.cmd in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                logger.log('ERROR', "Unexpected error opening Install.cmd in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
               }
             }
             if (installScriptStats && installScriptStats.size < 1) {
-              util.log("[ERROR] The Install.cmd file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "The Install.cmd file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             }
 
             // Validate content of Installer directory
@@ -1841,15 +1843,15 @@ function verifyPayloadFile(jarContent) {
               var installDirFiles = fs.readdirSync(payloadContentDir + 'Installer/');
             } catch (err) {
               if (err.code === 'ENOENT') {
-                util.log("[ERROR] The Installer directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "The Installer directory does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else if (err.code === 'EACCES') {
-                util.log("[ERROR] Permission denied trying to open Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Permission denied trying to open Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                util.log("[ERROR] Unexpected error opening Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package:\n" + err + "\n");
+                logger.log('ERROR', "Unexpected error opening Installer directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
               }
             }
             if (installDirFiles && installDirFiles.length < 1) {
-              util.log("[ERROR] No installer files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+              logger.log('ERROR', "No installer files found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else if (installDirFiles) {
               // Build list of expected OCM architectures
               var ocmArch = [];
@@ -1869,11 +1871,11 @@ function verifyPayloadFile(jarContent) {
                   ddFound = true;
                   var ddFileVersion = installFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileReplace);
                   if (ddFileVersion && ddFileVersion !== ddPkgVersion) {
-                    util.log("[ERROR] Driver installer file name (" + installFile + ") in Installer directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                    logger.log('ERROR', "Driver installer file name (" + installFile + ") in Installer directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
                   } else {
                     var ddFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
                     if (ddFileStats.size < 1) {
-                      util.log("[ERROR] Driver installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                      logger.log('ERROR', "Driver installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                   }
 
@@ -1886,12 +1888,12 @@ function verifyPayloadFile(jarContent) {
                     var installArch = installMatch[1];
                     var archIndex = ocmArch.indexOf(installArch);
                     if (archIndex < 0) {
-                      util.log("[ERROR] OCM installer found for unexpected architecture (" + installArch + ") in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package version.\n");
+                      logger.log('ERROR', "OCM installer found for unexpected architecture (" + installArch + ") in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package version.");
                     } else {
                       ocmArch.splice(archIndex, 1);
                       var ocmFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
                       if (ocmFileStats.size < 1) {
-                        util.log("[ERROR] OCM installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                        logger.log('ERROR', "OCM installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       }
                     }
                   }
@@ -1900,12 +1902,12 @@ function verifyPayloadFile(jarContent) {
 
               // Display error if driver installer was not found
               if (! ddFound) {
-                util.log("[ERROR] Driver installer file missing from Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "Driver installer file missing from Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
               }
 
               // Display error if OCM installer was expected but not found
               ocmArch.forEach(function(arch) {
-                util.log("[ERROR] OCM installer for architecture (" + arch + ") missing from Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+                logger.log('ERROR', "OCM installer for architecture (" + arch + ") missing from Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
               });
             }
           }
@@ -1917,7 +1919,7 @@ function verifyPayloadFile(jarContent) {
       }
     });
   } else {
-    util.log("[ERROR] Unexpected payload file name extension for the " + config.pkgTypes[jarContent.jarType].name + " package.\n");
+    logger.log('ERROR', "Unexpected payload file name extension for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   }
 }
 
@@ -1929,7 +1931,8 @@ function verifyPayloadFile(jarContent) {
 try {
   var config = require('../config.js');
 } catch (err) {
-  return util.log("[ERROR] Unable to open configuration file.\n" + err);
+  logger.log('ERROR', "Unable to open configuration file.\n" + err);
+  return logger.errorCount;
 }
 
 // Initialization
@@ -1945,7 +1948,8 @@ var helpText = "Usage: node jar-verify.js <parameters> \n" +
   "\nAvailable Parameters:\n" +
   " -b | --build    - (Required) Specifies the build number to verify.\n" +
   " -r | --release  - (Required) Specifies the release name to verify.\n" +
-  " -s | --save     - Save the specified release/build as a delivered build.";
+  " -s | --save     - Save the specified release/build as a delivered build.\n" +
+  " -d | --debug    - Display and log additional debug messages.\n";
 
 var runParams = getParams();
 var paramNames = Object.getOwnPropertyNames(runParams);
@@ -1955,6 +1959,9 @@ if (paramNames.length < 1 || paramNames.indexOf('h') > -1 || paramNames.indexOf(
   return console.log(helpText);
 }
 
+// Enable debug logging if specified
+if (paramNames.indexOf('d') > -1 || paramNames.indexOf('debug') > -1) logger.logLevel = 'DEBUG';
+
 // Verify specified build number is valid
 if (runParams['b'] || runParams['build']) {
   if (runParams['b'] && runParams['b'].search(/^[0-9]+(?:[0-9\.]+)?$/) > -1) {
@@ -1962,7 +1969,8 @@ if (runParams['b'] || runParams['build']) {
   } else if (runParams['build'] && runParams['build'].search(/^[0-9]+(?:[0-9\.]+)?$/) > -1) {
     var workingBuild = runParams['build'];
   } else {
-    return util.log("[ERROR] Specified build number is invalid.\n");
+    logger.log('ERROR', "Specified build number is invalid.");
+    return logger.errorCount;
   }
 }
 
@@ -1973,12 +1981,16 @@ if (runParams['r'] || runParams['release']) {
   } else if (runParams['release'] && runParams['release'].search(/^[0-9A-Za-z]+$/) > -1) {
     var workingRelease = runParams['release'].toUpperCase();
   } else {
-    return util.log("[ERROR] Specified release name is invalid.\n");
+    logger.log('ERROR', "Specified release name is invalid.");
+    return logger.errorCount;
   }
 }
 
 // Set jarDir to correct location based on release name and build number
-if (! workingBuild || ! workingRelease) return util.log("[ERROR] Release name and build number must be specified.\n" + helpText);
+if (! workingBuild || ! workingRelease) {
+  logger.log('ERROR', "Release name and build number must be specified.\n" + helpText);
+  return logger.errorCount;
+}
 var jarDir = config.jarDir + workingRelease + '/' + workingBuild + '/';
 
 // Read BOM file for specified release
@@ -1986,27 +1998,29 @@ try {
   var workingBOM = JSON.parse(fs.readFileSync(config.dataDir + workingRelease + '-BOM.json'));
 } catch (err) {
   if (err.code === 'ENOENT') {
-    return util.log("[ERROR] The BOM file (" + config.dataDir + workingRelease + "-BOM.json) does not exist.\n");
+    logger.log('ERROR', "The BOM file (" + config.dataDir + workingRelease + "-BOM.json) does not exist.");
   } else if (err.code === 'EACCES') {
-    return util.log("[ERROR] Permission denied trying to open BOM file.\n");
+    logger.log('ERROR', "Permission denied trying to open BOM file.");
   } else {
-    return util.log("[ERROR] Unexpected error:\n" + err);
+    logger.log('ERROR', "Unexpected error reading BOM file.\n" + err);
   }
+  return logger.errorCount;
 }
 
-util.log("[STATUS] Building list of JAR files for the specified release and build...\n");
+logger.log('INFO', "Building list of JAR files for the specified release and build...");
 
 // Gather list of JAR files in jarDir
 try {
   var jarDirFiles = fs.readdirSync(jarDir);
 } catch (err) {
   if (err.code === 'ENOENT') {
-    return util.log("[ERROR] The JAR file directory (" + jarDir + ") does not exist.\n");
+    logger.log('ERROR', "The JAR file directory (" + jarDir + ") does not exist.");
   } else if (err.code === 'EACCES') {
-    return util.log("[ERROR] Permission denied trying to open JAR file directory.\n");
+    logger.log('ERROR', "Permission denied trying to open JAR file directory.");
   } else {
-    return util.log("[ERROR] Unexpected error:\n" + err);
+    logger.log('ERROR', "Unexpected error reading JAR file directory.\n" + err);
   }
+  return logger.errorCount;
 }
 
 // Remove all files/directories from jarFiles array which don't end in .jar
@@ -2018,7 +2032,10 @@ for (var i = 0; i < jarDirFiles.length; i++) {
 }
 
 // Quit if no JAR files are found for the specified release/build
-if (jarDirFiles.length < 1) return util.log("[ERROR] No JAR files found in '" + jarDir + "'.\n");
+if (jarDirFiles.length < 1) {
+  logger.log('ERROR', "No JAR files found in '" + jarDir + "'.");
+  return logger.errorCount;
+}
 
 // Match each JAR file to the expected package types
 var jarFiles = {};
@@ -2034,11 +2051,11 @@ jarDirFiles.forEach(function(jar) {
           jarVersion: matchResult[1]
         };
       } else {
-        util.log("[WARNING] The " + config.pkgTypes[i].name + " package was matched to multiple JAR files. Ignored: " + jar + ".\n");
+        logger.log('WARN', "The " + config.pkgTypes[i].name + " package was matched to multiple JAR files. Ignored: " + jar + ".");
       }
     }
   }
-  if (! matched) util.log("[WARNING] The JAR file '" + jar + "' did not match any expected names and will be ignored.\n");
+  if (! matched) logger.log('WARN', "The JAR file '" + jar + "' did not match any expected names and will be ignored.");
 });
 
 // Build list of expected JAR files based on BOM
@@ -2060,19 +2077,19 @@ for (var bomOS in workingBOM.appDIDList['dd']) {
 
 // Show error if expected JAR file is missing (as compared to BOM)
 bomJarTypes.forEach(function(jarType) {
-  if (! jarFiles[jarType]) util.log("[ERROR] The " + config.pkgTypes[jarType].name + " JAR file cannot be found.\n");
+  if (! jarFiles[jarType]) logger.log('ERROR', "The " + config.pkgTypes[jarType].name + " JAR file cannot be found.");
 });
 
 // Show warning if unexpected JAR file exists (as compared to BOM)
 for (jarType in jarFiles) {
   if (bomJarTypes.indexOf(jarType) < 0) {
-    util.log("[WARNING] Unexpected JAR file will be ignored: " + jarFiles[jarType].fileName + "\n");
+    logger.log('WARN', "Unexpected JAR file (" + jarFiles[jarType].fileName + ") will be ignored.");
     delete jarFiles[jarType];
   }
 }
 
 // All items in jarFiles should now be valid - begin verification
-util.log("[STATUS] Verifying content of " + Object.keys(jarFiles).length + " JAR files...\n");
+logger.log('INFO', "Verifying content of " + Object.keys(jarFiles).length + " JAR files...");
 var jarData = [];
 for (jarType in jarFiles) {
   jarData[jarType] = {};
@@ -2085,50 +2102,50 @@ for (jarType in jarFiles) {
     jarData[jarContent.jarType].binFileChecksum = jarContent.binFileChecksum;
 
     // Verify input XML data
-    // util.log("[STATUS] Verifying input XML for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    // logger.log('INFO', "Verifying input XML for " + config.pkgTypes[jarContent.jarType].name + " package...");
     if (jarContent.inputFile !== null) {
       verifyInputXML(jarContent);
     }
 
     // Verify package XML data
-    // util.log("[STATUS] Verifying package XML for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    // logger.log('INFO', "Verifying package XML for " + config.pkgTypes[jarContent.jarType].name + " package...");
     if (jarContent.xmlFile !== null) {
       verifyPackageXML(jarContent);
     }
 
     // Verify readme data
-    // util.log("[STATUS] Verifying README file for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    // logger.log('INFO', "Verifying README file for " + config.pkgTypes[jarContent.jarType].name + " package...");
     if (jarContent.readmeFile !== null) {
       verifyReadmeFile(jarContent);
     }
 
     // Verify change history data
-    // util.log("[STATUS] Verifying Change History file for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    // logger.log('INFO', "Verifying Change History file for " + config.pkgTypes[jarContent.jarType].name + " package...");
     if (jarContent.changeFile !== null) {
       verifyChangeFile(jarContent);
     }
 
     // Verify payload
-    // util.log("[STATUS] Verifying payload for " + config.pkgTypes[jarContent.jarType].name + " package...\n");
+    // logger.log('INFO', "Verifying payload for " + config.pkgTypes[jarContent.jarType].name + " package...");
     if (jarContent.binFileName !== null) {
       verifyPayloadFile(jarContent);
     }
 
   }, function(err) {
     if (err.code === 'EACCES') {
-      util.log("[ERROR] Permission denied trying to open JAR file: " + err.path + "\n");
+      logger.log('ERROR', "Permission denied trying to open JAR file: " + err.path);
     } else if (err.code === 'NOINPUTFILE') {
-      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain an input XML file. No further verification will be performed with this JAR file.\n");
+      logger.log('ERROR', "The " + config.pkgTypes[err.jarType].name + " JAR file does not contain an input XML file. No further verification will be performed with this JAR file.");
     } else if (err.code === 'NOCHANGEFILE') {
-      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a change history file. No further verification will be performed with this JAR file.\n");
+      logger.log('ERROR', "The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a change history file. No further verification will be performed with this JAR file.");
     } else if (err.code === 'NOREADMEFILE') {
-      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a readme file. No further verification will be performed with this JAR file.\n");
+      logger.log('ERROR', "The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a readme file. No further verification will be performed with this JAR file.");
     } else if (err.code === 'NOXMLFILE') {
-      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain an XML file. No further verification will be performed with this JAR file.\n");
+      logger.log('ERROR', "The " + config.pkgTypes[err.jarType].name + " JAR file does not contain an XML file. No further verification will be performed with this JAR file.");
     } else if (err.code === 'NOBINFILE') {
-      util.log("[ERROR] The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a payload file. No further verification will be performed with this JAR file.\n");
+      logger.log('ERROR', "The " + config.pkgTypes[err.jarType].name + " JAR file does not contain a payload file. No further verification will be performed with this JAR file.");
     } else {
-      util.log("[ERROR] Unexpected error:\n" + err + "\n");
+      logger.log('ERROR', "Unexpected error.\n" + err);
     }
   }).catch(function(err) {
     console.dir(err);
@@ -2136,10 +2153,10 @@ for (jarType in jarFiles) {
 }
 
 process.on('exit', function() {
-  util.log("[STATUS] Finished all verification steps. Cleaning up...\n");
+  logger.log('INFO', "Finished all verification steps. Cleaning up...");
 
   // Clean up temporary files
   rmdir.sync(tempPath, {gently: tempPath}, function(err) {
-    if (err) util.log("[ERROR] Unable to delete temporary files:\n" + err);
+    if (err) logger.log('ERROR', "Unable to delete temporary files.\n" + err);
   });
 });
