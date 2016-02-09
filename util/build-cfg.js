@@ -6,6 +6,7 @@
  *
  * Available Parameters:
  *  -r | --release  - (Required) Specifies the release name to verify.
+ *  -d | --debug    - Display and log additional debug messages.
  *
  * Note: The BOM file XLS must have already been parsed with parse-bom.js
  *
@@ -13,8 +14,9 @@
  *  - Node.js
  */
 
-var util        = require('util');
 var fs          = require('fs');
+
+var logger      = require('./logger.js');
 
 /**************************************************************/
 /* Function/Class Definitions                                 */
@@ -69,14 +71,20 @@ function writeWithBackup(file, data, description) {
     var oldFile = fs.readFileSync(file);
     if (! description) var description = "";
     fs.writeFileSync(backupFile, oldFile);
-    util.log("[INFO] An existing " + description + "file for this release has been backed up.");
+    logger.log('INFO', "An existing " + description + "file for this release has been backed up.");
   } catch (err) {
-    if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old " + description + "file. New data will not be saved.\n" + err);
+    if (err.code !== 'ENOENT') {
+      logger.log('ERROR', "Problem backing up old " + description + "file. New data will not be saved.\n" + err);
+      return logger.errorCount;
+    }
   }
 
   fs.writeFile(file, data, function(err) {
-    if (err) return util.log("[ERROR] Unable to write " + description + "file to disk.\n" + err);
-    util.log("[INFO] The " + description + "file has been written to '" + file + "'.");
+    if (err) {
+      logger.log('ERROR', "Unable to write " + description + "file to disk.\n" + err);
+      return logger.errorCount;
+    }
+    logger.log('INFO', "The " + description + "file has been written to '" + file + "'.");
   });
 }
 
@@ -89,9 +97,8 @@ function writeWithBackup(file, data, description) {
 try {
   var config = require('../config.js');
 } catch (err) {
-  util.log("[ERROR] Unable to open configuration file.");
-  console.log(err);
-  return 1;
+  logger.log('ERROR', "Unable to open configuration file.\n" + err);
+  return logger.errorCount;
 }
 
 if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
@@ -99,7 +106,8 @@ if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
 // Parse command-line parameters
 var helpText = "Usage: node build-cfg.js <parameters> \n" +
   "\nAvailable Parameters:\n" +
-  " -r | --release  - (Required) Specifies the release name to verify.\n";
+  " -r | --release  - (Required) Specifies the release name to verify.\n" +
+  " -d | --debug    - Display and log additional debug messages.\n";
 
 var runParams = getParams();
 var paramNames = Object.getOwnPropertyNames(runParams);
@@ -109,6 +117,9 @@ if (paramNames.length < 1 || paramNames.indexOf('h') > -1 || paramNames.indexOf(
   return console.log(helpText);
 }
 
+// Enable debug logging if specified
+if (paramNames.indexOf('d') > -1 || paramNames.indexOf('debug') > -1) logger.logLevel = 'DEBUG';
+
 // Verify specified release name is valid
 if (runParams['r'] || runParams['release']) {
   if (runParams['r'] && runParams['r'].search(/^[0-9A-Za-z]+$/) > -1) {
@@ -116,7 +127,8 @@ if (runParams['r'] || runParams['release']) {
   } else if (runParams['release'] && runParams['release'].search(/^[0-9A-Za-z]+$/) > -1) {
     var workingRelease = runParams['release'].toUpperCase();
   } else {
-    return util.log("[ERROR] Specified release name is invalid.\n");
+    logger.log('ERROR', "Specified release name is invalid.");
+    return logger.errorCount;
   }
 }
 
@@ -125,18 +137,20 @@ try {
   var workingBOM = JSON.parse(fs.readFileSync(config.dataDir + workingRelease + '-BOM.json'));
 } catch (err) {
   if (err.code === 'ENOENT') {
-    return util.log("[ERROR] The BOM file (" + config.dataDir + workingRelease + "-BOM.json) does not exist.\n");
+    logger.log('ERROR', "The BOM file (" + config.dataDir + workingRelease + "-BOM.json) does not exist.");
   } else if (err.code === 'EACCES') {
-    return util.log("[ERROR] Permission denied trying to open BOM file.\n");
+    logger.log('ERROR', "Permission denied trying to open BOM file.");
   } else {
-    return util.log("[ERROR] Unexpected error: " + err);
+    logger.log('ERROR', "Unexpected error reading BOM file.\n" + err);
   }
+  return logger.errorCount;
 }
 
 // Build agentless.cfg file based on BOM
 if (! workingBOM.adapterList) {
-  util.log("[ERROR] No adapters found in BOM file.\n");
+  logger.log('ERROR', "No adapters found in BOM file. Unable to build agentless.cfg file.");
 } else {
+  logger.log('INFO', "Building agentless.cfg file based on BOM.");
   var agentlessList = {};
   workingBOM.adapterList.forEach(function(adapter) {
     // Determine set of section names to use for this adapter
@@ -173,8 +187,9 @@ if (! workingBOM.adapterList) {
 
 // Build app_dev_id.cfg file based on BOM
 if (! workingBOM.appDIDList) {
-  util.log("[ERROR] No Applicable Device ID entries found in BOM file.\n");
+  logger.log('ERROR', "No Applicable Device ID entries found in BOM file. Unable to build app_dev_id.cfg file.");
 } else {
+  logger.log('INFO', "Building app_dev_id.cfg file based on BOM.");
   var appDevIdList = {};
   for (var type in workingBOM.appDIDList) {
     for (var os in workingBOM.appDIDList[type]) {
@@ -224,10 +239,11 @@ if (! workingBOM.appDIDList) {
 
 // Build base.cfg file based on BOM
 if (! workingBOM.osList) {
-  util.log("[ERROR] No Operating System entries found in BOM file.\n");
+  logger.log('ERROR', "No Operating System entries found in BOM file. Unable to build base.cfg file.");
 } else if (! workingBOM.adapterList) {
-  util.log("[ERROR] No adapters found in BOM file.\n");
+  logger.log('ERROR', "No adapters found in BOM file. Unable to build base.cfg file.");
 } else {
+  logger.log('INFO', "Building base.cfg file based on BOM.");
   // Build entries for [BASE] section
   var baseArchitectures = [];
   var baseLinux = {};
@@ -473,8 +489,9 @@ if (! workingBOM.osList) {
 
 // Build pldm_support.cfg file based on BOM
 if (! workingBOM.adapterList) {
-  util.log("[ERROR] No adapters found in BOM file.\n");
+  logger.log('ERROR', "No adapters found in BOM file. Unable to build pldm_support.cfg file.");
 } else {
+  logger.log('INFO', "Building pldm_support.cfg file based on BOM.");
   var pldmList = {};
   workingBOM.adapterList.forEach(function(adapter) {
     if (Object.keys(adapter.pldm).length > 0) {

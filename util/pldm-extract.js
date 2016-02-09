@@ -19,6 +19,8 @@ var stream      = require('stream');
 var pd          = require('pretty-data').pd;
 var xml2object  = require('xml2object');
 
+var logger      = require('./logger.js');
+
 /**************************************************************/
 /* Function/Class Definitions                                 */
 /**************************************************************/
@@ -32,14 +34,20 @@ function writeWithBackup(file, data, description) {
     var oldFile = fs.readFileSync(file);
     if (! description) var description = "";
     fs.writeFileSync(backupFile, oldFile);
-    util.log("[INFO] An existing " + description + "file for this package has been backed up.\n");
+    logger.log('INFO', "An existing " + description + "file for this package has been backed up.");
   } catch (err) {
-    if (err.code !== 'ENOENT') return util.log("[ERROR] Problem backing up old " + description + "file. New data will not be saved.\n" + err);
+    if (err.code !== 'ENOENT') {
+      logger.log('ERROR', "Problem backing up old " + description + "file. New data will not be saved.\n" + err);
+      return logger.errorCount;
+    }
   }
 
   fs.writeFile(file, data, function(err) {
-    if (err) return util.log("[ERROR] Unable to write " + description + "file to disk.\n" + err);
-    util.log("[INFO] The " + description + "file has been written to '" + file + "'.\n");
+    if (err) {
+      logger.log('ERROR', "Unable to write " + description + "file to disk.\n" + err);
+      return logger.errorCount;
+    }
+    logger.log('INFO', "The " + description + "file has been written to '" + file + "'.");
   });
 }
 
@@ -55,9 +63,8 @@ function writeWithBackup(file, data, description) {
 try {
   var config = require('../config.js');
 } catch (err) {
-  util.log("[ERROR] Unable to open configuration file.");
-  console.log(err);
-  return 1;
+  logger.log('ERROR', "Unable to open configuration file.\n" + err);
+  return logger.errorCount;
 }
 
 // Create data directory if it doesn't exist -- Comment out this section for standalone usage
@@ -66,10 +73,10 @@ if (! fs.existsSync(config.dataDir)){
   try {
     fs.mkdirSync(config.dataDir);
   } catch (err) {
-    util.log("[ERROR] Unable to create data directory.\n" + err + "\n");
-    return 1;
+    logger.log('ERROR', "Unable to create data directory.\n" + err);
+    return logger.errorCount;
   }
-  util.log("[INFO] Data directory did not exist. Empty directory created.");
+  logger.log('INFO', "Data directory did not exist. Empty directory created.");
 }
 
 // Verify UX Package payload file has been passed as an argument
@@ -84,18 +91,21 @@ var binFile = process.argv[2];
 fs.readFile(binFile, function(err, data) {
   if (err) {
     if (err.code === 'ENOENT') {
-      util.log("[ERROR] Specified payload file does not exists.\n");
+      logger.log('ERROR', "Specified payload file does not exists.");
     } else if (err.code === 'EACCES') {
-      util.log("[ERROR] Permission denied trying to open specified payload file.\n");
+      logger.log('ERROR', "Permission denied trying to open specified payload file.");
     } else {
-      util.log("[ERROR] Unexpected error: " + err);
+      logger.log('ERROR', "Unexpected error opening payload file.\n" + err);
     }
-    return 1;
+    return logger.errorCount;
   }
 
   // Find PLDM XML data within payload file
   var tarStart = data.indexOf('pldm.xml');
-  if (tarStart < 0) return util.log("[ERROR] Unable to find start of PLDM binary section of payload file.\n");
+  if (tarStart < 0) {
+    logger.log('ERROR', "Unable to find start of PLDM binary section of payload file.");
+    return logger.errorCount;
+  }
   var xmlStart = tarStart + 512;
   var xmlSize = parseInt(data.slice(tarStart + 124, tarStart + 136), 8);
   var xmlEnd = xmlStart + xmlSize;
@@ -129,10 +139,11 @@ fs.readFile(binFile, function(err, data) {
     var xmlData = obj;
     // Verify firmware image size matches size in XML file
     if (! xmlData.image || ! xmlData.image.size) {
-      return util.log("[ERROR] Unable to find firmware image size in PLDM XML data.\n");
+      logger.log('ERROR', "Unable to find firmware image size in PLDM XML data.");
+      return logger.errorCount;
     } else {
       var fwSize = parseInt(xmlData.image.size);
-      if (fwSize !== binSize) util.log("[ERROR] Actual firmware image size does not match size specified in PLDM XML data.\n");
+      if (fwSize !== binSize) logger.log('ERROR', "Actual firmware image size does not match size specified in PLDM XML data.");
     }
   });
   parser.start();
