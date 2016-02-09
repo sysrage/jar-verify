@@ -13,6 +13,8 @@ var path    = require('path');
 var fs      = require('fs');
 
 var logger = exports;
+var logDir = path.join(__dirname + '/../logs/');
+logger.scriptName = 'unknown';
 logger.logLevel = 'ERROR';
 logger.errorCount = 0;
 
@@ -29,6 +31,9 @@ logger.log = function(level, message) {
     console.log("[" + level + "] " + message + "\n");
 
     // Write message to log file
+    // console.log('logDir:' + logDir);
+    // console.log('scriptName: ' + logger.scriptName);
+
     // TODO:
 
   }

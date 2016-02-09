@@ -17,6 +17,7 @@
 var fs          = require('fs');
 
 var logger      = require('./logger.js');
+logger.scriptName = path.basename(__filename, '.js');
 
 /**************************************************************/
 /* Function/Class Definitions                                 */
@@ -75,14 +76,14 @@ function writeWithBackup(file, data, description) {
   } catch (err) {
     if (err.code !== 'ENOENT') {
       logger.log('ERROR', "Problem backing up old " + description + "file. New data will not be saved.\n" + err);
-      return logger.errorCount;
+      process.exit(logger.errorCount);
     }
   }
 
   fs.writeFile(file, data, function(err) {
     if (err) {
       logger.log('ERROR', "Unable to write " + description + "file to disk.\n" + err);
-      return logger.errorCount;
+      process.exit(logger.errorCount);
     }
     logger.log('INFO', "The " + description + "file has been written to '" + file + "'.");
   });
@@ -98,7 +99,7 @@ try {
   var config = require('../config.js');
 } catch (err) {
   logger.log('ERROR', "Unable to open configuration file.\n" + err);
-  return logger.errorCount;
+  process.exit(logger.errorCount);
 }
 
 if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
@@ -114,7 +115,8 @@ var paramNames = Object.getOwnPropertyNames(runParams);
 
 // Display help if no parameters or help parameters specified
 if (paramNames.length < 1 || paramNames.indexOf('h') > -1 || paramNames.indexOf('help') > -1 || paramNames.indexOf('?') > -1) {
-  return console.log(helpText);
+  console.log(helpText);
+  process.exit(1);
 }
 
 // Enable debug logging if specified
@@ -128,7 +130,7 @@ if (runParams['r'] || runParams['release']) {
     var workingRelease = runParams['release'].toUpperCase();
   } else {
     logger.log('ERROR', "Specified release name is invalid.");
-    return logger.errorCount;
+    process.exit(logger.errorCount);
   }
 }
 
@@ -143,7 +145,7 @@ try {
   } else {
     logger.log('ERROR', "Unexpected error reading BOM file.\n" + err);
   }
-  return logger.errorCount;
+  process.exit(logger.errorCount);
 }
 
 // Build agentless.cfg file based on BOM
@@ -521,3 +523,7 @@ if (! workingBOM.adapterList) {
   // Back up old pldm_support.cfg for this release then save new file
   writeWithBackup(config.dataDir + workingRelease + '-pldm_support.cfg', pldmCfgDump, 'pldm_support.cfg ');
 }
+
+process.on('exit', function() {
+  process.exit(logger.errorCount);
+});

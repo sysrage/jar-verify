@@ -39,6 +39,7 @@ var yauzl       = require('yauzl');
 if (typeof Promise === 'undefined') Promise = require('bluebird');
 
 var logger      = require('./logger.js');
+logger.scriptName = path.basename(__filename, '.js');
 
 /**************************************************************/
 /* Function/Class Definitions                                 */
@@ -1915,7 +1916,7 @@ try {
   var config = require('../config.js');
 } catch (err) {
   logger.log('ERROR', "Unable to open configuration file.\n" + err);
-  return logger.errorCount;
+  process.exit(logger.errorCount);
 }
 
 // Initialization
@@ -1939,7 +1940,8 @@ var paramNames = Object.getOwnPropertyNames(runParams);
 
 // Display help if no parameters or help parameters specified
 if (paramNames.length < 1 || paramNames.indexOf('h') > -1 || paramNames.indexOf('help') > -1 || paramNames.indexOf('?') > -1) {
-  return console.log(helpText);
+  console.log(helpText);
+  process.exit(1);
 }
 
 // Enable debug logging if specified
@@ -1953,7 +1955,7 @@ if (runParams['b'] || runParams['build']) {
     var workingBuild = runParams['build'];
   } else {
     logger.log('ERROR', "Specified build number is invalid.");
-    return logger.errorCount;
+    process.exit(logger.errorCount);
   }
 }
 
@@ -1965,14 +1967,14 @@ if (runParams['r'] || runParams['release']) {
     var workingRelease = runParams['release'].toUpperCase();
   } else {
     logger.log('ERROR', "Specified release name is invalid.");
-    return logger.errorCount;
+    process.exit(logger.errorCount);
   }
 }
 
 // Set jarDir to correct location based on release name and build number
 if (! workingBuild || ! workingRelease) {
   logger.log('ERROR', "Release name and build number must be specified.\n" + helpText);
-  return logger.errorCount;
+  process.exit(logger.errorCount);
 }
 var jarDir = config.jarDir + workingRelease + '/' + workingBuild + '/';
 
@@ -1987,7 +1989,7 @@ try {
   } else {
     logger.log('ERROR', "Unexpected error reading BOM file.\n" + err);
   }
-  return logger.errorCount;
+  process.exit(logger.errorCount);
 }
 
 logger.log('INFO', "Building list of JAR files for the specified release and build...");
@@ -2003,7 +2005,7 @@ try {
   } else {
     logger.log('ERROR', "Unexpected error reading JAR file directory.\n" + err);
   }
-  return logger.errorCount;
+  process.exit(logger.errorCount);
 }
 
 // Remove all files/directories from jarFiles array which don't end in .jar
@@ -2017,7 +2019,7 @@ for (var i = 0; i < jarDirFiles.length; i++) {
 // Quit if no JAR files are found for the specified release/build
 if (jarDirFiles.length < 1) {
   logger.log('ERROR', "No JAR files found in '" + jarDir + "'.");
-  return logger.errorCount;
+  process.exit(logger.errorCount);
 }
 
 // Match each JAR file to the expected package types
@@ -2142,4 +2144,5 @@ process.on('exit', function() {
   rmdir.sync(tempPath, {gently: tempPath}, function(err) {
     if (err) logger.log('ERROR', "Unable to delete temporary files.\n" + err);
   });
+  process.exit(logger.errorCount);
 });
