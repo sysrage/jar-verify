@@ -1920,7 +1920,7 @@ try {
 
 // Initialization
 var curDate = new Date();
-var startTime = '' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
+var startTime = '' + curDate.getFullYear() + String('00' + (curDate.getUTCMonth() + 1)).slice(-2) + String('00' + curDate.getDate()).slice(-2) + String('00' + curDate.getHours()).slice(-2) + String('00' + curDate.getMinutes()).slice(-2) + String('00' + curDate.getSeconds()).slice(-2);
 if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
 if (config.tempDir[config.tempDir.length - 1] !== '/') config.tempDir += '/';
 if (config.jarDir[config.jarDir.length - 1] !== '/') config.jarDir += '/';

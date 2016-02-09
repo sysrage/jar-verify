@@ -11,7 +11,6 @@
  *  - xml2object
  */
 
-var util        = require('util');
 var path        = require('path');
 var fs          = require('fs');
 var stream      = require('stream');
@@ -29,7 +28,7 @@ var logger      = require('./logger.js');
 function writeWithBackup(file, data, description) {
   try {
     var curDate = new Date();
-    var dateString = '' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
+    var dateString = '' + curDate.getFullYear() + String('00' + (curDate.getUTCMonth() + 1)).slice(-2) + String('00' + curDate.getDate()).slice(-2) + String('00' + curDate.getHours()).slice(-2) + String('00' + curDate.getMinutes()).slice(-2) + String('00' + curDate.getSeconds()).slice(-2);
     var backupFile = file + '-' + dateString;
     var oldFile = fs.readFileSync(file);
     if (! description) var description = "";

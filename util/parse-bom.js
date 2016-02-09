@@ -491,7 +491,7 @@ var bomFileJSON = releaseName + '-BOM.json';
 try {
   var oldBOM = fs.readFileSync(config.dataDir + bomFileJSON);
   var curDate = new Date();
-  var buName = bomFileJSON + '-' + curDate.getFullYear() + (curDate.getUTCMonth() + 1) + curDate.getDate() + curDate.getHours() + curDate.getMinutes() + curDate.getSeconds();
+  var buName = bomFileJSON + '-' + curDate.getFullYear() + String('00' + (curDate.getUTCMonth() + 1)).slice(-2) + String('00' + curDate.getDate()).slice(-2) + String('00' + curDate.getHours()).slice(-2) + String('00' + curDate.getMinutes()).slice(-2) + String('00' + curDate.getSeconds()).slice(-2);
   fs.writeFileSync(config.dataDir + buName, oldBOM);
   logger.log('INFO', "An existing BOM file for this release has been backed up.");
 } catch (err) {
