@@ -1916,7 +1916,7 @@ try {
   var config = require('../config.js');
 } catch (err) {
   logger.log('ERROR', "Unable to open configuration file.\n" + err);
-  process.exit(logger.errorCount);
+  return;
 }
 
 // Initialization
@@ -1941,7 +1941,7 @@ var paramNames = Object.getOwnPropertyNames(runParams);
 // Display help if no parameters or help parameters specified
 if (paramNames.length < 1 || paramNames.indexOf('h') > -1 || paramNames.indexOf('help') > -1 || paramNames.indexOf('?') > -1) {
   console.log(helpText);
-  process.exit(1);
+  return;
 }
 
 // Enable debug logging if specified
@@ -1955,7 +1955,7 @@ if (runParams['b'] || runParams['build']) {
     var workingBuild = runParams['build'];
   } else {
     logger.log('ERROR', "Specified build number is invalid.");
-    process.exit(logger.errorCount);
+    return;
   }
 }
 
@@ -1967,14 +1967,14 @@ if (runParams['r'] || runParams['release']) {
     var workingRelease = runParams['release'].toUpperCase();
   } else {
     logger.log('ERROR', "Specified release name is invalid.");
-    process.exit(logger.errorCount);
+    return;
   }
 }
 
 // Set jarDir to correct location based on release name and build number
 if (! workingBuild || ! workingRelease) {
   logger.log('ERROR', "Release name and build number must be specified.\n" + helpText);
-  process.exit(logger.errorCount);
+  return;
 }
 var jarDir = config.jarDir + workingRelease + '/' + workingBuild + '/';
 
@@ -1989,7 +1989,7 @@ try {
   } else {
     logger.log('ERROR', "Unexpected error reading BOM file.\n" + err);
   }
-  process.exit(logger.errorCount);
+  return;
 }
 
 logger.log('INFO', "Building list of JAR files for the specified release and build...");
@@ -2005,7 +2005,7 @@ try {
   } else {
     logger.log('ERROR', "Unexpected error reading JAR file directory.\n" + err);
   }
-  process.exit(logger.errorCount);
+  return;
 }
 
 // Remove all files/directories from jarFiles array which don't end in .jar
@@ -2019,7 +2019,7 @@ for (var i = 0; i < jarDirFiles.length; i++) {
 // Quit if no JAR files are found for the specified release/build
 if (jarDirFiles.length < 1) {
   logger.log('ERROR', "No JAR files found in '" + jarDir + "'.");
-  process.exit(logger.errorCount);
+  return;
 }
 
 // Match each JAR file to the expected package types
@@ -2137,12 +2137,14 @@ for (jarType in jarFiles) {
   });
 }
 
+
 process.on('exit', function() {
-  logger.log('INFO', "Finished all verification steps. Cleaning up...");
+  logger.log('INFO', "Verification complete. Cleaning up temporary files...");
 
   // Clean up temporary files
   rmdir.sync(tempPath, {gently: tempPath}, function(err) {
     if (err) logger.log('ERROR', "Unable to delete temporary files.\n" + err);
   });
-  process.exit(logger.errorCount);
+
+  logger.log('INFO', "Finished all activity with " + logger.errorCount + " errors.");
 });

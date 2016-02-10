@@ -10,8 +10,8 @@
  *
  */
 
-var path    = require('path');
 var fs      = require('fs');
+var path    = require('path');
 
 var xlsx    = require('xlsx');
 
@@ -106,7 +106,7 @@ try {
   var config = require('../config.js');
 } catch (err) {
   logger.log('ERROR', "Unable to open configuration file.\n" + err);
-  process.exit(logger.errorCount);
+  return;
 }
 
 if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
@@ -117,7 +117,7 @@ if (! fs.existsSync(config.dataDir)){
     fs.mkdirSync(config.dataDir);
   } catch (err) {
     logger.log('ERROR', "Unable to create data directory.\n" + err);
-    process.exit(logger.errorCount);
+    return;
   }
   logger.log('INFO', "Data directory did not exist. Empty directory created.");
 }
@@ -126,7 +126,7 @@ if (! fs.existsSync(config.dataDir)){
 if (! process.argv[2]) {
   console.log("Usage: node parse-bom.js <BOM File>" +
     "\nWhere <BOM File> is the name of an XLSX BOFM file.\n");
-  process.exit(1);
+  return;
 }
 
 // Read in the specified XLSX BOM file
@@ -143,8 +143,7 @@ try {
   } else {
     logger.log('ERROR', "Unexpected error reading specified BOM file.\n" + err);
   }
-  console.log('count: ' + logger.errorCount);
-  process.exit(logger.errorCount);
+  return;
 }
 
 // Initialization
@@ -499,20 +498,20 @@ try {
 } catch (err) {
   if (err.code !== 'ENOENT') {
     logger.log('ERROR', "Problem backing up old BOM data. New data will not be saved.\n" + err);
-    process.exit(logger.errorCount);
+    return;
   }
 }
 
 fs.writeFile(config.dataDir + bomFileJSON, JSON.stringify(bomDump, null, 2), function(err) {
   if (err) {
     logger.log('ERROR', "Unable to write BOM data to disk.\n" + err);
-    process.exit(logger.errorCount);
+    return;
   }
   logger.log('INFO', "All BOM file data has been written to '" + config.dataDir + bomFileJSON + "'.");
 });
 
 process.on('exit', function() {
-  process.exit(logger.errorCount);
+  logger.log('INFO', "Finished all activity with " + logger.errorCount + " errors.");
 });
 
 // ***DEBUG***

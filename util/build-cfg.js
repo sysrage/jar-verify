@@ -15,6 +15,7 @@
  */
 
 var fs          = require('fs');
+var path        = require('path');
 
 var logger      = require('./logger.js');
 logger.scriptName = path.basename(__filename, '.js');
@@ -76,14 +77,14 @@ function writeWithBackup(file, data, description) {
   } catch (err) {
     if (err.code !== 'ENOENT') {
       logger.log('ERROR', "Problem backing up old " + description + "file. New data will not be saved.\n" + err);
-      process.exit(logger.errorCount);
+      return;
     }
   }
 
   fs.writeFile(file, data, function(err) {
     if (err) {
       logger.log('ERROR', "Unable to write " + description + "file to disk.\n" + err);
-      process.exit(logger.errorCount);
+      return;
     }
     logger.log('INFO', "The " + description + "file has been written to '" + file + "'.");
   });
@@ -99,7 +100,7 @@ try {
   var config = require('../config.js');
 } catch (err) {
   logger.log('ERROR', "Unable to open configuration file.\n" + err);
-  process.exit(logger.errorCount);
+  return;
 }
 
 if (config.dataDir[config.dataDir.length - 1] !== '/') config.dataDir += '/';
@@ -116,7 +117,7 @@ var paramNames = Object.getOwnPropertyNames(runParams);
 // Display help if no parameters or help parameters specified
 if (paramNames.length < 1 || paramNames.indexOf('h') > -1 || paramNames.indexOf('help') > -1 || paramNames.indexOf('?') > -1) {
   console.log(helpText);
-  process.exit(1);
+  return;
 }
 
 // Enable debug logging if specified
@@ -130,7 +131,7 @@ if (runParams['r'] || runParams['release']) {
     var workingRelease = runParams['release'].toUpperCase();
   } else {
     logger.log('ERROR', "Specified release name is invalid.");
-    process.exit(logger.errorCount);
+    return;
   }
 }
 
@@ -145,7 +146,7 @@ try {
   } else {
     logger.log('ERROR', "Unexpected error reading BOM file.\n" + err);
   }
-  process.exit(logger.errorCount);
+  return;
 }
 
 // Build agentless.cfg file based on BOM
@@ -525,5 +526,5 @@ if (! workingBOM.adapterList) {
 }
 
 process.on('exit', function() {
-  process.exit(logger.errorCount);
+  logger.log('INFO', "Finished all activity with " + logger.errorCount + " errors.");
 });

@@ -12,26 +12,20 @@
  x open bug to remove 32-bit OCM from Windows NIC driver packages
 
  - is ko_version.txt required in linux driver packages?
- - add list of expected files to config.pkgTypes?
 
+ - store md5sum for important files
+ - auto-extract PLDM data and compare with the rest of the package
+
+ - store last released build number
+ - store last released version/subversion for each component
+ - validate subversion based on previously released build
+ - add debug logging
+ - find cross-platform solution for extracting self-extracting zip files
+
+ - add list of all expected files to config.pkgTypes?
+ - validate xClarity workaround device IDs in linux firmware update scripts
 
 =====================================
-
-bom-parse <BOM file>                        = parse BOM XLS and store as JSON
-jar-verify -r <release> -b <build number>   = verify JARs
-jar-verify -s                               = save last run data as an official release
-
-Config File (separate sections for each release where applicable):
- - Linux distributions
- - Linux point releases
- - Linux kernel versions
- - Windows versions
- - VMware versions
-
-Data Files:
- - store last released build number
- - store last released version/subversion for each component (only list packages that have changed)
- - JSON representation of BOM file
 
 Linux Driver Packages:
   - Verify FixID format
@@ -47,26 +41,8 @@ Firmware Packages:
 
 =========================================
 
-Problems Found w/ Existing Packages:
- - All BE3, Lancer, and Skyhawk package driverFiles classifications should be '13' not 'firmware'
- - Invalid x32 Windows driverFile entry needs to be removed from Windows FCoE driver package
- - Duplicate Windows driverFile entry needs to be removed from Windows NIC driver package
- - Duplicate Agentless entries need to be removed from Saturn FW packages
- - Duplicate Agentless entries need to be removed from Lancer FW packages
- - The OS "VMware vSphere 2013" needs to be added to all VMware firmware packages
+SCM Activity:
+ - Get subversions moved to a separate file so new config files can be checked in without effort
+ - Find out SVN location for config files, so I can check in BOM updates myself
+ - Find out if Node.js can be installed on build server
 
- - Old BOM contained 00JY829 instead of 00JY827 for Gold Lite. Ensure this is fixed in new packages.
-
-=========================================
-
-base15a.cfg:
-
- - What exactly does 'architectures' indicate? Each OS has different architecture support, so how is this general variable used?
- - What is the difference between the 'linux' and 'linux_os' variables and how is each one used?
- - What is the significance of the commented out 'linux_drivers' variable as opposed to the uncommented one? Does the order matter?
- - How are the 'name' variables used in each firmware section? Are they only used for the fwmatrix.txt file? They seem to be wrong for Saturn.
-
- - Are the '[DRIVER SUBVERSIONS]' and '[LNX_DRIVER]' sections ever changed or are they always set to '1'?
- - When are subversions for the firmware sections changed?
- - subversions should really be completely removed from base.cfg
- - mtms15a.cfg should be completely eliminated - list of machine types can be included directly in base.cfg

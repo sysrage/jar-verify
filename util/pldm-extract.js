@@ -11,8 +11,8 @@
  *  - xml2object
  */
 
-var path        = require('path');
 var fs          = require('fs');
+var path        = require('path');
 var stream      = require('stream');
 
 var pd          = require('pretty-data').pd;
@@ -38,14 +38,14 @@ function writeWithBackup(file, data, description) {
   } catch (err) {
     if (err.code !== 'ENOENT') {
       logger.log('ERROR', "Problem backing up old " + description + "file. New data will not be saved.\n" + err);
-      process.exit(logger.errorCount);
+      return;
     }
   }
 
   fs.writeFile(file, data, function(err) {
     if (err) {
       logger.log('ERROR', "Unable to write " + description + "file to disk.\n" + err);
-      process.exit(logger.errorCount);
+      return;
     }
     logger.log('INFO', "The " + description + "file has been written to '" + file + "'.");
   });
@@ -64,7 +64,7 @@ try {
   var config = require('../config.js');
 } catch (err) {
   logger.log('ERROR', "Unable to open configuration file.\n" + err);
-  process.exit(logger.errorCount);
+  return;
 }
 
 // Create data directory if it doesn't exist -- Comment out this section for standalone usage
@@ -74,7 +74,7 @@ if (! fs.existsSync(config.dataDir)){
     fs.mkdirSync(config.dataDir);
   } catch (err) {
     logger.log('ERROR', "Unable to create data directory.\n" + err);
-    process.exit(logger.errorCount);
+    return;
   }
   logger.log('INFO', "Data directory did not exist. Empty directory created.");
 }
@@ -83,7 +83,7 @@ if (! fs.existsSync(config.dataDir)){
 if (! process.argv[2]) {
   console.log("Usage: node pldm-extract.js <payload file>" +
     "\nWhere <payload file> is the name of a UX Package payload file.\n");
-  process.exit(1);
+  return;
 }
 
 // Read in the specified payload file
@@ -97,14 +97,14 @@ fs.readFile(binFile, function(err, data) {
     } else {
       logger.log('ERROR', "Unexpected error opening payload file.\n" + err);
     }
-    process.exit(logger.errorCount);
+    return;
   }
 
   // Find PLDM XML data within payload file
   var tarStart = data.indexOf('pldm.xml');
   if (tarStart < 0) {
     logger.log('ERROR', "Unable to find start of PLDM binary section of payload file.");
-    process.exit(logger.errorCount);
+    return;
   }
   var xmlStart = tarStart + 512;
   var xmlSize = parseInt(data.slice(tarStart + 124, tarStart + 136), 8);
@@ -140,7 +140,7 @@ fs.readFile(binFile, function(err, data) {
     // Verify firmware image size matches size in XML file
     if (! xmlData.image || ! xmlData.image.size) {
       logger.log('ERROR', "Unable to find firmware image size in PLDM XML data.");
-      process.exit(logger.errorCount);
+      return;
     } else {
       var fwSize = parseInt(xmlData.image.size);
       if (fwSize !== binSize) logger.log('ERROR', "Actual firmware image size does not match size specified in PLDM XML data.");
@@ -150,5 +150,5 @@ fs.readFile(binFile, function(err, data) {
 });
 
 process.on('exit', function() {
-  process.exit(logger.errorCount);
+  logger.log('INFO', "Finished all activity with " + logger.errorCount + " errors.");
 });
