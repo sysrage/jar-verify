@@ -15,10 +15,11 @@
 
  - store md5sum for important files
  - auto-extract PLDM data and compare with the rest of the package
-
  - store last released build number
  - store last released version/subversion for each component
  - validate subversion based on previously released build
+
+ - fix use of Path in all scripts
  - add debug logging
  - find cross-platform solution for extracting self-extracting zip files
 
