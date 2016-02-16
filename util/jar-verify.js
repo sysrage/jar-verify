@@ -85,6 +85,18 @@ function getParams() {
   return paramList;
 }
 
+// Function to obtain checksum of a file
+function getFileChecksum(file, callback) {
+  var fileHash = crypto.createHash('md5');
+  fileHash.setEncoding('hex');
+  var fd = fs.createReadStream(file);
+  fd.on('end', function() {
+    fileHash.end();
+    callback(fileHash.read());
+  });
+  fd.pipe(fileHash);
+}
+
 // Function to gather all expected data from a JAR file
 function getJarContent(jarType) {
   return new Promise(function(fulfill, reject) {
@@ -973,6 +985,11 @@ function verifyPayloadFile(jarContent) {
           }
           if (installScriptStats && installScriptStats.size < 1) {
             logger.log('ERROR', "The install.sh file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+          } else {
+            // Save checksum of install.sh
+            getFileChecksum(payloadExtract + 'install.sh', function(checksum) {
+              jarData[jarContent.jarType].binFileContent['install.sh'] = checksum;
+            });
           }
 
           // Validate presence of ibm-driver-tool.pl and verify it's not 0 bytes
@@ -989,6 +1006,11 @@ function verifyPayloadFile(jarContent) {
           }
           if (ddToolStats && ddToolStats.size < 1) {
             logger.log('ERROR', "The ibm-driver-tool.pl file is 0 bytes in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+          } else {
+            // Save checksum of ibm-driver-tool.pl
+            getFileChecksum(payloadExtract + 'tools/ibm-driver-tool.pl', function(checksum) {
+              jarData[jarContent.jarType].binFileContent['ibm-driver-tool.pl'] = checksum;
+            });
           }
 
           var ddPkgVersion = jarData[jarContent.jarType].version;
@@ -1064,6 +1086,11 @@ function verifyPayloadFile(jarContent) {
                           var ddFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + "/" + ddFound);
                           if (ddFileStats.size < 1) {
                             logger.log('ERROR', "Driver RPM (" + ddFound + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                          } else {
+                            // Save checksum of driver RPM
+                            getFileChecksum(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + '/' + ddFound, function(checksum) {
+                              jarData[jarContent.jarType].binFileContent[ddFound] = checksum;
+                            });
                           }
                         }
                       }
@@ -1159,6 +1186,11 @@ function verifyPayloadFile(jarContent) {
                           var ddFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/' + archDir + '/update/SUSE-SLES/' + osVer + '/rpm/' + ddName);
                           if (ddFileStats.size < 1) {
                             logger.log('ERROR', "Driver RPM (" + ddName + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                          } else {
+                            // Save checksum of driver RPM
+                            getFileChecksum(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/' + archDir + '/update/SUSE-SLES/' + osVer + '/rpm/' + ddName, function(checksum) {
+                              jarData[jarContent.jarType].binFileContent[ddName] = checksum;
+                            });
                           }
                         });
                       }
@@ -1215,6 +1247,11 @@ function verifyPayloadFile(jarContent) {
                   var srpmFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].srpmImageFileDir + srpmFile);
                   if (srpmFileStats.size < 1) {
                     logger.log('ERROR', "SRPM file (" + srpmFile + ") is 0 bytes in the SRPM directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  } else {
+                    // Save checksum of driver SRPM
+                    getFileChecksum(payloadExtract + config.pkgTypes[jarContent.jarType].srpmImageFileDir + srpmFile, function(checksum) {
+                      jarData[jarContent.jarType].binFileContent[srpmFile] = checksum;
+                    });
                   }
                 }
               }
@@ -1281,6 +1318,11 @@ function verifyPayloadFile(jarContent) {
                   var dudFileStats = fs.statSync(payloadExtract + 'disks/' + dudFile);
                   if (dudFileStats.size < 1) {
                     logger.log('ERROR', "DUD file (" + dudFile + ") is 0 bytes in the disks directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  } else {
+                    // Save checksum of driver DUD
+                    getFileChecksum(payloadExtract + 'disks/' + dudFile, function(checksum) {
+                      jarData[jarContent.jarType].binFileContent[dudFile] = checksum;
+                    });
                   }
                 }
               }
@@ -1317,6 +1359,11 @@ function verifyPayloadFile(jarContent) {
                 var installFileStats = fs.statSync(payloadExtract + 'apps/' + 'elx_install.sh');
                 if (installFileStats.size < 1) {
                   logger.log('ERROR', "OCM installer file (elx_install.sh) is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                } else {
+                  // Save checksum of elx_install.sh
+                  getFileChecksum(payloadExtract + 'apps/' + 'elx_install.sh', function(checksum) {
+                    jarData[jarContent.jarType].binFileContent['elx_install.sh'] = checksum;
+                  });
                 }
               }
 
@@ -1361,6 +1408,10 @@ function verifyPayloadFile(jarContent) {
                               logger.log('ERROR', "OCM installer file (" + ocmDir + ocmFile + ") is 0 bytes in the apps directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                             } else {
                               ocmFileExists = true;
+                              // Save checksum of OCM RPM
+                              getFileChecksum(payloadExtract + 'apps/' + ocmDir + ocmFile, function(checksum) {
+                                jarData[jarContent.jarType].binFileContent[ocmFile] = checksum;
+                              });
                             }
                           }
                         }
@@ -1425,6 +1476,11 @@ function verifyPayloadFile(jarContent) {
                   logger.log('ERROR', "Unexpected error opening fwmatrix.txt for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                 }
               } else {
+                // Save checksum of fwmatrix.txt
+                getFileChecksum(payloadContentDir + 'fwmatrix.txt', function(checksum) {
+                  jarData[jarContent.jarType].binFileContent['fwmatrix.txt'] = checksum;
+                });
+
                 // Build list of expected device types based on BOM and configuration file
                 var bomDeviceNames = [];
                 bomAdapterList.forEach(function(adapter) {
@@ -1532,44 +1588,80 @@ function verifyPayloadFile(jarContent) {
             }
             if (elxflashFileStats && elxflashFileStats.size < 1) {
               logger.log('ERROR', "The file " + flashScript + " is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            } else {
+              // Save checksum of elxflash script
+              getFileChecksum(payloadContentDir + flashScript, function(checksum) {
+                jarData[jarContent.jarType].binFileContent[flashScript] = checksum;
+              });
             }
 
             // Validate presence of elxflash binary files
+            var flashSubDir = [];
             elxflashArch.forEach(function(arch) {
               if (arch === 'x86') {
-                if (config.pkgTypes[jarContent.jarType].osType === 'windows') var flashDir = 'win32/';
-                if (config.pkgTypes[jarContent.jarType].osType === 'linux') var flashDir = 'i386/';
-              } else if (arch === 'x64') {
-                if (config.pkgTypes[jarContent.jarType].osType === 'windows') var flashDir = 'x64/';
-                if (config.pkgTypes[jarContent.jarType].osType === 'linux') var flashDir = 'x86_64/';
-              }
-              try {
-                var flashDirFiles = fs.readdirSync(payloadContentDir + flashDir);
-              } catch (err) {
-                if (err.code === 'ENOENT') {
-                  logger.log('ERROR', "The directory '" + flashDir + "' does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-                } else if (err.code === 'EACCES') {
-                  logger.log('ERROR', "Permission denied trying to open '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-                } else {
-                  logger.log('ERROR', "Unexpected error opening '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
+                if (config.pkgTypes[jarContent.jarType].osType === 'windows') {
+                  var flashDir = 'win32/';
+                  flashSubDir.push('');
                 }
-              }
-              if (flashDirFiles) {
-                if (flashDirFiles.length < 1) {
-                  logger.log('ERROR', "No files found in '" + flashDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-                } else {
-                  flashDirFiles.forEach(function(flashFile) {
-                    try {
-                      var elxflashBinFileStats = fs.statSync(payloadContentDir + flashDir + flashFile);
-                    } catch (err) {
-                      logger.log('ERROR', "Unexpected error opening '" + flashDir + flashFile + "' in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
+                if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
+                  var flashDir = 'i386/';
+                  workingBOM.osList.forEach(function(os) {
+                    if (os.type === config.pkgTypes[jarContent.jarType].osType && os.arch === 'x86') {
+                      var osDirName = os.name.toLowerCase().replace(' ', '-') + '/';
+                      if (flashSubDir.indexOf(osDirName) < 0) flashSubDir.push(osDirName);
                     }
-                    if (elxflashBinFileStats && elxflashBinFileStats.size < 1) {
-                      logger.log('ERROR', "The file '" + flashDir + flashFile + "' is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  });
+                }
+              } else if (arch === 'x64') {
+                if (config.pkgTypes[jarContent.jarType].osType === 'windows') {
+                  var flashDir = 'x64/';
+                  flashSubDir.push('');
+                }
+                if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
+                  var flashDir = 'x86_64/';
+                  workingBOM.osList.forEach(function(os) {
+                    if (os.type === config.pkgTypes[jarContent.jarType].osType && os.arch === 'x64') {
+                      var osDirName = os.name.toLowerCase().replace(' ', '-') + '/';
+                      if (flashSubDir.indexOf(osDirName) < 0) flashSubDir.push(osDirName);
                     }
                   });
                 }
               }
+
+              flashSubDir.forEach(function(subDir) {
+                try {
+                  var flashDirFiles = fs.readdirSync(payloadContentDir + flashDir + subDir);
+                } catch (err) {
+                  if (err.code === 'ENOENT') {
+                    logger.log('ERROR', "The directory '" + flashDir + subDir + "' does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  } else if (err.code === 'EACCES') {
+                    logger.log('ERROR', "Permission denied trying to open '" + flashDir + subDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  } else {
+                    logger.log('ERROR', "Unexpected error opening '" + flashDir + subDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
+                  }
+                }
+                if (flashDirFiles) {
+                  if (flashDirFiles.length < 1) {
+                    logger.log('ERROR', "No files found in '" + flashDir + subDir + "' directory in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  } else {
+                    flashDirFiles.forEach(function(flashFile) {
+                      try {
+                        var elxflashBinFileStats = fs.statSync(payloadContentDir + flashDir + subDir + flashFile);
+                      } catch (err) {
+                        logger.log('ERROR', "Unexpected error opening '" + flashDir + subDir + flashFile + "' in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
+                      }
+                      if (elxflashBinFileStats && elxflashBinFileStats.size < 1) {
+                        logger.log('ERROR', "The file '" + flashDir + subDir + flashFile + "' is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      } else {
+                        // Save checksum of elxflash binary file
+                        getFileChecksum(payloadContentDir + flashDir + subDir + flashFile, function(checksum) {
+                          jarData[jarContent.jarType].binFileContent[flashDir + subDir + flashFile] = checksum;
+                        });
+                      }
+                    });
+                  }
+                }
+              });
             });
 
             // Validate presence of Update script and verify it's not 0 bytes
@@ -1588,6 +1680,11 @@ function verifyPayloadFile(jarContent) {
             }
             if (updateScriptStats && updateScriptStats.size < 1) {
               logger.log('ERROR', "The " + updateScript + " file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            } else {
+              // Save checksum of Update script
+              getFileChecksum(payloadContentDir + updateScript, function(checksum) {
+                jarData[jarContent.jarType].binFileContent[updateScript] = checksum;
+              });
             }
 
             if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
@@ -1612,6 +1709,11 @@ function verifyPayloadFile(jarContent) {
           var parser = new xml2object(['payload'], payloadXmlFileStream);
           parser.on('object', function(name, obj) { payloadXmlFile.push(obj); });
           parser.on('end', function() {
+            // Save checksum of payload.xml
+            getFileChecksum(payloadContentDir + 'payload.xml', function(checksum) {
+              jarData[jarContent.jarType].binFileContent['payload.xml'] = checksum;
+            });
+
             // Validate payload.xml against BOM and package version
             payloadXmlFile.forEach(function(payload) {
               // Validate that the firmware image file name matches the package version (FixID)
@@ -1725,6 +1827,11 @@ function verifyPayloadFile(jarContent) {
                   var fwFileStats = fs.statSync(payloadContentDir + 'firmware/' + fwFile);
                   if (fwFileStats.size < 1) {
                     logger.log('ERROR', "Firmware image file (" + fwFile + ") is 0 bytes in firmware directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  } else {
+                    // Save checksum of firmware file
+                    getFileChecksum(payloadContentDir + 'firmware/' + fwFile, function(checksum) {
+                      jarData[jarContent.jarType].binFileContent['firmware/' + fwFile] = checksum;
+                    });
                   }
                 }
               }
@@ -1786,6 +1893,11 @@ function verifyPayloadFile(jarContent) {
                     var bootFileStats = fs.statSync(payloadContentDir + 'boot/' + bootFile);
                     if (bootFileStats.size < 1) {
                       logger.log('ERROR', "Boot code image file (" + bootFile + ") is 0 bytes in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    } else {
+                      // Save checksum of boot code file
+                      getFileChecksum(payloadContentDir + 'boot/' + bootFile, function(checksum) {
+                        jarData[jarContent.jarType].binFileContent['boot/' + bootFile] = checksum;
+                      });
                     }
                   }
                 }
@@ -1820,6 +1932,11 @@ function verifyPayloadFile(jarContent) {
             }
             if (installScriptStats && installScriptStats.size < 1) {
               logger.log('ERROR', "The Install.cmd file is 0 bytes in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            } else {
+              // Save checksum of Install.cmd
+              getFileChecksum(payloadContentDir + 'Install.cmd', function(checksum) {
+                jarData[jarContent.jarType].binFileContent['Install.cmd'] = checksum;
+              });
             }
 
             // Validate content of Installer directory
@@ -1860,6 +1977,11 @@ function verifyPayloadFile(jarContent) {
                     var ddFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
                     if (ddFileStats.size < 1) {
                       logger.log('ERROR', "Driver installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    } else {
+                      // Save checksum of driver installer
+                      getFileChecksum(payloadContentDir + 'Installer/' + installFile, function(checksum) {
+                        jarData[jarContent.jarType].binFileContent[installFile] = checksum;
+                      });
                     }
                   }
 
@@ -1878,6 +2000,11 @@ function verifyPayloadFile(jarContent) {
                       var ocmFileStats = fs.statSync(payloadContentDir + 'Installer/' + installFile);
                       if (ocmFileStats.size < 1) {
                         logger.log('ERROR', "OCM installer file (" + installFile + ") is 0 bytes in Installer directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      } else {
+                        // Save checksum of OCM installer
+                        getFileChecksum(payloadContentDir + 'Installer/' + installFile, function(checksum) {
+                          jarData[jarContent.jarType].binFileContent[installFile] = checksum;
+                        });
                       }
                     }
                   }
@@ -2075,7 +2202,7 @@ for (jarType in jarFiles) {
 
 // All items in jarFiles should now be valid - begin verification
 logger.log('INFO', "Verifying content of " + Object.keys(jarFiles).length + " JAR files...");
-var jarData = [];
+var jarData = {};
 for (jarType in jarFiles) {
   jarData[jarType] = {};
   getJarContent(jarType).then(function(jarContent) {
@@ -2113,6 +2240,7 @@ for (jarType in jarFiles) {
     // Verify payload
     // logger.log('INFO', "Verifying payload for " + config.pkgTypes[jarContent.jarType].name + " package...");
     if (jarContent.binFileName !== null) {
+      jarData[jarContent.jarType].binFileContent = {};
       verifyPayloadFile(jarContent);
     }
 
@@ -2137,6 +2265,22 @@ for (jarType in jarFiles) {
   });
 }
 
+var readyToExit = false;
+process.on('beforeExit', function() {
+  if (! readyToExit) {
+    readyToExit = true;
+
+    // Save jarData to file for later comparison
+    var dataFileName = workingRelease + '-' + workingBuild + '-last.json';
+    fs.writeFile(config.dataDir + dataFileName, JSON.stringify(jarData, null, 2), function(err) {
+      if (err) {
+        logger.log('ERROR', "Unable to write JAR data to disk.\n" + err);
+        return;
+      }
+      logger.log('INFO', "All JAR data has been written to '" + config.dataDir + dataFileName + "'.");
+    });
+  }
+});
 
 process.on('exit', function() {
   logger.log('INFO', "Verification complete. Cleaning up temporary files...");
