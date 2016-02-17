@@ -24,7 +24,7 @@ for i in $(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print)
         # Ignore build if dir already exists - otherwise create directory
         mkdir "${JAR_WORKDIR}/${JAR_BUILDNUM}/"
 
-        if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" ]
+        if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" ]; then
           # Lenovo package exists - unzip JAR files
           unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" *.jar -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/"
 
