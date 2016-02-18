@@ -29,6 +29,7 @@ var crypto      = require('crypto');
 var exec        = require('child_process').exec;
 var fs          = require('fs');
 var path        = require('path');
+var stream      = require('stream');
 
 var Decompress  = require('decompress');
 var mkdirp      = require('mkdirp');
@@ -1831,6 +1832,121 @@ function verifyPayloadFile(jarContent) {
                     // Save checksum of firmware file
                     getFileChecksum(payloadContentDir + 'firmware/' + fwFile, function(checksum) {
                       jarData[jarContent.jarType].binFileContent['firmware/' + fwFile] = checksum;
+
+                      // Build list of expected PLDM firmware entries (if supported by package)
+                      var pldmList = [];
+                      workingBOM.adapterList.forEach(function(adapter) {
+                        if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && Object.keys(adapter.pldm).length > 0) {
+                          // Adapter supports PLDM firmware download
+                          adapter.agent.forEach(function(agent) {
+                            var pldmEntry = {
+                              'class': agent.type,
+                              'id': '00' + agent.id,
+                              'device': '0x' + adapter.pldm.device,
+                              'vendor': '0x' + adapter.pldm.vendor
+                            };
+                            var entryExists = false;
+                            for (var i = 0; i < pldmList.length; i++) {
+                              if (pldmList[i].class === pldmEntry.class && pldmList[i].id === pldmEntry.id && pldmList[i].device === pldmEntry.device && pldmList[i].vendor === pldmEntry.vendor) {
+                                entryExists = true;
+                                break;
+                              }
+                            }
+                            if (! entryExists) pldmList.push(pldmEntry);
+                          });
+                        }
+                      });
+
+                      if (pldmList.length > 0) {
+                        // Package supports PLDM firmware download - extract data from payload
+                        fs.readFile(payloadFile, function(err, data) {
+                          if (err) {
+                            logger.log('ERROR', "Unexpected error reading PLDM data from payload file for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
+                          } else {
+                            // Find start of PLDM data within payload file
+                            var tarStart = data.indexOf('pldm.xml');
+                            if (tarStart < 0) {
+                              logger.log('ERROR', "Unable to find start of PLDM binary section of payload file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                            } else {
+                              // Extract PLDM XML data
+                              var xmlStart = tarStart + 512;
+                              var xmlSize = parseInt(data.slice(tarStart + 124, tarStart + 136), 8);
+                              var xmlEnd = xmlStart + xmlSize;
+                              var xmlBlocks = Math.ceil(xmlSize / 512);
+                              var xmlRawData = data.slice(xmlStart, xmlEnd).toString();
+
+                              // Extract PLDM firmware image
+                              var binHeader = xmlStart + xmlBlocks * 512;
+                              var binStart = binHeader + 512;
+                              var binSize = parseInt(data.slice(binHeader + 124, binHeader + 136), 8);
+                              var binEnd  = binStart + binSize;
+                              var binRawData = data.slice(binStart, binEnd);
+
+                              // Create stream from XML data for use with xml2object
+                              var xmlStream = new stream.Readable();
+                              xmlStream._read = function noop() {};
+                              xmlStream.push(xmlRawData);
+                              xmlStream.push(null);
+
+                              // Verify XML data matches actual firmware image
+                              var parser = new xml2object([ 'IBMBladeCenterFWUpdFmt' ], xmlStream);
+                              parser.on('object', function(name, obj) {
+                                var xmlData = obj;
+                                // Verify firmware image size matches size in XML file
+                                if (! xmlData.image || ! xmlData.image.size) {
+                                  logger.log('ERROR', "Unable to find firmware image size in PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                                } else {
+                                  var fwSize = parseInt(xmlData.image.size);
+                                  if (fwSize !== binSize) logger.log('ERROR', "Actual firmware image size does not match size specified in PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                                }
+
+                                // Verify version in XML matches package version
+                                if (xmlData.image.file.version !== fwPkgVersion) {
+                                  logger.log('ERROR', "Firmware version in PLDM XML data does not match the expected version for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                                }
+
+                                // Verify firmware image checksum matches checksum from image in payload
+                                var pldmImageChecksum = crypto.createHash('md5').update(binRawData).digest("hex");
+                                var binFileContentKeys = Object.keys(jarData[jarContent.jarType].binFileContent);
+                                for (var i = 0; i < binFileContentKeys.length; i++) {
+                                  if (binFileContentKeys[i].search('firmware/') > -1) {
+                                    var payloadImageChecksum = jarData[jarContent.jarType].binFileContent[binFileContentKeys[i]];
+                                    break;
+                                  }
+                                }
+                                if (pldmImageChecksum !== payloadImageChecksum) {
+                                  logger.log('ERROR', "Checksum of firmware image in PLDM data does not match the firmware image included in the payload file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                                }
+
+                                // Verify all expected device IDs are included in XML
+                                pldmList.forEach(function(listDevice) {
+                                  var foundDevice = false;
+                                  for (var i = 0; i < xmlData.image.device_descriptor.length; i++) {
+                                    if (xmlData.image.device_descriptor[i].classification === listDevice.class && xmlData.image.device_descriptor[i].image_id === listDevice.id && xmlData.image.device_descriptor[i].device_specifier === listDevice.device && xmlData.image.device_descriptor[i].vendor_specifier === listDevice.vendor) {
+                                      foundDevice = true;
+                                      break;
+                                    }
+                                  }
+                                  if (! foundDevice) logger.log('ERROR', "Expected device descriptor (" + listDevice.id + " " + listDevice.device + " " + listDevice.vendor + ") missing from PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                                });
+
+                                // Verify all device IDs in XML were expected
+                                xmlData.image.device_descriptor.forEach(function(xmlDevice) {
+                                  var expectedDevice = false;
+                                  for (var i = 0; i < pldmList.length; i++) {
+                                    if (pldmList[i].class === xmlDevice.classification && pldmList[i].id === xmlDevice.image_id && pldmList[i].device === xmlDevice.device_specifier && pldmList[i].vendor === xmlDevice.vendor_specifier) {
+                                      expectedDevice = true;
+                                      break;
+                                    }
+                                  }
+                                  if (! expectedDevice) logger.log('ERROR', "Unexpected device descriptor (" + xmlDevice.image_id + " " + xmlDevice.device_specifier + " " + xmlDevice.vendor_specifier + ") in PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                                });
+                              });
+                              parser.start();
+                            }
+                          }
+                        });
+                      }
                     });
                   }
                 }
