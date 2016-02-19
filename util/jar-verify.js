@@ -8,6 +8,7 @@
  *  -b | --build    - (Required) Specifies the build number to verify.
  *  -r | --release  - (Required) Specifies the release name to verify.
  *  -s | --save     - Save the specified release/build as a delivered build.
+ *  -u | --unsave   - Unsave (remove) the specified release/build as a delivered build.
  *  -d | --debug    - Display and log additional debug messages.
  *
  * Note: The BOM file XLS must have already been parsed with parse-bom.js
@@ -260,6 +261,17 @@ function getJarContent(jarType) {
         });
       }
     });
+  });
+}
+
+// Function to write saved data to disk
+function putSavedData() {
+  fs.writeFile(config.dataDir + dataFileName, JSON.stringify(savedData, null, 2), function(err) {
+    if (err) {
+      logger.log('ERROR', "Unable to write JAR data to disk.\n" + err);
+    } else {
+      logger.log('INFO', "All JAR data has been written to '" + config.dataDir + dataFileName + "'.");
+    }
   });
 }
 
@@ -2176,6 +2188,7 @@ var helpText = "Usage: node jar-verify.js <parameters> \n" +
   " -b | --build    - (Required) Specifies the build number to verify.\n" +
   " -r | --release  - (Required) Specifies the release name to verify.\n" +
   " -s | --save     - Save the specified release/build as a delivered build.\n" +
+  " -u | --unsave   - Unsave (remove) the specified release/build as a delivered build.\n" +
   " -d | --debug    - Display and log additional debug messages.\n";
 
 var runParams = getParams();
@@ -2210,6 +2223,39 @@ if (runParams['r'] || runParams['release']) {
     var workingRelease = runParams['release'].toUpperCase();
   } else {
     logger.log('ERROR', "Specified release name is invalid.");
+    return;
+  }
+}
+
+// Check if --save was specified
+if (paramNames.indexOf('s') > -1 || paramNames.indexOf('save') > -1) {
+  var saveBuildInfo = true;
+} else {
+  var saveBuildInfo = false;
+}
+
+// Read saved data from previous verification attempts
+var dataFileName = workingRelease + '-releases.json';
+try {
+  var savedData = JSON.parse(fs.readFileSync(config.dataDir + dataFileName));
+} catch (err) {
+  if (err.code === 'ENOENT') {
+    var savedData = {};
+  } else {
+    logger.log('ERROR', "Unexpected error reading saved data file.\n" + err);
+    return;
+  }
+}
+
+// If --unsave was specified, remove entry and exit
+if (paramNames.indexOf('u') > -1 || paramNames.indexOf('unsave') > -1) {
+  if (Object.keys(savedData).indexOf(workingBuild) > -1) {
+    delete savedData[workingBuild];
+    logger.log('INFO', "Build " + workingBuild + " removed from saved data.");
+    putSavedData();
+    return;
+  } else {
+    logger.log('ERROR', "Build " + workingBuild + " not found in saved data.");
     return;
   }
 }
@@ -2386,15 +2432,16 @@ process.on('beforeExit', function() {
   if (! readyToExit) {
     readyToExit = true;
 
-    // Save jarData to file for later comparison
-    var dataFileName = workingRelease + '-' + workingBuild + '-last.json';
-    fs.writeFile(config.dataDir + dataFileName, JSON.stringify(jarData, null, 2), function(err) {
-      if (err) {
-        logger.log('ERROR', "Unable to write JAR data to disk.\n" + err);
-        return;
+    if (saveBuildInfo) {
+      // Save jarData to file for later comparison
+      savedData[workingBuild] = {
+        build: workingBuild,
+        releaseDate: curDate.toISOString(),
+        errors: logger.errorCount,
+        jarData: jarData
       }
-      logger.log('INFO', "All JAR data has been written to '" + config.dataDir + dataFileName + "'.");
-    });
+      putSavedData();
+    }
   }
 });
 
