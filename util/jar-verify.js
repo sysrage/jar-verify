@@ -2464,12 +2464,33 @@ for (jarType in jarFiles) {
                       logger.log('DEBUG', "Verifying payload for " + config.pkgTypes[jarContent.jarType].name + " package...");
                       jarData[jarContent.jarType].binFileContent = {};
                       verifyPayloadFile(jarContent).then(function() {
+                        // Verify subversions based on previously released build
+                        var savedBuilds = Object.keys(savedData);
+                        savedBuilds.push(workingBuild);
+                        if (savedBuilds.sort().indexOf(workingBuild) > 0) {
+                          var lastSavedBuild = savedBuilds[savedBuilds.sort().indexOf(workingBuild) - 1];
+                          var lastVersion = savedData[lastSavedBuild].jarData[jarContent.jarType].version;
+                          if (savedData[lastSavedBuild].jarData[jarContent.jarType].bootVersion) {
+                            var lastBootVersion = savedData[lastSavedBuild].jarData[jarContent.jarType].bootVersion;
+                          }
+                          var lastSubVersion = savedData[lastSavedBuild].jarData[jarContent.jarType].subVersion;
+
+                          console.log("\n" + jarContent.jarType);
+                          console.log('jar version: ' + jarData[jarContent.jarType].version);
+                          if (jarData[jarContent.jarType].bootVersion) {
+                            console.log('jar boot: ' + jarData[jarContent.jarType].bootVersion);
+                          }
+                          console.log('jar subver: ' + jarData[jarContent.jarType].subVersion);
+                          console.log('---');
+                          console.log('prior build: ' + lastSavedBuild);
+                          console.log('prior version: ' + lastVersion);
+                          if (lastBootVersion) console.log('prior boot: ' + lastBootVersion);
+                          console.log('prior subver: ' + lastSubVersion);
+
+                        }
+
                         activeCount--;
-
                         if (activeCount === 0) {
-                          // Verify subversions based on previous builds
-                          // TODO:
-
                           // Save jarData to file for later comparison
                           if (saveBuildInfo) {
                             savedData[workingBuild] = {
