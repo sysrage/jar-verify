@@ -86,6 +86,7 @@ find ${JAR_WORKDIR}/${JAR_RELEASENUM}.* -maxdepth 0 -mtime +30 -exec rm -rf {} \
 # Handle officially staged builds
 for i in $(find ${JAR_OCSADIR}/* -maxdepth 0 -name 'Build*' -newer ${JAR_LASTOCSABUILDSRC} -print); do
   JAR_OCSABUILDNUM=${i#${JAR_OCSADIR}/Build}
+  JAR_OCSABUILDVER=$(ls -la $i | cut -d '>' -f 2 | cut -d ' ' -f 2)
 
   # Create symlink to OCSA location
   ln -s $i/JARs/Red/ ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}
@@ -102,7 +103,7 @@ for i in $(find ${JAR_OCSADIR}/* -maxdepth 0 -name 'Build*' -newer ${JAR_LASTOCS
   fi
 
   # E-mail jar-verify results
-  mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" -- -f ${JAR_EMAILFROM} < jar-verify-results-${JAR_OCSABUILDNUM}.txt
+  mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" -- -f ${JAR_EMAILFROM} < jar-verify-results-${JAR_OCSABUILDNUM}.txt
 
   # Delete jar-verify results
   rm -f jar-verify-results-${JAR_OCSABUILDNUM}.txt
