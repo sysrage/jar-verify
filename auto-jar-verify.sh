@@ -4,16 +4,23 @@ JAR_RELEASENAME="16A"
 JAR_RELEASENUM="11.0"
 JAR_EMAILFROM="brian.bothwell@broadcom.com"
 JAR_EMAILTO="brian.bothwell@broadcom.com"
+JAR_OCSAEMAILTO="brian.bothwell@broadcom.com"
 
 JAR_BUILDDIR="/elx/local/ftpse/scm_builds/be2/Palau_${JAR_RELEASENUM}"
 JAR_WORKDIR="${HOME}/Downloads/jars/${JAR_RELEASENAME}"
 JAR_NODEBIN="${HOME}/.nvm/v4.2.4/bin/node"
 JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
 
-JAR_LASTBUILDDIR=$(ls -td ${JAR_WORKDIR}/${JAR_RELEASENUM}.* | head -1 )
+JAR_OCSADIR="/nfs/links/scm_release/OneConnect_Staging_Area/Lenovo_Kits/RT${JAR_RELEASENUM}"
+
+JAR_LASTBUILDDIR=$(ls -td ${JAR_WORKDIR}/${JAR_RELEASENUM}.* | head -1)
 JAR_LASTBUILDNUM=${JAR_LASTBUILDDIR#${JAR_WORKDIR}/}
 JAR_LASTBUILDSRC="${JAR_BUILDDIR}/${JAR_LASTBUILDNUM}"
+JAR_LASTOCSABUILDDIR=$(ls -tdF ${JAR_WORKDIR}/* | grep '@' | head -1 | cut -d '@' -f 1)
+JAR_LASTOCSABUILD=${JAR_LASTOCSABUILDDIR#${JAR_WORKDIR}/}
+JAR_LASTOCSABUILDSRC="${JAR_OCSADIR}/Build${JAR_LASTOCSABUILD}/"
 
+# Handle internally staged SCM builds
 for i in $(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print); do
   JAR_BUILDNUM=${i#${JAR_BUILDDIR}/}
   if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/ReleaseNotes-${JAR_BUILDNUM}.html" ]; then
@@ -75,3 +82,28 @@ done
 
 # Delete builds older than 30 days
 find ${JAR_WORKDIR}/${JAR_RELEASENUM}.* -maxdepth 0 -mtime +30 -exec rm -rf {} \;
+
+# Handle officially staged builds
+for i in $(find ${JAR_OCSADIR}/* -maxdepth 0 -name 'Build*' -newer ${JAR_LASTOCSABUILDSRC} -print); do
+  JAR_OCSABUILDNUM=${i#${JAR_OCSADIR}/Build}
+
+  # Create symlink to OCSA location
+  ln -s $i/JARs/Red/ ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}
+
+  # Run jar-verify against new build and save results
+  ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_OCSABUILDNUM} -s > jar-verify-results-${JAR_OCSABUILDNUM}.txt
+
+  # Determine if results are pass or fail
+  JAR_ERRORCOUNT=$(grep 'Finished all activity with' jar-verify-results-${JAR_OCSABUILDNUM}.txt | cut -d ' ' -f 6)
+  if [[ ${JAR_ERRORCOUNT} -eq 0 ]]; then
+    JAR_RESULTS="PASS"
+  else
+    JAR_RESULTS="FAIL"
+  fi
+
+  # E-mail jar-verify results
+  mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" -- -f ${JAR_EMAILFROM} < jar-verify-results-${JAR_OCSABUILDNUM}.txt
+
+  # Delete jar-verify results
+  rm -f jar-verify-results-${JAR_OCSABUILDNUM}.txt
+done

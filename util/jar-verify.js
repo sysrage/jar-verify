@@ -2475,17 +2475,17 @@ for (jarType in jarFiles) {
                           }
                           var lastSubVersion = savedData[lastSavedBuild].jarData[jarContent.jarType].subVersion;
 
-                          console.log("\n" + jarContent.jarType);
-                          console.log('jar version: ' + jarData[jarContent.jarType].version);
-                          if (jarData[jarContent.jarType].bootVersion) {
-                            console.log('jar boot: ' + jarData[jarContent.jarType].bootVersion);
-                          }
-                          console.log('jar subver: ' + jarData[jarContent.jarType].subVersion);
-                          console.log('---');
-                          console.log('prior build: ' + lastSavedBuild);
-                          console.log('prior version: ' + lastVersion);
-                          if (lastBootVersion) console.log('prior boot: ' + lastBootVersion);
-                          console.log('prior subver: ' + lastSubVersion);
+                          // console.log("\n" + jarContent.jarType);
+                          // console.log('jar version: ' + jarData[jarContent.jarType].version);
+                          // if (jarData[jarContent.jarType].bootVersion) {
+                          //   console.log('jar boot: ' + jarData[jarContent.jarType].bootVersion);
+                          // }
+                          // console.log('jar subver: ' + jarData[jarContent.jarType].subVersion);
+                          // console.log('---');
+                          // console.log('prior build: ' + lastSavedBuild);
+                          // console.log('prior version: ' + lastVersion);
+                          // if (lastBootVersion) console.log('prior boot: ' + lastBootVersion);
+                          // console.log('prior subver: ' + lastSubVersion);
 
                         }
 
