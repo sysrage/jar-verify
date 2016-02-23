@@ -2543,6 +2543,8 @@ for (jarType in jarFiles) {
                                   }
                                 }
                               });
+                              //TODO: check all the savedData keys to see if any are missing from jarData
+
                               if (matchingContent && parseInt(lastSubVersion) === parseInt(jarData[jarContent.jarType].subVersion)) {
                                 logger.log('WARN', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package is identical to the previous build (" + lastSavedBuild + ").");
                               }

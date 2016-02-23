@@ -44,7 +44,7 @@ for i in $(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print)
 
           # Determine if results are pass or fail
           JAR_ERRORCOUNT=$(grep 'Finished all activity with' jar-verify-results-${JAR_BUILDNUM}.txt | cut -d ' ' -f 6)
-          if [[ ${JAR_ERRORCOUNT} -eq 0 ]]; then
+          if [[ ${JAR_ERRORCOUNT} == "0" ]]; then
             JAR_RESULTS="PASS"
           else
             JAR_RESULTS="FAIL"
