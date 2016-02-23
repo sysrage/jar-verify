@@ -47,6 +47,57 @@ logger.scriptName = path.basename(__filename, '.js');
 /* Function/Class Definitions                                 */
 /**************************************************************/
 
+// Function to compare two version strings
+function compareVersion(v1, v2) {
+  // returns  1 if v1 > v2 (v2 is older)
+  // returns -1 if v1 < v2 (v1 is older)
+  // returns  0 if v1 = v2
+
+  if (v1 === v2) {
+    return 0;
+  } else {
+    var partsTemp = {
+      v1: v1.split('.'),
+      v2: v2.split('.')
+    };
+
+    var parts = {};
+    Object.keys(partsTemp).forEach(function(p) {
+      parts[p] = [];
+      for (var i = 0; i < partsTemp[p].length; i++) {
+        var match = partsTemp[p][i].match(/([0-9]+)([^0-9]+)([0-9]+)/);
+        if (match) {
+          parts[p].push(match[1]);
+          parts[p].push(match[2].toLowerCase());
+          parts[p].push(match[3]);
+        } else {
+          parts[p].push(partsTemp[p][i]);
+        }
+      }
+    });
+
+    for (var i = 0; i < parts['v1'].length; i++) {
+      if (parts['v2'].length == i) {
+        return 1;
+      }
+
+      Object.keys(parts).forEach(function(v) {
+        if (parts[v][i].match(/[0-9]+/)) parts[v][i] = parseInt(parts[v][i]);
+      });
+
+      if (parts['v1'][i] == parts['v2'][i]) {
+        continue;
+      } else if (parts['v1'][i] > parts['v2'][i]) {
+        return 1;
+      } else {
+        return -1;
+      }
+
+    }
+    return 0;
+  }
+}
+
 // Function to parse command line parameters
 function getParams() {
   var paramList = {}
@@ -2464,7 +2515,7 @@ for (jarType in jarFiles) {
                       logger.log('DEBUG', "Verifying payload for " + config.pkgTypes[jarContent.jarType].name + " package...");
                       jarData[jarContent.jarType].binFileContent = {};
                       verifyPayloadFile(jarContent).then(function() {
-                        // Verify subversions based on previously released build
+                        // All component verification is complete - perform final verification steps
                         var savedBuilds = Object.keys(savedData);
                         savedBuilds.push(workingBuild);
                         if (savedBuilds.sort().indexOf(workingBuild) > 0) {
@@ -2475,17 +2526,44 @@ for (jarType in jarFiles) {
                           }
                           var lastSubVersion = savedData[lastSavedBuild].jarData[jarContent.jarType].subVersion;
 
+                          if (compareVersion(lastVersion, jarData[jarContent.jarType].version) === 0) {
+                            // Versions are equal - Compare content between prior build and current JAR
+                            if (parseInt(lastSubVersion) > parseInt(jarData[jarContent.jarType].subVersion)) {
+                              logger.log('ERROR', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package contains an older subversion than the previous build (Build " + lastSavedBuild + ": " + lastSubVersion + ").");
+                            } else {
+                              var matchingContent = true;
+                              Object.keys(jarData[jarContent.jarType].binFileContent).forEach(function(jarComponent) {
+                                if (! savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent] || jarData[jarContent.jarType].binFileContent[jarComponent] !== savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]) {
+                                  matchingContent = false;
+                                  if (parseInt(lastSubVersion) === parseInt(jarData[jarContent.jarType].subVersion)) {
+                                    console.log("\n" + jarContent.jarType);
+                                    console.log('mismatch: ' + jarComponent);
+                                    console.log('old (' + lastSubVersion + '): ' + savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]);
+                                    console.log('new (' + jarData[jarContent.jarType].subVersion + '): ' + jarData[jarContent.jarType].binFileContent[jarComponent]);
+                                  }
+                                }
+                              });
+                              if (matchingContent && parseInt(lastSubVersion) === parseInt(jarData[jarContent.jarType].subVersion)) {
+                                logger.log('WARN', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package is identical to the previous build (" + lastSavedBuild + ").");
+                              }
+                            }
+                          } else if (compareVersion(lastVersion, jarData[jarContent.jarType].version) === 1) {
+                            // JAR is an older version
+                            logger.log('ERROR', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package is for an older version than the previous build (Build " + lastSavedBuild + ": " + lastVersion + ").");
+                          }
+
+                          // vvv DEBUG vvv
                           // console.log("\n" + jarContent.jarType);
                           // console.log('jar version: ' + jarData[jarContent.jarType].version);
                           // if (jarData[jarContent.jarType].bootVersion) {
                           //   console.log('jar boot: ' + jarData[jarContent.jarType].bootVersion);
                           // }
                           // console.log('jar subver: ' + jarData[jarContent.jarType].subVersion);
-                          // console.log('---');
                           // console.log('prior build: ' + lastSavedBuild);
                           // console.log('prior version: ' + lastVersion);
                           // if (lastBootVersion) console.log('prior boot: ' + lastBootVersion);
                           // console.log('prior subver: ' + lastSubVersion);
+                          // ^^^ DEBUG ^^^
 
                         }
 

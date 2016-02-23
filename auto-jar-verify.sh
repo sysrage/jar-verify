@@ -51,7 +51,7 @@ for i in $(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print)
           fi
 
           # E-mail jar-verify results
-          mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" -- -f ${JAR_EMAILFROM} < jar-verify-results-${JAR_BUILDNUM}.txt
+          mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" -- -f "${JAR_EMAILFROM}" < jar-verify-results-${JAR_BUILDNUM}.txt
 
           # Delete jar-verify results
           rm -f jar-verify-results-${JAR_BUILDNUM}.txt
@@ -103,7 +103,7 @@ for i in $(find ${JAR_OCSADIR}/* -maxdepth 0 -name 'Build*' -newer ${JAR_LASTOCS
   fi
 
   # E-mail jar-verify results
-  mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" -- -f ${JAR_EMAILFROM} < jar-verify-results-${JAR_OCSABUILDNUM}.txt
+  mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" -- -f "${JAR_EMAILFROM}" < jar-verify-results-${JAR_OCSABUILDNUM}.txt
 
   # Delete jar-verify results
   rm -f jar-verify-results-${JAR_OCSABUILDNUM}.txt
