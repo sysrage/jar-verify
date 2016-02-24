@@ -11,14 +11,33 @@ JAR_WORKDIR="${HOME}/Downloads/jars/${JAR_RELEASENAME}"
 JAR_NODEBIN="${HOME}/.nvm/v4.2.4/bin/node"
 JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
 
-JAR_OCSADIR="/nfs/links/scm_release/OneConnect_Staging_Area/Lenovo_Kits/RT${JAR_RELEASENUM}"
+# Comment out unused OCSADIRs
+JAR_OCSADIR1="/nfs/links/scm_release/OneConnect_Staging_Area/Lenovo_Kits/RT11.0"
+JAR_OCSADIR2="/nfs/links/scm_release/OneConnect_Staging_Area/Lenovo_Kits/RT11.0.2"
+#JAR_OCSADIR3="/nfs/links/scm_release/OneConnect_Staging_Area/Lenovo_Kits/RT11.0"
 
 JAR_LASTBUILDDIR=$(ls -td ${JAR_WORKDIR}/${JAR_RELEASENUM}.* | head -1)
 JAR_LASTBUILDNUM=${JAR_LASTBUILDDIR#${JAR_WORKDIR}/}
 JAR_LASTBUILDSRC="${JAR_BUILDDIR}/${JAR_LASTBUILDNUM}"
-JAR_LASTOCSABUILDDIR=$(ls -tdF ${JAR_WORKDIR}/* | grep '@' | head -1 | cut -d '@' -f 1)
-JAR_LASTOCSABUILD=${JAR_LASTOCSABUILDDIR#${JAR_WORKDIR}/}
-JAR_LASTOCSABUILDSRC="${JAR_OCSADIR}/Build${JAR_LASTOCSABUILD}/"
+JAR_LASTOCSABUILDLINK=$(ls -tdF ${JAR_WORKDIR}/* | grep '@' | head -1 | cut -d '@' -f 1)
+JAR_LASTOCSABUILD=${JAR_LASTOCSABUILDLINK#${JAR_WORKDIR}/}
+
+if [[ ${JAR_OCSADIR3} != "" ]]; then
+  JAR_OCSADIR=${JAR_OCSADIR3}
+  JAR_LASTOCSABUILDSRC="${JAR_OCSADIR3}/Build${JAR_LASTOCSABUILD}/"
+  if [[ ! -d ${JAR_LASTOCSABUILDSRC} ]]; then
+    JAR_LASTOCSABUILDSRC="${JAR_OCSADIR2}/Build${JAR_LASTOCSABUILD}/"
+  fi
+elif [[ ${JAR_OCSADIR2} != "" ]]; then
+  JAR_OCSADIR=${JAR_OCSADIR2}
+  JAR_LASTOCSABUILDSRC="${JAR_OCSADIR2}/Build${JAR_LASTOCSABUILD}/"
+  if [[ ! -d ${JAR_LASTOCSABUILDSRC} ]]; then
+    JAR_LASTOCSABUILDSRC="${JAR_OCSADIR1}/Build${JAR_LASTOCSABUILD}/"
+  fi
+else
+  JAR_OCSADIR=${JAR_OCSADIR1}
+  JAR_LASTOCSABUILDSRC="${JAR_OCSADIR1}/Build${JAR_LASTOCSABUILD}/"
+fi
 
 # Handle internally staged SCM builds
 for i in $(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print); do
