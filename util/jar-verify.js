@@ -1631,7 +1631,7 @@ function verifyPayloadFile(jarContent) {
                         if (jarData[jarContent.jarType].bootVersion) {
                           // Package contains boot code -- Compare boot code image name to package boot code version
                           if (! fwMatrixBoot) {
-                            logger.log('ERROR', "Missing boot image on line " + (matrixIndex + 1) + " of fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                            logger.log('ERROR', "Missing boot code image on line " + (matrixIndex + 1) + " of fwmatrix.txt from the " + config.pkgTypes[jarContent.jarType].name + " package.");
                           } else {
                             var fwMatrixBootVersion = fwMatrixBoot.replace(RegExp(config.pkgTypes[jarContent.jarType].bootImageFileSearch), config.pkgTypes[jarContent.jarType].bootImageFileReplace);
                             var fwPkgBootVersion = jarData[jarContent.jarType].bootVersion;
@@ -1974,7 +1974,7 @@ function verifyPayloadFile(jarContent) {
                 bootDirFiles.forEach(function(bootFile) {
                   var bootFileVersion = bootFile.replace(RegExp(config.pkgTypes[jarContent.jarType].bootImageFileSearch), config.pkgTypes[jarContent.jarType].bootImageFileReplace);
                   if (bootFileVersion !== fwPkgBootVersion) {
-                    logger.log('ERROR', "Boot image file name (" + bootFile + ") in boot directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
+                    logger.log('ERROR', "Boot code image file name (" + bootFile + ") in boot directory doesn't match the " + config.pkgTypes[jarContent.jarType].name + " package version.");
                   } else {
                     var adapterTypeFound = false;
                     for (var i=0; i < bomAdapterTypes.length; i++) {
@@ -1990,7 +1990,7 @@ function verifyPayloadFile(jarContent) {
                       }
                     }
                     if (! adapterTypeFound) {
-                      logger.log('ERROR', "Unexpected boot image file (" + bootFile + ") in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      logger.log('ERROR', "Unexpected boot code image file (" + bootFile + ") in boot directory of the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else {
                       // Verify image file isn't 0 bytes
                       var bootFileStats = fs.statSync(payloadContentDir + 'boot/' + bootFile);
@@ -2008,7 +2008,7 @@ function verifyPayloadFile(jarContent) {
                 });
                 if (bomAdapterTypes.length > 0) {
                   bomAdapterTypes.forEach(function(adapterType) {
-                    logger.log('ERROR', "Missing boot image file type (" + adapterType + ") in boot directory for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    logger.log('ERROR', "Missing boot code image file type (" + adapterType + ") in boot directory for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   });
                 }
               }
@@ -2515,7 +2515,7 @@ for (jarType in jarFiles) {
                       logger.log('DEBUG', "Verifying payload for " + config.pkgTypes[jarContent.jarType].name + " package...");
                       jarData[jarContent.jarType].binFileContent = {};
                       verifyPayloadFile(jarContent).then(function() {
-                        // All component verification is complete - perform final verification steps
+                        // Verify version and subversion as compared to last build
                         var savedBuilds = Object.keys(savedData);
                         savedBuilds.push(workingBuild);
                         if (savedBuilds.sort().indexOf(workingBuild) > 0) {
@@ -2531,42 +2531,40 @@ for (jarType in jarFiles) {
                             if (parseInt(lastSubVersion) > parseInt(jarData[jarContent.jarType].subVersion)) {
                               logger.log('ERROR', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package contains an older subversion than the previous build (Build " + lastSavedBuild + ": " + lastSubVersion + ").");
                             } else {
-                              var matchingContent = true;
+                              var mismatchedFile = [];
+                              // Check for components in JAR which don't match last build
                               Object.keys(jarData[jarContent.jarType].binFileContent).forEach(function(jarComponent) {
                                 if (! savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent] || jarData[jarContent.jarType].binFileContent[jarComponent] !== savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]) {
-                                  matchingContent = false;
-                                  if (parseInt(lastSubVersion) === parseInt(jarData[jarContent.jarType].subVersion)) {
-                                    console.log("\n" + jarContent.jarType);
-                                    console.log('mismatch: ' + jarComponent);
-                                    console.log('old (' + lastSubVersion + '): ' + savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]);
-                                    console.log('new (' + jarData[jarContent.jarType].subVersion + '): ' + jarData[jarContent.jarType].binFileContent[jarComponent]);
-                                  }
+                                  if (mismatchedFile.indexOf(jarComponent) < 0) mismatchedFile.push(jarComponent);
                                 }
                               });
-                              //TODO: check all the savedData keys to see if any are missing from jarData
-
-                              if (matchingContent && parseInt(lastSubVersion) === parseInt(jarData[jarContent.jarType].subVersion)) {
-                                logger.log('WARN', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package is identical to the previous build (" + lastSavedBuild + ").");
+                              // Check for components in last build which don't match JAR
+                              Object.keys(savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent).forEach(function(jarComponent) {
+                                if (! jarData[jarContent.jarType].binFileContent[jarComponent] || jarData[jarContent.jarType].binFileContent[jarComponent] !== savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]) {
+                                  if (mismatchedFile.indexOf(jarComponent) < 0) mismatchedFile.push(jarComponent);
+                                }
+                              });
+                              if (parseInt(lastSubVersion) === parseInt(jarData[jarContent.jarType].subVersion)) {
+                                if (mismatchedFile.length === 0) {
+                                  logger.log('WARN', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package is identical to the previous build (" + lastSavedBuild + ").");
+                                } else {
+                                  mismatchedFile.forEach(function(mismatch) {
+                                    logger.log('ERROR', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package incorrectly contains the same subversion as the previous build (Build " + lastSavedBuild + ": " + lastSubVersion + ") although file '" + mismatch + "' differs.");
+                                  });
+                                }
                               }
                             }
                           } else if (compareVersion(lastVersion, jarData[jarContent.jarType].version) === 1) {
-                            // JAR is an older version
+                            // JAR version is older than last build - show error
                             logger.log('ERROR', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package is for an older version than the previous build (Build " + lastSavedBuild + ": " + lastVersion + ").");
                           }
 
-                          // vvv DEBUG vvv
-                          // console.log("\n" + jarContent.jarType);
-                          // console.log('jar version: ' + jarData[jarContent.jarType].version);
-                          // if (jarData[jarContent.jarType].bootVersion) {
-                          //   console.log('jar boot: ' + jarData[jarContent.jarType].bootVersion);
-                          // }
-                          // console.log('jar subver: ' + jarData[jarContent.jarType].subVersion);
-                          // console.log('prior build: ' + lastSavedBuild);
-                          // console.log('prior version: ' + lastVersion);
-                          // if (lastBootVersion) console.log('prior boot: ' + lastBootVersion);
-                          // console.log('prior subver: ' + lastSubVersion);
-                          // ^^^ DEBUG ^^^
-
+                          // If boot code exists, show error if it's an older version than the prior build
+                          if (jarData[jarContent.jarType].bootVersion || lastBootVersion) {
+                            if (compareVersion(lastBootVersion, jarData[jarContent.jarType].bootVersion) === 1) {
+                              logger.log('ERROR', "JAR file for the " + config.pkgTypes[jarContent.jarType].name + " package contains an older boot code version than the previous build (Build " + lastSavedBuild + ": " + lastVersion + ").");
+                            }
+                          }
                         }
 
                         activeCount--;
