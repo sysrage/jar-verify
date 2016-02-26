@@ -2414,9 +2414,37 @@ try {
   return;
 }
 
+// Verify existence and content of triggerfile
+if (jarDirFiles.indexOf('triggerfile') < 0) {
+  logger.log('ERROR', "No triggerfile found in '" + jarDir + "'.");
+} else {
+  fs.readFile(jarDir + 'triggerfile', 'utf8', function(err, data) {
+    if (err) {
+      logger.log('ERROR', "Unexpected error reading triggerfile.\n" + err);
+    } else {
+      if (data.search('::jarfilenames') < 0) logger.log('ERROR', "Missing '::jarfilenames' in triggerfile.");
+      if (data.search('::ossuserids') < 0) logger.log('ERROR', "Missing '::jarfilenames' in triggerfile.");
+      if (data.search('::emailidsforjarfileprocessingstatus') < 0) logger.log('ERROR', "Missing '::jarfilenames' in triggerfile.");
+      if (data.search('::complete') < 0) logger.log('ERROR', "Missing '::jarfilenames' in triggerfile.");
+
+      if (data.search('::jarfilenames') > -1 && data.search('::ossuserids') > -1 && data.search('::emailidsforjarfileprocessingstatus') > -1 && data.search('::complete') > -1) {
+        // var triggerSections = data.match(/.*::jarfilenames[\s]+([\S]+)[\s]*::ossuserids[\s]+([\S]+)[\s]*::emailidsforjarfileprocessingstatus[\s]+([\S]+)[\s]*::complete.*/);
+        var triggerSections = data.match(/.*::jarfilenames[\s]+(.+)::ossuserids/g);
+        // console.dir(triggerSections);
+        console.log('filenames');
+        console.log(triggerSections[1]);
+        // console.log('\noss ids');
+        // console.log(triggerSections[2]);
+        // console.log('\nemails');
+        // console.log(triggerSections[3]);
+      }
+    }
+  });
+}
+
 // Remove all files/directories from jarFiles array which don't end in .jar
 for (var i = 0; i < jarDirFiles.length; i++) {
-  if (jarDirFiles[i].search(/\.jar$/i) < 0) {
+  if (jarDirFiles[i].search(/\.jar$/i) < 0 && jarDirFiles[i]) {
     jarDirFiles.splice(i, 1);
     i--;
   }
