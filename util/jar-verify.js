@@ -2428,15 +2428,37 @@ if (jarDirFiles.indexOf('triggerfile') < 0) {
       if (data.search('::complete') < 0) logger.log('ERROR', "Missing '::jarfilenames' in triggerfile.");
 
       if (data.search('::jarfilenames') > -1 && data.search('::ossuserids') > -1 && data.search('::emailidsforjarfileprocessingstatus') > -1 && data.search('::complete') > -1) {
-        // var triggerSections = data.match(/.*::jarfilenames[\s]+([\S]+)[\s]*::ossuserids[\s]+([\S]+)[\s]*::emailidsforjarfileprocessingstatus[\s]+([\S]+)[\s]*::complete.*/);
-        var triggerSections = data.match(/.*::jarfilenames[\s]+(.+)::ossuserids/g);
-        // console.dir(triggerSections);
-        console.log('filenames');
-        console.log(triggerSections[1]);
-        // console.log('\noss ids');
-        // console.log(triggerSections[2]);
-        // console.log('\nemails');
-        // console.log(triggerSections[3]);
+        var triggerSections = data.match(/::jarfilenames[\s]+([\S\s]+)[\s]*::ossuserids[\s]+([\S\s]+)[\s]*::emailidsforjarfileprocessingstatus[\s]+([\S\s]+)[\s]*::complete/);
+        if (triggerSections[1].trim() === "") {
+          var triggerFileNames = [];
+        } else {
+          var triggerFileNames = triggerSections[1].trim().split(/[\s]+/);
+        }
+        if (triggerSections[2].trim() === "") {
+          var triggerOssIds = [];
+        } else {
+          var triggerOssIds = triggerSections[2].trim().split(/[\s]+/);
+        }
+        if (triggerSections[3].trim() === "") {
+          var triggerEmails = [];
+        } else {
+          var triggerEmails = triggerSections[3].trim().split(/[\s]+/);
+        }
+
+        if (triggerFileNames.length < 1) {
+          logger.log('ERROR', "No files listed in '::jarfilenames' section of triggerfile.");
+        } else {
+          triggerFileNames.forEach(function(tFile) {
+            if (jarDirFiles.indexOf(tFile) < 0) logger.log('ERROR', "JAR file '" + tFile + "' listed in triggerfile does not exist.");
+          });
+          jarDirFiles.forEach(function(jarFile) {
+            if (jarFile.search(/\.jar$/i) > -1 && triggerFileNames.indexOf(jarFile) < 0) {
+              logger.log('ERROR', "JAR file '" + jarFile + "' missing from triggerfile.");
+            }
+          });
+        }
+        if (triggerOssIds.length < 1) logger.log('ERROR', "No OSS IDs listed in '::ossuserids' section of triggerfile.");
+        if (triggerEmails.length < 1) logger.log('ERROR', "No email addresses listed in '::emailidsforjarfileprocessingstatus' section of triggerfile.");
       }
     }
   });
