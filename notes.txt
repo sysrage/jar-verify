@@ -13,30 +13,11 @@
 
  - is ko_version.txt required in linux driver packages?
 
- - validate subversion based on previously released build & md5sums
-
  - fix use of Path in all scripts
- - add debug logging
  - find cross-platform solution for extracting self-extracting zip files
-
- - add list of all expected files to config.pkgTypes?
- - validate xClarity workaround device IDs in linux firmware update scripts
+ - add debug logging
 
 =====================================
-
-Linux Driver Packages:
-  - Verify FixID format
-  - Verify driver version
-  - Verify FixID subversion
-  - Verify all 5 files exist and are non-empty
-  - Verify XML matches BOM
-  - Verify tgz file can be extracted successfully
-
-Windows Driver Packages:
-
-Firmware Packages:
-
-=========================================
 
 SCM Activity:
  - Get subversions moved to a separate file so new config files can be checked in without effort

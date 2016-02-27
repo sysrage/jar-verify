@@ -34,7 +34,8 @@ module.exports = {
         rack: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
         flex: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
         bladecenter: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
-      }
+      },
+      workaroundName: 'oc11-'
     },
     {
       name: 'Lancer G6',
@@ -51,7 +52,8 @@ module.exports = {
         rack: ['LPe31000', 'LPe31002', 'LPe32000', 'LPe32002'],
         flex: [],
         bladecenter: [],
-      }
+      },
+      workaroundName: 'lancerg6'
     },
     {
       name: 'Lancer G5',
@@ -68,7 +70,8 @@ module.exports = {
         rack: ['LPe16000', 'LPe16002'],
         flex: ['LPm16002', 'LPm16004'],
         bladecenter: [],
-      }
+      },
+      workaroundName: 'lancer'
     },
     {
       name: 'Saturn',
@@ -91,7 +94,8 @@ module.exports = {
         rack: ['LPe12000', 'LPe12002'],
         flex: ['LPe1205'],
         bladecenter: ['LPe1205'],
-      }
+      },
+      workaroundName: 'ud'
     },
     {
       name: 'Skyhawk',
@@ -108,7 +112,8 @@ module.exports = {
         rack: ['OCe14100-FCoE', 'OCe14100-iSCSI', 'OCe14100-NIC'],
         flex: ['OCe14100-FCoE', 'OCe14100-iSCSI', 'OCe14100-NIC'],
         bladecenter: [],
-      }
+      },
+      workaroundName: 'oc14-'
     },
   ],
 

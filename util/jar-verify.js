@@ -1790,8 +1790,43 @@ function verifyPayloadFile(jarContent) {
 
               if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
                 // Validate device IDs inside Update script for xClarity workaround
-                // TODO:
+                try {
+                  var updateScriptContent = fs.readFileSync(payloadContentDir + updateScript, 'utf8');
+                } catch (err) {
+                  logger.log('ERROR', "Unexpected error opening " + updateScript + " in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
+                }
 
+                if (updateScriptContent) {
+                  for (var i = 0; i < config.asicTypes.length; i++) {
+                    if (config.asicTypes[i].name === config.pkgTypes[jarContent.jarType].asic) {
+                      var workaroundName = config.asicTypes[i].workaroundName;
+                      break;
+                    }
+                  }
+                  var expectedDids = [];
+                  workingBOM.adapterList.forEach(function(adapter) {
+                    if (adapter.asic === config.pkgTypes[jarContent.jarType].asic) {
+                      adapter.agent.forEach(function(agent) {
+                        var did = agent.id.replace('10DF','').replace('19A2','');
+                        if (expectedDids.indexOf(did) < 0) expectedDids.push(did);
+                      });
+                    }
+                  });
+                  var workaroundRegex = /firmware\/(.+?)\*[\s\S]+?emulex_DID="(.+)"[\s\S]+?/;
+                  for (var match = updateScriptContent.match(workaroundRegex); match; match = updateScriptContent.match(workaroundRegex)) {
+                    var asicName = match[1];
+                    var didList = match[2].split('_');
+                    if (asicName === workaroundName) {
+                      expectedDids.forEach(function(did) {
+                        if (didList.indexOf(did) < 0) logger.log('ERROR', "Expected device ID (" + did + ") missing from the xClarity workaround in " + updateScript + " for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      });
+                      didList.forEach(function(did) {
+                        if (expectedDids.indexOf(did) < 0) logger.log('ERROR', "Unexpected device ID (" + did + ") found in the xClarity workaround in " + updateScript + " for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      });
+                    }
+                    updateScriptContent = updateScriptContent.substring(match.index + match[0].length);
+                  }
+                }
               }
             }
 
