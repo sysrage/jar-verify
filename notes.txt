@@ -11,10 +11,10 @@
  x open bug to remove 32-bit Xen RPMs from all SLES11 driver packages
  x open bug to remove 32-bit OCM from Windows NIC driver packages
  - open bug to fix Lancer Change History description (Fibre Channel vs. FC)
+ - open bug to fix Saturn Change History support list (add 'Rack')
 
  - is ko_version.txt required in linux driver packages?
 
- - add verification of "Supported On: " in Change History
  - fix use of Path in all scripts
  - find cross-platform solution for extracting self-extracting zip files
  - add debug logging

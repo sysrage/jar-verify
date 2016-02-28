@@ -992,6 +992,28 @@ function verifyReadmeFile(jarContent) {
 function verifyChangeFile(jarContent) {
   logger.log('DEBUG', "Found Change History file " + jarContent.changeFileName + " for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   return new Promise(function(fulfill, reject) {
+    // Build list of supported system types based on BOM
+    var bomSystemTypeList = [];
+    workingBOM.adapterList.forEach(function(adapter) {
+      if (config.pkgTypes[jarContent.jarType].type === 'fw') {
+        if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && bomSystemTypeList.indexOf(adapter.type) < 0) bomSystemTypeList.push(adapter.type);
+      } else {
+        for (var i = 0; i < config.asicTypes.length; i++) {
+          if (config.asicTypes[i].name === adapter.asic) {
+            if (config.asicTypes[i].type === 'cna') var baseProtos = ['cna', 'iscsi', 'nic'];
+            else var baseProtos = [config.asicTypes[i].type];
+            if (baseProtos.indexOf(config.pkgTypes[jarContent.jarType].proto) > -1 && bomSystemTypeList.indexOf(adapter.type) < 0) bomSystemTypeList.push(adapter.type);
+          }
+        }
+      }
+    });
+    // Build list of unsupported system types based on BOM
+    var unsupportedTypeList = [];
+    config.headerStr.systemTypes.forEach(function(sysType) {
+      if (bomSystemTypeList.indexOf(sysType) < 0) unsupportedTypeList.push(sysType);
+    });
+
+    // Search file for each section to verify
     var next = 0;
     var lineCount = 0;
     var pkgDescription = null;
@@ -1023,24 +1045,36 @@ function verifyChangeFile(jarContent) {
       next = next + match[0].length;
     }
 
+    // Show error if package description is missing
     if (! pkgDescription) {
-      logger.log('ERROR', "Package description not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+      logger.log('ERROR', "Expected package description not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     }
+    // Show error if package version is missing or incorrect
     if (! pkgVersion) {
       logger.log('ERROR', "Package version not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else if (pkgVersion !== jarData[jarContent.jarType].version) {
       logger.log('ERROR', "Incorrect package version (" + pkgVersion + ") found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     }
+    // Show error if package boot code version is missing or incorrect
     if (bootVerRegex && ! pkgBootVersion) {
       logger.log('ERROR', "Boot code version not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else if (bootVerRegex && pkgBootVersion !== jarData[jarContent.jarType].bootVersion) {
       logger.log('ERROR', "Incorrect boot code version (" + pkgVersion + ") found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     }
+    // Show error if package support list is missing or incorrect
     if (! pkgSupportList) {
       logger.log('ERROR', "Package support list not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else {
-      // TODO: match this to BOM
-      // console.log(jarContent.jarType + ": " + pkgSupportList);
+      bomSystemTypeList.forEach(function(systemType) {
+        if (pkgSupportList.toUpperCase().search(systemType.toUpperCase()) < 0) {
+          logger.log('ERROR', "Expected supported system type (" + systemType + ") not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+        }
+      });
+      unsupportedTypeList.forEach(function(systemType) {
+        if (pkgSupportList.toUpperCase().search(systemType.toUpperCase()) > -1) {
+          logger.log('ERROR', "Unsupported system type (" + systemType + ") found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+        }
+      });
     }
 
     fulfill();
