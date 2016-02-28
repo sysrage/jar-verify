@@ -327,8 +327,7 @@ function putSavedData() {
 }
 
 function verifyInputXML(jarContent) {
-  // console.log(jarContent.inputFileName);
-  // console.log(JSON.stringify(jarContent.inputFile, null, 2));
+  logger.log('DEBUG', "Found input XML file " + jarContent.inputFileName + " for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   return new Promise(function(fulfill, reject) {
     if (! jarContent.inputFile || ! jarContent.inputFile.version) {
       logger.log('ERROR', "Parameter 'version' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
@@ -973,33 +972,73 @@ function verifyInputXML(jarContent) {
 }
 
 function verifyPackageXML(jarContent) {
-  // console.log(jarContent.xmlFileName);
-  // console.log(JSON.stringify(jarContent.xmlFile, null, 2));
+  logger.log('DEBUG', "Found package XML file " + jarContent.xmlFileName + " for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   // TODO:
+  // console.log(JSON.stringify(jarContent.xmlFile, null, 2));
   return new Promise(function(fulfill, reject) {
     fulfill();
   });
 }
 
 function verifyReadmeFile(jarContent) {
-  // console.log(jarContent.readmeFileName);
-  // console.log(jarContent.readmeFile);
+  logger.log('DEBUG', "Found README file " + jarContent.readmeFileName + " for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   // TODO:
+  // console.log(jarContent.readmeFile);
   return new Promise(function(fulfill, reject) {
     fulfill();
   });
 }
 
 function verifyChangeFile(jarContent) {
-  // console.log(jarContent.changeFileName);
-  // console.log(jarContent.changeFile);
-  // TODO:
+  logger.log('DEBUG', "Found Change History file " + jarContent.changeFileName + " for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   return new Promise(function(fulfill, reject) {
+    var next = 0;
+    var lineCount = 0;
+    var pkgDescription = null;
+    var pkgVersion = null;
+    var pkgBootVersion = null;
+    var pkgSupportList = null;
+    for (var match = jarContent.changeFile.substring(next).match(/(.*)\r?\n|\r/); match; match = jarContent.changeFile.substring(next).match(/(.*)\r?\n|\r/)) {
+      lineCount++;
+      if (lineCount > 10) break;
+      var descRegex = new RegExp(config.pkgTypes[jarContent.jarType].changeDesc);
+      var descMatch = match[0].match(descRegex);
+      var verRegex = new RegExp(config.pkgTypes[jarContent.jarType].changeVer);
+      var verMatch = match[0].match(verRegex);
+      if (config.pkgTypes[jarContent.jarType].changeBootVer) {
+        var bootVerRegex = new RegExp(config.pkgTypes[jarContent.jarType].changeBootVer);
+        var bootVerMatch = match[0].match(bootVerRegex);
+      }
+      if (descMatch) {
+        pkgDescription = match[0].replace(descRegex, config.pkgTypes[jarContent.jarType].changeDescReplace);
+      } else if (verMatch) {
+        pkgVersion = match[0].replace(verRegex, config.pkgTypes[jarContent.jarType].changeVerReplace);
+      } else if (bootVerRegex && bootVerMatch) {
+        pkgBootVersion = match[0].replace(bootVerRegex, config.pkgTypes[jarContent.jarType].changeBootVerReplace);
+      }
+      next = next + match[0].length;
+    }
+
+    if (! pkgDescription) {
+      logger.log('ERROR', "Package description not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    }
+    if (! pkgVersion) {
+      logger.log('ERROR', "Package version not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else if (pkgVersion !== jarData[jarContent.jarType].version) {
+      logger.log('ERROR', "Incorrect package version (" + pkgVersion + ") found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    }
+    if (bootVerRegex && ! pkgBootVersion) {
+      logger.log('ERROR', "Boot code version not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else if (bootVerRegex && pkgBootVersion !== jarData[jarContent.jarType].bootVersion) {
+      logger.log('ERROR', "Incorrect boot code version (" + pkgVersion + ") found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    }
+
     fulfill();
   });
 }
 
 function verifyPayloadFile(jarContent) {
+  logger.log('DEBUG', "Found payload file " + jarContent.binFileName + " for the " + config.pkgTypes[jarContent.jarType].name + " package.");
   // Node.js unzip libraries seem to have issues with Lenovo's self-extracting archives.
   // TODO: Find a working library to make this work cross-platform or bundle unzip.exe
   return new Promise(function(fulfill, reject) {
@@ -1008,7 +1047,6 @@ function verifyPayloadFile(jarContent) {
     var payloadExtract = payloadDir + 'e/';
     var payloadContentDir = payloadExtract + 'image/';
     var payloadHashFiles = [];
-    // console.log(payloadFile);
 
     if (payloadFile.match(/\.(?:tgz)|(?:tar\.gz)$/)) {
       // Payload is a tar.gz archive (Linux drivers) -- Extract it

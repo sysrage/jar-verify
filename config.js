@@ -428,7 +428,11 @@ module.exports = {
       ddImageFileSearch: 'elxdrvr\-nic\-([0-9\.]+)\-([0-9]+)\.exe',
       ddImageFileReplace: '$1',
       ocmImageFileSearch: 'elxocmcore\-windows\-(x86|x64)\-([0-9\.]+)\-([0-9]+)\.exe',
-      ocmImageFileReplace: '$2'
+      ocmImageFileReplace: '$2',
+      changeDesc: '\\s*(Emulex NIC Device Driver for Windows)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddWinISCSI: {
       name: 'Windows iSCSI Driver',
@@ -442,7 +446,11 @@ module.exports = {
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Win iSCSI DD',
       ddImageFileSearch: 'elxdrvr\-iscsi\-([0-9\.]+)\-([0-9]+)\.exe',
-      ddImageFileReplace: '$1'
+      ddImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex iSCSI Device Driver for Windows)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddWinFC: {
       name: 'Windows FC Driver',
@@ -456,7 +464,11 @@ module.exports = {
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Win FC DD',
       ddImageFileSearch: 'elxdrvr\-fc\-([0-9\.]+)\-([0-9]+)\.exe',
-      ddImageFileReplace: '$1'
+      ddImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex FC Device Driver for Windows)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddWinFCoE: {
       name: 'Windows FCoE Driver',
@@ -470,7 +482,11 @@ module.exports = {
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Win FCoE DD',
       ddImageFileSearch: 'elxdrvr\-fcoe\-([0-9\.]+)\-([0-9]+)\.exe',
-      ddImageFileReplace: '$1'
+      ddImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex FCoE Device Driver for Windows)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL5NIC: {
       name: 'RHEL 5.x NIC Driver',
@@ -501,7 +517,11 @@ module.exports = {
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
       ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3'
+      ocmImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL5ISCSI: {
       name: 'RHEL 5.x iSCSI Driver',
@@ -526,6 +546,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL5FC: {
       name: 'RHEL 5.x FC/FCoE Driver',
@@ -550,6 +574,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL6NIC: {
       name: 'RHEL 6.x NIC Driver',
@@ -580,7 +608,11 @@ module.exports = {
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
       ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3'
+      ocmImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL6ISCSI: {
       name: 'RHEL 6.x iSCSI Driver',
@@ -605,6 +637,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL6FC: {
       name: 'RHEL 6.x FC/FCoE Driver',
@@ -629,6 +665,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL7NIC: {
       name: 'RHEL 7.x NIC Driver',
@@ -659,7 +699,11 @@ module.exports = {
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
       ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3'
+      ocmImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL7ISCSI: {
       name: 'RHEL 7.x iSCSI Driver',
@@ -684,6 +728,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddRHEL7FC: {
       name: 'RHEL 7.x FC/FCoE Driver',
@@ -708,6 +756,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES10NIC: {
       name: 'SLES 10.x NIC Driver',
@@ -740,7 +792,11 @@ module.exports = {
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
       ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3'
+      ocmImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES10ISCSI: {
       name: 'SLES 10.x iSCSI Driver',
@@ -767,6 +823,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES10FC: {
       name: 'SLES 10.x FC/FCoE Driver',
@@ -793,6 +853,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES11NIC: {
       name: 'SLES 11.x NIC Driver',
@@ -825,7 +889,11 @@ module.exports = {
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
       ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3'
+      ocmImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES11ISCSI: {
       name: 'SLES 11.x iSCSI Driver',
@@ -852,6 +920,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES11FC: {
       name: 'SLES 11.x FC/FCoE Driver',
@@ -878,6 +950,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES12NIC: {
       name: 'SLES 12.x NIC Driver',
@@ -910,7 +986,11 @@ module.exports = {
         'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
       ],
       ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3'
+      ocmImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES12ISCSI: {
       name: 'SLES 12.x iSCSI Driver',
@@ -937,6 +1017,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     ddSLES12FC: {
       name: 'SLES 12.x FC/FCoE Driver',
@@ -963,6 +1047,10 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
+      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwBELinux: {
       name: 'Linux BE Firmware',
@@ -975,7 +1063,11 @@ module.exports = {
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'BE FW',
       fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwBEVMware: {
       name: 'VMware BE Firmware',
@@ -988,7 +1080,11 @@ module.exports = {
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'BE FW',
       fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwBEWindows: {
       name: 'Windows BE Firmware',
@@ -1001,7 +1097,11 @@ module.exports = {
       inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'BE FW',
       fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwLancerG6Linux: {
       name: 'Linux Lancer G6 Firmware',
@@ -1014,7 +1114,11 @@ module.exports = {
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G6 FW',
       fwImageFileSearch: 'lancerg6_A([0-9\.]+)\.grp',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwLancerG6VMware: {
       name: 'VMware Lancer G6 Firmware',
@@ -1027,7 +1131,11 @@ module.exports = {
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G6 FW',
       fwImageFileSearch: 'lancerg6_A([0-9\.]+)\.grp',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwLancerG6Windows: {
       name: 'Windows Lancer G6 Firmware',
@@ -1040,7 +1148,11 @@ module.exports = {
       inputDesc: 'Emulex HBA (LPe3100x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G6 FW',
       fwImageFileSearch: 'lancerg6_A([0-9\.]+)\.grp',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwLancerG5Linux: {
       name: 'Linux Lancer G5 Firmware',
@@ -1053,7 +1165,11 @@ module.exports = {
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G5 FW',
       fwImageFileSearch: 'lancer_A([0-9\.]+)\.grp',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwLancerG5VMware: {
       name: 'VMware Lancer G5 Firmware',
@@ -1066,7 +1182,11 @@ module.exports = {
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G5 FW',
       fwImageFileSearch: 'lancer_A([0-9\.]+)\.grp',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwLancerG5Windows: {
       name: 'Windows Lancer G5 Firmware',
@@ -1079,7 +1199,11 @@ module.exports = {
       inputDesc: 'Emulex HBA (LPe1600x) Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Lancer G5 FW',
       fwImageFileSearch: 'lancer_A([0-9\.]+)\.grp',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwSaturnLinux: {
       name: 'Linux Saturn Firmware',
@@ -1104,7 +1228,13 @@ module.exports = {
         rack: 'UU',
         flex: 'UU',
         bladecenter: 'UU'
-      }
+      },
+      changeDesc: '\\s*(Emulex 8Gb Fibre Channel Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
+      changeVerReplace: '$1',
+      changeBootVer: 'Boot Code Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
+      changeBootVerReplace: '$1'
     },
     fwSaturnVMware: {
       name: 'VMware Saturn Firmware',
@@ -1129,7 +1259,13 @@ module.exports = {
         rack: 'UU',
         flex: 'UU',
         bladecenter: 'UU'
-      }
+      },
+      changeDesc: '\\s*(Emulex 8Gb Fibre Channel Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
+      changeVerReplace: '$1',
+      changeBootVer: 'Boot Code Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
+      changeBootVerReplace: '$1'
     },
     fwSaturnWindows: {
       name: 'Windows Saturn Firmware',
@@ -1154,7 +1290,13 @@ module.exports = {
         rack: 'UU',
         flex: 'UU',
         bladecenter: 'UU'
-      }
+      },
+      changeDesc: '\\s*(Emulex 8Gb Fibre Channel Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
+      changeVerReplace: '$1',
+      changeBootVer: 'Boot Code Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
+      changeBootVerReplace: '$1'
     },
     fwSkyhawkLinux: {
       name: 'Linux Skyhawk Firmware',
@@ -1167,7 +1309,11 @@ module.exports = {
       inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Skyhawk FW',
       fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwSkyhawkVMware: {
       name: 'VMware Skyhawk Firmware',
@@ -1180,7 +1326,11 @@ module.exports = {
       inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Skyhawk FW',
       fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
     fwSkyhawkWindows: {
       name: 'Windows Skyhawk Firmware',
@@ -1193,7 +1343,11 @@ module.exports = {
       inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
       appDevIdCfgName: 'Skyhawk FW',
       fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1'
+      fwImageFileReplace: '$1',
+      changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
+      changeDescReplace: '$1',
+      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
+      changeVerReplace: '$1'
     },
   },
 
