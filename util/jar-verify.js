@@ -1009,12 +1009,16 @@ function verifyChangeFile(jarContent) {
         var bootVerRegex = new RegExp(config.pkgTypes[jarContent.jarType].changeBootVer);
         var bootVerMatch = match[0].match(bootVerRegex);
       }
+      var suppRegex = new RegExp(config.pkgTypes[jarContent.jarType].changeSupport);
+      var suppMatch = match[0].match(suppRegex);
       if (descMatch) {
         pkgDescription = match[0].replace(descRegex, config.pkgTypes[jarContent.jarType].changeDescReplace);
       } else if (verMatch) {
         pkgVersion = match[0].replace(verRegex, config.pkgTypes[jarContent.jarType].changeVerReplace);
       } else if (bootVerRegex && bootVerMatch) {
         pkgBootVersion = match[0].replace(bootVerRegex, config.pkgTypes[jarContent.jarType].changeBootVerReplace);
+      } else if (suppMatch) {
+        pkgSupportList = match[0].replace(suppRegex, config.pkgTypes[jarContent.jarType].changeSupportReplace);
       }
       next = next + match[0].length;
     }
@@ -1031,6 +1035,12 @@ function verifyChangeFile(jarContent) {
       logger.log('ERROR', "Boot code version not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
     } else if (bootVerRegex && pkgBootVersion !== jarData[jarContent.jarType].bootVersion) {
       logger.log('ERROR', "Incorrect boot code version (" + pkgVersion + ") found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    }
+    if (! pkgSupportList) {
+      logger.log('ERROR', "Package support list not found in Change History file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+    } else {
+      // TODO: match this to BOM
+      // console.log(jarContent.jarType + ": " + pkgSupportList);
     }
 
     fulfill();

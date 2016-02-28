@@ -432,7 +432,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex NIC Device Driver for Windows)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddWinISCSI: {
       name: 'Windows iSCSI Driver',
@@ -450,7 +452,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex iSCSI Device Driver for Windows)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddWinFC: {
       name: 'Windows FC Driver',
@@ -468,7 +472,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex FC Device Driver for Windows)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddWinFCoE: {
       name: 'Windows FCoE Driver',
@@ -486,7 +492,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex FCoE Device Driver for Windows)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL5NIC: {
       name: 'RHEL 5.x NIC Driver',
@@ -521,7 +529,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL5ISCSI: {
       name: 'RHEL 5.x iSCSI Driver',
@@ -549,7 +559,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL5FC: {
       name: 'RHEL 5.x FC/FCoE Driver',
@@ -577,7 +589,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL6NIC: {
       name: 'RHEL 6.x NIC Driver',
@@ -612,7 +626,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL6ISCSI: {
       name: 'RHEL 6.x iSCSI Driver',
@@ -640,7 +656,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL6FC: {
       name: 'RHEL 6.x FC/FCoE Driver',
@@ -668,7 +686,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL7NIC: {
       name: 'RHEL 7.x NIC Driver',
@@ -703,7 +723,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL7ISCSI: {
       name: 'RHEL 7.x iSCSI Driver',
@@ -731,7 +753,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddRHEL7FC: {
       name: 'RHEL 7.x FC/FCoE Driver',
@@ -759,7 +783,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES10NIC: {
       name: 'SLES 10.x NIC Driver',
@@ -796,7 +822,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES10ISCSI: {
       name: 'SLES 10.x iSCSI Driver',
@@ -826,7 +854,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES10FC: {
       name: 'SLES 10.x FC/FCoE Driver',
@@ -856,7 +886,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES11NIC: {
       name: 'SLES 11.x NIC Driver',
@@ -893,7 +925,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES11ISCSI: {
       name: 'SLES 11.x iSCSI Driver',
@@ -923,7 +957,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES11FC: {
       name: 'SLES 11.x FC/FCoE Driver',
@@ -953,7 +989,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES12NIC: {
       name: 'SLES 12.x NIC Driver',
@@ -990,7 +1028,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES12ISCSI: {
       name: 'SLES 12.x iSCSI Driver',
@@ -1020,7 +1060,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex iSCSI Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     ddSLES12FC: {
       name: 'SLES 12.x FC/FCoE Driver',
@@ -1050,7 +1092,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwBELinux: {
       name: 'Linux BE Firmware',
@@ -1067,7 +1111,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwBEVMware: {
       name: 'VMware BE Firmware',
@@ -1084,7 +1130,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwBEWindows: {
       name: 'Windows BE Firmware',
@@ -1101,7 +1149,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwLancerG6Linux: {
       name: 'Linux Lancer G6 Firmware',
@@ -1118,7 +1168,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwLancerG6VMware: {
       name: 'VMware Lancer G6 Firmware',
@@ -1135,7 +1187,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwLancerG6Windows: {
       name: 'Windows Lancer G6 Firmware',
@@ -1152,7 +1206,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwLancerG5Linux: {
       name: 'Linux Lancer G5 Firmware',
@@ -1169,7 +1225,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwLancerG5VMware: {
       name: 'VMware Lancer G5 Firmware',
@@ -1186,7 +1244,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwLancerG5Windows: {
       name: 'Windows Lancer G5 Firmware',
@@ -1203,7 +1263,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex 16GB FC Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwSaturnLinux: {
       name: 'Linux Saturn Firmware',
@@ -1234,7 +1296,9 @@ module.exports = {
       changeVer: 'Firmware Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
       changeVerReplace: '$1',
       changeBootVer: 'Boot Code Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
-      changeBootVerReplace: '$1'
+      changeBootVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwSaturnVMware: {
       name: 'VMware Saturn Firmware',
@@ -1265,7 +1329,9 @@ module.exports = {
       changeVer: 'Firmware Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
       changeVerReplace: '$1',
       changeBootVer: 'Boot Code Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
-      changeBootVerReplace: '$1'
+      changeBootVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwSaturnWindows: {
       name: 'Windows Saturn Firmware',
@@ -1296,7 +1362,9 @@ module.exports = {
       changeVer: 'Firmware Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
       changeVerReplace: '$1',
       changeBootVer: 'Boot Code Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
-      changeBootVerReplace: '$1'
+      changeBootVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwSkyhawkLinux: {
       name: 'Linux Skyhawk Firmware',
@@ -1313,7 +1381,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwSkyhawkVMware: {
       name: 'VMware Skyhawk Firmware',
@@ -1330,7 +1400,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
     fwSkyhawkWindows: {
       name: 'Windows Skyhawk Firmware',
@@ -1347,7 +1419,9 @@ module.exports = {
       changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1'
+      changeVerReplace: '$1',
+      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
+      changeSupportReplace: '$1'
     },
   },
 
