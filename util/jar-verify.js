@@ -2533,7 +2533,7 @@ try {
 
 // Verify existence and content of triggerfile
 if (jarDirFiles.indexOf('triggerfile') < 0) {
-  logger.log('ERROR', "No triggerfile found in '" + jarDir + "'.");
+  logger.log('ERROR', "The triggerfile cannot be found.");
 } else {
   fs.readFile(jarDir + 'triggerfile', 'utf8', function(err, data) {
     if (err) {
