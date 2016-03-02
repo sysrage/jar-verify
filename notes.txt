@@ -10,8 +10,8 @@
  x open bug to remove 'LPe1205a' and 'LPe1205-CIOv' from fwmatrix.txt in all Saturn firmware packages
  x open bug to remove 32-bit Xen RPMs from all SLES11 driver packages
  x open bug to remove 32-bit OCM from Windows NIC driver packages
- - open bug to fix Lancer Change History description (Fibre Channel vs. FC)
- - open bug to fix Saturn Change History support list (add 'Rack')
+ x open bug to fix Lancer Change History description (Fibre Channel vs. FC)
+ x open bug to fix Saturn Change History support list (add 'Rack')
 
  - is ko_version.txt required in linux driver packages?
 
