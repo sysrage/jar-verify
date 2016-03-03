@@ -1,20 +1,13 @@
 #!/bin/bash
 
-JAR_RELEASENAME="16A"
-JAR_RELEASENUM="11.0"
-JAR_EMAILFROM="brian.bothwell@broadcom.com"
-JAR_EMAILTO="brian.bothwell@broadcom.com"
-JAR_OCSAEMAILTO="brian.bothwell@broadcom.com"
+for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do
+  source "${BLDCONFIG}"
+done
 
 JAR_BUILDDIR="/elx/local/ftpse/scm_builds/be2/Palau_${JAR_RELEASENUM}"
 JAR_WORKDIR="${HOME}/Downloads/jars/${JAR_RELEASENAME}"
 JAR_NODEBIN="${HOME}/.nvm/v4.2.4/bin/node"
 JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
-
-# Comment out unused OCSADIRs
-JAR_OCSADIR1="/nfs/links/scm_release/OneConnect_Staging_Area/Lenovo_Kits/RT11.0"
-JAR_OCSADIR2="/nfs/links/scm_release/OneConnect_Staging_Area/Lenovo_Kits/RT11.0.2"
-#JAR_OCSADIR3="/nfs/links/scm_release/OneConnect_Staging_Area/Lenovo_Kits/RT11.0"
 
 JAR_LASTBUILDDIR=$(ls -td ${JAR_WORKDIR}/${JAR_RELEASENUM}.* | head -1)
 JAR_LASTBUILDNUM=${JAR_LASTBUILDDIR#${JAR_WORKDIR}/}
