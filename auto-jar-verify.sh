@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ls ${HOME}/jar-verify/auto-verify-cfg-*.cfg | while read BLDCONFIG; do
+for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do (
   source "${BLDCONFIG}"
 
   JAR_BUILDDIR="/elx/local/ftpse/scm_builds/be2/Palau_${JAR_RELEASENUM}"
@@ -140,4 +140,4 @@ ls ${HOME}/jar-verify/auto-verify-cfg-*.cfg | while read BLDCONFIG; do
     # Delete jar-verify results
     rm -f jar-verify-results-${JAR_OCSABUILDNUM}.txt
   done
-done
+) done
