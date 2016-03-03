@@ -8,12 +8,17 @@ for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do
   JAR_NODEBIN="${HOME}/.nvm/v4.2.4/bin/node"
   JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
 
+  # Create workdir if it doesn't already exist
+  if [ ! -d "${JAR_WORKDIR}" ]; then
+    mkdir ${JAR_WORKDIR};
+  fi
+
+  # Determine the last build which was verified
   JAR_LASTBUILDDIR=$(ls -td ${JAR_WORKDIR}/${JAR_RELEASENUM}.* | head -1)
   JAR_LASTBUILDNUM=${JAR_LASTBUILDDIR#${JAR_WORKDIR}/}
   JAR_LASTBUILDSRC="${JAR_BUILDDIR}/${JAR_LASTBUILDNUM}"
   JAR_LASTOCSABUILDLINK=$(ls -tdF ${JAR_WORKDIR}/* | grep '@' | head -1 | cut -d '@' -f 1)
   JAR_LASTOCSABUILD=${JAR_LASTOCSABUILDLINK#${JAR_WORKDIR}/}
-
   if [[ ${JAR_OCSADIR3} != "" ]]; then
     JAR_OCSADIR=${JAR_OCSADIR3}
     JAR_LASTOCSABUILDSRC="${JAR_OCSADIR3}/Build${JAR_LASTOCSABUILD}"
@@ -31,8 +36,15 @@ for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do
     JAR_LASTOCSABUILDSRC="${JAR_OCSADIR1}/Build${JAR_LASTOCSABUILD}"
   fi
 
+  # Generate list of new internally staged SCM builds
+  if [[ ! ${JAR_LASTBUILDDIR} ]]; then
+    JAR_NEWBUILDS=$(ls -td ${JAR_BUILDDIR}/* | head -1)
+  else
+    JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print)
+  fi
+
   # Handle internally staged SCM builds
-  for i in $(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print); do
+  for i in ${JAR_NEWBUILDS}; do
     JAR_BUILDNUM=${i#${JAR_BUILDDIR}/}
     if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/ReleaseNotes-${JAR_BUILDNUM}.html" ]; then
       # Build is complete
@@ -96,8 +108,15 @@ for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do
   # Delete builds older than 30 days
   find ${JAR_WORKDIR}/${JAR_RELEASENUM}.* -maxdepth 0 -mtime +30 -exec rm -rf {} \;
 
+  # Generate list of new officially staged builds
+  if [[ ! ${JAR_LASTOCSABUILD} ]]; then
+    JAR_NEWOCSABUILDS=$(ls -tdF ${JAR_OCSADIR}/* | grep '@' | head -1 | cut -d '@' -f 1)
+  else
+    JAR_NEWOCSABUILDS=$(find ${JAR_OCSADIR}/* -maxdepth 0 -name 'Build*' -newer ${JAR_LASTOCSABUILDSRC} -print)
+  fi
+
   # Handle officially staged builds
-  for i in $(find ${JAR_OCSADIR}/* -maxdepth 0 -name 'Build*' -newer ${JAR_LASTOCSABUILDSRC} -print); do
+  for i in ${JAR_NEWOCSABUILDS}; do
     JAR_OCSABUILDNUM=${i#${JAR_OCSADIR}/Build}
     JAR_OCSABUILDVER=$(ls -la $i | cut -d '>' -f 2 | cut -d ' ' -f 2)
 
