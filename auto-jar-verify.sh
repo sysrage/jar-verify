@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do
+ls ${HOME}/jar-verify/auto-verify-cfg-*.cfg | while read BLDCONFIG; do
   source "${BLDCONFIG}"
 
   JAR_BUILDDIR="/elx/local/ftpse/scm_builds/be2/Palau_${JAR_RELEASENUM}"
