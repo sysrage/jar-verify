@@ -2684,9 +2684,19 @@ for (jarType in jarFiles) {
                       verifyPayloadFile(jarContent).then(function() {
                         // Verify version and subversion as compared to last build
                         var savedBuilds = Object.keys(savedData);
-                        savedBuilds.push(workingBuild);
-                        if (savedBuilds.sort().indexOf(workingBuild) > 0) {
-                          var lastSavedBuild = savedBuilds[savedBuilds.sort().indexOf(workingBuild) - 1];
+                        if (workingBuild.match(/^[0-9]+(?:\.[0-9]+)?$/)) {
+                          var buildToCompare = workingBuild;
+                        } else {
+                          // Generate a fake build number if this isn't a released build
+                          if (savedBuilds.length > 0) {
+                            var buildToCompare = Number(savedBuilds.sort()[savedBuilds.length - 1]) + 1;
+                          } else {
+                            var buildToCompare = 1;
+                          }
+                        }
+                        savedBuilds.push(buildToCompare);
+                        if (savedBuilds.sort().indexOf(buildToCompare) > 0) {
+                          var lastSavedBuild = savedBuilds[savedBuilds.sort().indexOf(buildToCompare) - 1];
                           var lastVersion = savedData[lastSavedBuild].jarData[jarContent.jarType].version;
                           if (savedData[lastSavedBuild].jarData[jarContent.jarType].bootVersion) {
                             var lastBootVersion = savedData[lastSavedBuild].jarData[jarContent.jarType].bootVersion;
