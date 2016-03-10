@@ -75,7 +75,9 @@ for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do (
             fi
 
             # E-mail jar-verify results
-            mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" -- -f "${JAR_EMAILFROM}" < jar-verify-results-${JAR_BUILDNUM}.txt
+            if [ ! $(grep 'No JAR files found in' jar-verify-results=${JAR_BUILDNUM}.txt) ]; then
+              mail -s "JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" -- -f "${JAR_EMAILFROM}" < jar-verify-results-${JAR_BUILDNUM}.txt
+            fi
 
             # Delete jar-verify results
             rm -f jar-verify-results-${JAR_BUILDNUM}.txt
