@@ -22,6 +22,7 @@
 =====================================
 
 SCM Activity:
+ - Bump Linux driver subversions if *any* change/rebuild -- This temporarily worked around by ignoring md5sums
  - Get subversions moved to a separate file so new config files can be checked in without effort
  - Find out SVN location for config files, so I can check in BOM updates myself
 

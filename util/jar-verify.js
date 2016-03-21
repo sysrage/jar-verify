@@ -2711,15 +2711,36 @@ for (jarType in jarFiles) {
                               var mismatchedFile = [];
                               // Check for components in JAR which don't match last build
                               Object.keys(jarData[jarContent.jarType].binFileContent).forEach(function(jarComponent) {
-                                if (! savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent] || jarData[jarContent.jarType].binFileContent[jarComponent] !== savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]) {
+                                if (! savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]) {
                                   if (mismatchedFile.indexOf(jarComponent) < 0) mismatchedFile.push(jarComponent);
+                                } else {
+                                  if (config.pkgTypes[jarContent.jarType].type === 'dd' && config.pkgTypes[jarContent.jarType].osType === 'linux') {
+                                    // Skip Linux driver md5sum comparison
+                                    // TODO: Get SCM to bump subversion for any DD rebuild
+
+                                  } else {
+                                    if (jarData[jarContent.jarType].binFileContent[jarComponent] !== savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]) {
+                                      if (mismatchedFile.indexOf(jarComponent) < 0) mismatchedFile.push(jarComponent);
+                                    }
+                                  }
                                 }
                               });
                               // Check for components in last build which don't match JAR
                               Object.keys(savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent).forEach(function(jarComponent) {
-                                if (! jarData[jarContent.jarType].binFileContent[jarComponent] || jarData[jarContent.jarType].binFileContent[jarComponent] !== savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]) {
+                                if (! jarData[jarContent.jarType].binFileContent[jarComponent]) {
                                   if (mismatchedFile.indexOf(jarComponent) < 0) mismatchedFile.push(jarComponent);
+                                } else {
+                                  if (config.pkgTypes[jarContent.jarType].type === 'dd' && config.pkgTypes[jarContent.jarType].osType === 'linux') {
+                                    // Skip Linux driver md5sum comparison
+                                    // TODO: Get SCM to bump subversion for any DD rebuild
+
+                                  } else {
+                                    if (jarData[jarContent.jarType].binFileContent[jarComponent] !== savedData[lastSavedBuild].jarData[jarContent.jarType].binFileContent[jarComponent]) {
+                                      if (mismatchedFile.indexOf(jarComponent) < 0) mismatchedFile.push(jarComponent);
+                                    }
+                                  }
                                 }
+
                               });
                               if (parseInt(lastSubVersion) === parseInt(jarData[jarContent.jarType].subVersion)) {
                                 if (mismatchedFile.length === 0) {
