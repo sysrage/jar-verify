@@ -365,6 +365,8 @@ module.exports = {
     // Lancer G6
     {name: 'elx_Croydon1P_FC',      value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33310DF', type: 'fc'},
     {name: 'elx_Croydon2P_FC',      value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33210DF', type: 'fc'},
+    {name: 'elx_Sutton1P_FC',       value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33110DF', type: 'fc'},
+    {name: 'elx_Sutton2P_FC',       value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33010DF', type: 'fc'},
 
     // Skyhawk NIC
     {name: 'elx_Silver_N',          value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81010DF', type: 'nic'},
@@ -380,6 +382,7 @@ module.exports = {
     {name: 'elx_Gold_Plus_N',       value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81810DF', type: 'nic'},
     {name: 'elx_Gold_Plus_P2_N',    value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81E10DF', type: 'nic'},
     {name: 'elx_Gold_P2_N',         value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81C10DF', type: 'nic'},
+    {name: 'elx_Brighton_N',        value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E87110DF', type: 'nic'},
 
     // Skyhawk iSCSI
     {name: 'elx_Silver_I',          value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81010DF', type: 'iscsi'},
