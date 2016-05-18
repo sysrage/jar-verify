@@ -147,7 +147,8 @@ module.exports = {
       kernel: {
         5: '2.6.32-431',
         6: '2.6.32-504',
-        7: '2.6.32-573'
+        7: '2.6.32-573',
+        8: '2.6.32-642'
       }
     },
     {
@@ -210,7 +211,7 @@ module.exports = {
       id: 109,
       pkgsdkName: ['Windows 2008'],
       version: '2008',
-      arch: ['x86', 'x64'],
+      arch: ['x64'],
       type: 'windows',
       ddName: 'windows'
     },
@@ -228,6 +229,15 @@ module.exports = {
       id: 112,
       pkgsdkName: ['Windows 2012'],
       version: '2012',
+      arch: ['x64'],
+      type: 'windows',
+      ddName: 'windows'
+    },
+    {
+      name: 'Windows 2016',
+      id: 114,
+      pkgsdkName: ['Windows 2016'],
+      version: '2016',
       arch: ['x64'],
       type: 'windows',
       ddName: 'windows'
@@ -264,6 +274,15 @@ module.exports = {
       id: 313,
       pkgsdkName: ['VMware ESXi 6'],
       version: '6.0',
+      arch: ['x64'],
+      type: 'vmware',
+      ddName: 'none'
+    },
+    {
+      name: 'VMware ESXi 6.5',
+      id: 314,
+      pkgsdkName: ['VMware ESXi 6.5'],
+      version: '6.5',
       arch: ['x64'],
       type: 'vmware',
       ddName: 'none'
