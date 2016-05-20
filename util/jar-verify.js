@@ -519,7 +519,10 @@ function verifyInputXML(jarContent) {
                       logger.log('ERROR', "Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else {
                       if (! driverFileEntry.arch || uniqueEntries[driverFileEntry.os].indexOf(driverFileEntry.arch) > -1) {
-                        logger.log('ERROR', "Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                        if (driverFileEntry.os !== 'Windows 2008' || jarContent.jarType !== 'ddWinNIC') {
+                          // Workaround for Lenovo tools using same OS for WS2008 and WS2008R2
+                          logger.log('ERROR', "Duplicate OS entries in 'driverFile' sections from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                        }
                       } else {
                         uniqueEntries[driverFileEntry.os].push(driverFileEntry.arch);
                       }
