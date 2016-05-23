@@ -166,7 +166,7 @@ for (var i in worksheet) {
   // Gather release type
   if (worksheet[i].v.toString().toLowerCase().search(RegExp(config.headerStr.relType)) > -1) {
     releaseType = worksheet[i].v.toString().split(':')[1].replace(/\s+/g, '');
-    if (['Red', 'Blue'].indexOf(releaseType) < 0) logger.log('ERROR', "Invalid release type specified in cell " + i + ".");
+    if (['Red-ECD', 'Red-CCX', 'Red', 'Blue'].indexOf(releaseType) < 0) logger.log('ERROR', "Invalid release type specified in cell " + i + ".");
   }
 
   // Gather supported operating systems
