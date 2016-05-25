@@ -4,7 +4,7 @@ for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do (
   source "${BLDCONFIG}"
 
   JAR_BUILDDIR="/elx/local/ftpse/scm_builds/be2/Palau_${JAR_RELEASENUM}"
-  JAR_WORKDIR="${HOME}/Downloads/jars/${JAR_RELEASENAME}"
+  JAR_WORKDIR="${HOME}/Downloads/SUPs/jars/${JAR_RELEASENAME}"
   JAR_NODEBIN="${HOME}/.nvm/v4.2.4/bin/node"
   JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
 
