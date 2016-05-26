@@ -227,7 +227,7 @@ for (var i in worksheet) {
             logger.log('ERROR', "Missing or invalid item ID in cell " + systemItemCol + y + ".");
           } else {
             // Build list of supported machine types
-            var mtmList = worksheet[systemMTMCol + y].v.toString().replace(' ', '').split(',');
+            var mtmList = worksheet[systemMTMCol + y].v.toString().replace(/\s+/g, '').split(',');
             systemList[worksheet[systemItemCol + y].v] = {
               name: worksheet[systemNameCol + y].v.trim(),
               type: systemType,
