@@ -444,7 +444,7 @@ module.exports = {
       osType: 'windows',
       proto: 'nic',
       inputDesc: 'Emulex NIC Device Driver for Windows - ##VERSION## - Release ##RELEASE##',
-      ddFileName: ['be2nd6x.sys', 'be2nd62.sys', 'ocnd63.sys', 'ocnd64.sys'],
+      ddFileName: ['be2nd6x.sys', 'be2nd62.sys', 'ocnd63.sys', 'ocnd64.sys', 'ocnd65.sys'],
       ddVerFormat: '##VERSION##',
       appDevIdCfgName: 'Win NIC DD',
       ddImageFileSearch: 'elxdrvr\-nic\-([0-9\.]+)\-([0-9]+)\.exe',
