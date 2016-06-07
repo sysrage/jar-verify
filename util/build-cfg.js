@@ -255,7 +255,11 @@ if (! workingBOM.osList) {
   var baseAsics = [];
   var baseLinDrivers = [];
   var baseWinDrivers = [];
-  var baseMTMs = [];
+  var baseMTMsLinuxCNA = [];
+  var baseMTMsLinuxFC = [];
+  var baseMTMsWinCNA = [];
+  var baseMTMsWinFC = [];
+
   workingBOM.osList.forEach(function(os) {
     if (baseArchitectures.indexOf(os.arch) < 0) baseArchitectures.push(os.arch);
     if (os.type === 'linux') {
@@ -280,17 +284,30 @@ if (! workingBOM.osList) {
     }
   });
   workingBOM.adapterList.forEach(function(adapter) {
+    for (var a = 0; a < config.asicTypes.length; a++) {
+      if (config.asicTypes[a].name === adapter.asic) {
+        var asicType = config.asicTypes[a].type;
+        break;
+      }
+    }
+
     adapter.mtm.forEach(function(mtm) {
-      if (baseMTMs.indexOf(mtm) < 0 ) baseMTMs.push(mtm);
+      if (asicType === 'cna') {
+        if (baseMTMsLinuxCNA.indexOf(mtm) < 0) baseMTMsLinuxCNA.push(mtm);
+        if (baseMTMsWinCNA.indexOf(mtm) < 0) baseMTMsWinCNA.push(mtm);
+      } else {
+        if (baseMTMsLinuxFC.indexOf(mtm) < 0) baseMTMsLinuxFC.push(mtm);
+        if (baseMTMsWinFC.indexOf(mtm) < 0) baseMTMsWinFC.push(mtm);
+      }
     });
+
+    // TODO: Workaround until FC and FCoE drivers are split.
+    baseMTMsLinuxCNA.forEach(function(mtm) {
+      if (baseMTMsLinuxFC.indexOf(mtm) < 0) baseMTMsLinuxFC.push(mtm);
+    });
+
     if (baseAsics.indexOf(adapter.asic) < 0) {
       baseAsics.push(adapter.asic);
-      for (var a = 0; a < config.asicTypes.length; a++) {
-        if (config.asicTypes[a].name === adapter.asic) {
-          var asicType = config.asicTypes[a].type;
-          break;
-        }
-      }
       if (asicType === 'cna') var baseProtos = ['cna', 'iscsi', 'nic'];
       else var baseProtos = [asicType];
       baseProtos.forEach(function(proto) {
@@ -367,9 +384,33 @@ if (! workingBOM.osList) {
     baseDump += dd;
   });
 
-  baseDump += "\nmtm = ";
+  baseDump += "\nmtm_lnx_nic_iscsi = ";
   var first = true;
-  baseMTMs.forEach(function(mtm) {
+  baseMTMsLinuxCNA.forEach(function(mtm) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += mtm;
+  });
+
+  baseDump += "\nmtm_lnx_fc_fcoe = ";
+  var first = true;
+  baseMTMsLinuxFC.forEach(function(mtm) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += mtm;
+  });
+
+  baseDump += "\nmtm_win_cna = ";
+  var first = true;
+  baseMTMsWinCNA.forEach(function(mtm) {
+    if (! first) baseDump += ",";
+    first = false;
+    baseDump += mtm;
+  });
+
+  baseDump += "\nmtm_win_fc = ";
+  var first = true;
+  baseMTMsWinFC.forEach(function(mtm) {
     if (! first) baseDump += ",";
     first = false;
     baseDump += mtm;
