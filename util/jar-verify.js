@@ -1766,8 +1766,13 @@ function verifyPayloadFile(jarContent) {
               });
 
               // Validate presence of elxflash script and verify it's not 0 bytes
-              if (config.pkgTypes[jarContent.jarType].osType === 'windows') var flashScript = 'elxflash.bat';
-              if (config.pkgTypes[jarContent.jarType].osType === 'linux') var flashScript = 'elxflash.sh';
+              if (config.pkgTypes[jarContent.jarType].elxflashName) {
+                var flashScript = config.pkgTypes[jarContent.jarType].elxflashName;
+              } else if (config.pkgTypes[jarContent.jarType].osType === 'windows') {
+                var flashScript = 'elxflash.bat';
+              } else if (config.pkgTypes[jarContent.jarType].osType === 'linux') {
+                var flashScript = 'elxflash.sh';
+              }
               try {
                 var elxflashFileStats = fs.statSync(payloadContentDir + flashScript);
               } catch (err) {
