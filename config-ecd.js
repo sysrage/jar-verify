@@ -10,7 +10,7 @@ module.exports = {
   dataDir: __dirname + '/data/',
 
   // Base directory where JAR files should be located
-  jarDir: os.homedir() + '/Downloads/SUPs/jars/',
+  jarDir: os.homedir() + '/Downloads/SUPs/ECD/jars',
 
   // Regular Expression to match vendor string (matches elx or elx-lnvgy)
   vendor: 'elx(?:\-lnvgy)?',
