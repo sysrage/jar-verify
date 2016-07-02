@@ -458,8 +458,6 @@ module.exports = {
       appDevIdCfgName: 'Win NIC DD',
       ddImageFileSearch: 'elxdrvr\-nic\-([0-9\.]+)\-([0-9]+)\.exe',
       ddImageFileReplace: '$1',
-      ocmImageFileSearch: 'elxocmcore\-windows\-(x86|x64)\-([0-9\.]+)\-([0-9]+)\.exe',
-      ocmImageFileReplace: '$2',
       changeDesc: '\\s*(Emulex NIC Device Driver for Windows)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
@@ -550,13 +548,6 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      ocmImageFileSearch: [
-        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
-      ],
-      ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3',
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
@@ -647,13 +638,6 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      ocmImageFileSearch: [
-        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
-      ],
-      ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3',
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
@@ -744,13 +728,6 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      ocmImageFileSearch: [
-        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
-      ],
-      ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3',
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
@@ -843,13 +820,6 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      ocmImageFileSearch: [
-        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
-      ],
-      ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3',
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
@@ -946,13 +916,6 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      ocmImageFileSearch: [
-        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
-      ],
-      ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3',
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
@@ -1049,13 +1012,6 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      ocmImageFileSearch: [
-        'elxocmcore\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmcorelibs\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm',
-        'elxocmlibhbaapi(?:\-32bit)?\-([0-9\.]+)\-([0-9]+)\.(i386|x86_64)\.rpm'
-      ],
-      ocmImageFileVersion: '$1',
-      ocmImageFileArch: '$3',
       changeDesc: '\\s*(Emulex NIC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
