@@ -23,6 +23,7 @@ module.exports = {
       name: 'BE',
       type: 'cna',
       agentlessCfgNames: {
+        10: 'BE_AG-BOARDS',
         13: 'BE_AG-BOARDS'
       },
       fwCfgNames: {
@@ -41,6 +42,7 @@ module.exports = {
       name: 'Lancer G6',
       type: 'fc',
       agentlessCfgNames: {
+        10: 'LANG6_AG-BOARDS',
         13: 'LANG6_AG-BOARDS'
       },
       fwCfgNames: {
@@ -59,6 +61,7 @@ module.exports = {
       name: 'Lancer G5',
       type: 'fc',
       agentlessCfgNames: {
+        10: 'LANG5_AG-BOARDS',
         13: 'LANG5_AG-BOARDS'
       },
       fwCfgNames: {
@@ -101,6 +104,7 @@ module.exports = {
       name: 'Skyhawk',
       type: 'cna',
       agentlessCfgNames: {
+        10: 'SKY_AG-BOARDS',
         13: 'SKY_AG-BOARDS'
       },
       fwCfgNames: {
