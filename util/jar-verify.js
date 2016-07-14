@@ -484,6 +484,9 @@ function verifyInputXML(jarContent) {
             var bomDriverFileEntries = {};
             bomAdapterList.forEach(function(adapter) {
               adapter.agent.forEach(function(agent) {
+                // TODO: Workaround for Lenovo's multiple classification bug
+                if (agent.type === '10' && adapter.asic !== 'Saturn') agent.type = '13';
+                // TODO: End workaround
                 if (! bomDriverFileEntries[agent.type]) {
                   bomDriverFileEntries[agent.type] = [agent.id];
                 } else {
@@ -825,6 +828,9 @@ function verifyInputXML(jarContent) {
                 if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && Object.keys(adapter.pldm).length > 0) {
                   var isUnique = true;
                   adapter.agent.forEach(function(agent) {
+                    // TODO: Workaround for Lenovo's multiple classification bug
+                    if (agent.type === '10' && adapter.asic !== 'Saturn') agent.type = '13';
+                    // TODO: End workaround
                     var agentExists = false;
                     bomAdapterList.forEach(function(bomAdapter) {
                       bomAdapter.agent.forEach(function(bomAdapterAgent) {
