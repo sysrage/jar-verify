@@ -165,6 +165,9 @@ if (! workingBOM.adapterList) {
 
     // Add each entry to the appropriate section
     adapter.agent.forEach(function(agent) {
+      // TODO: Workaround for Lenovo's multiple classification bug
+      if (agent.type === '10' && adapter.asic !== 'Saturn') agent.type = '13';
+      // TODO: End workaround
       if (! agentlessList[agentlessCfgNames[agent.type]]) {
         agentlessList[agentlessCfgNames[agent.type]] = [agent.id];
       } else {
