@@ -484,9 +484,6 @@ function verifyInputXML(jarContent) {
             var bomDriverFileEntries = {};
             bomAdapterList.forEach(function(adapter) {
               adapter.agent.forEach(function(agent) {
-                // TODO: Workaround for Lenovo's multiple classification bug
-                if (agent.type === '10' && adapter.asic !== 'Saturn') agent.type = '13';
-                // TODO: End workaround
                 if (! bomDriverFileEntries[agent.type]) {
                   bomDriverFileEntries[agent.type] = [agent.id];
                 } else {
@@ -497,6 +494,16 @@ function verifyInputXML(jarContent) {
                 adapter.v2.forEach(function(v2) {
                   if (bomDriverFileEntries[config.classMap[agent.type]].indexOf(v2) < 0) bomDriverFileEntries[config.classMap[agent.type]].push(v2);
                 });
+
+                // TODO: Workaround for Lenovo's broken classification types
+                if (agent.type === '13') {
+                  if (! bomDriverFileEntries['10']) bomDriverFileEntries['10'] = [];
+                  adapter.v2.forEach(function(v2) {
+                    if (bomDriverFileEntries['10'].indexOf(v2) < 0) bomDriverFileEntries['10'].push(v2);
+                  });
+                  if (bomDriverFileEntries['10'].indexOf(agent.id) < 0) bomDriverFileEntries['10'].push(agent.id);
+                }
+                // TODO: End workaround
               });
             });
           }
@@ -828,9 +835,6 @@ function verifyInputXML(jarContent) {
                 if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && Object.keys(adapter.pldm).length > 0) {
                   var isUnique = true;
                   adapter.agent.forEach(function(agent) {
-                    // TODO: Workaround for Lenovo's multiple classification bug
-                    if (agent.type === '10' && adapter.asic !== 'Saturn') agent.type = '13';
-                    // TODO: End workaround
                     var agentExists = false;
                     bomAdapterList.forEach(function(bomAdapter) {
                       bomAdapter.agent.forEach(function(bomAdapterAgent) {
