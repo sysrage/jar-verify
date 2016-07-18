@@ -12,7 +12,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   source "${BLDCONFIG}"
 
   JAR_BUILDDIR="/elx/local/ftpse/scm_builds/be2/Palau_${JAR_RELEASENUM}"
-  JAR_WORKDIR="${HOME}/Downloads/SUPs/jars/${JAR_BUNAME}/${JAR_RELTYPE}/${JAR_RELEASENAME}"
+  JAR_WORKDIR="${HOME}/Downloads/SUPs/${JAR_BUNAME}/jars/${JAR_RELEASENAME}"
 
   # Create workdir if it doesn't already exist
   if [ ! -d "${JAR_WORKDIR}" ]; then
