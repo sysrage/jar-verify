@@ -204,6 +204,11 @@ module.exports = {
       kernel: {
         0: '3.12.28_4',
         1: '3.12.49_11'
+      },
+      elxFlashDir: {
+        0: 'sles-12-sp0',
+        1: 'sles-12-sp0',
+        2: 'sles-12-sp2'
       }
     },
     {

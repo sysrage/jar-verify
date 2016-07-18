@@ -35,6 +35,7 @@ function validateOS(osName, cell) {
       var osMapArch = config.osMappings[os].arch;
       var osMapType = config.osMappings[os].type;
       var osMapDDName = config.osMappings[os].ddName;
+      var osMapFlashDirs = config.osMappings[os].elxFlashDir;
       break;
     }
   }
@@ -79,6 +80,8 @@ function validateOS(osName, cell) {
         var extras = osName.toLowerCase().match(/((?:kvm)|(?:xen))/);
         if (extras) var osExtras = extras[1];
 
+        var elxFlashDir = osMapFlashDirs ? osMapFlashDirs[osSubVersion]: null;
+
         osItem = {
           fullName: osName,
           id: osMapID,
@@ -89,7 +92,8 @@ function validateOS(osName, cell) {
           extras: osExtras,
           arch: osArch,
           type: osMapType,
-          ddName: osMapDDName
+          ddName: osMapDDName,
+          elxFlashDir: elxFlashDir
         }
         return osItem;
       }

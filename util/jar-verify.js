@@ -1801,7 +1801,7 @@ function verifyPayloadFile(jarContent) {
                     var flashDir = 'i386/';
                     workingBOM.osList.forEach(function(os) {
                       if (os.type === config.pkgTypes[jarContent.jarType].osType && os.arch === 'x86') {
-                        var osDirName = os.name.toLowerCase().replace(' ', '-') + '/';
+                        var osDirName = os.elxFlashDir ? os.elxFlashDir + '/' : os.name.toLowerCase().replace(' ', '-') + '/';
                         if (flashSubDir.indexOf(osDirName) < 0) flashSubDir.push(osDirName);
                       }
                     });
@@ -1815,7 +1815,7 @@ function verifyPayloadFile(jarContent) {
                     var flashDir = 'x86_64/';
                     workingBOM.osList.forEach(function(os) {
                       if (os.type === config.pkgTypes[jarContent.jarType].osType && os.arch === 'x64') {
-                        var osDirName = os.name.toLowerCase().replace(' ', '-') + '/';
+                        var osDirName = os.elxFlashDir ? os.elxFlashDir + '/' : os.name.toLowerCase().replace(' ', '-') + '/';
                         if (flashSubDir.indexOf(osDirName) < 0) flashSubDir.push(osDirName);
                       }
                     });
