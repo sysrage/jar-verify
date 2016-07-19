@@ -963,7 +963,7 @@ module.exports = {
       os: 'sles12',
       osType: 'linux',
       proto: 'cna',
-      inputDesc: 'Emulex FCoE (lpfc) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
+      inputDesc: 'Emulex FCoE (brcmfcoe) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['brcmfcoe.ko'],
       ddVerFormat: '0:##VERSION##',
       appDevIdCfgName: 'Linux FCoE DD',
