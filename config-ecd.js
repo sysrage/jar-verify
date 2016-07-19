@@ -10,7 +10,7 @@ module.exports = {
   dataDir: __dirname + '/data/',
 
   // Base directory where JAR files should be located
-  jarDir: os.homedir() + '/Downloads/SUPs/jars/',
+  jarDir: os.homedir() + '/Downloads/SUPs/ECD/jars',
 
   // Regular Expression to match vendor string (matches elx or elx-lnvgy)
   vendor: 'elx(?:\-lnvgy)?',
@@ -1100,6 +1100,7 @@ module.exports = {
       appDevIdCfgName: 'BE FW',
       fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
       fwImageFileReplace: '$1',
+      elxflashName: 'elxflash.sh',
       changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
@@ -1138,6 +1139,7 @@ module.exports = {
       appDevIdCfgName: 'BE FW',
       fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
       fwImageFileReplace: '$1',
+      elxflashName: 'elxflash.bat',
       changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
@@ -1157,6 +1159,7 @@ module.exports = {
       appDevIdCfgName: 'Lancer G6 FW',
       fwImageFileSearch: 'lancerg6_A([0-9\.]+)\.grp',
       fwImageFileReplace: '$1',
+      elxflashName: 'elxflash.sh',
       changeDesc: '\\s*(Emulex 16GB Fibre Channel Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
@@ -1195,6 +1198,7 @@ module.exports = {
       appDevIdCfgName: 'Lancer G6 FW',
       fwImageFileSearch: 'lancerg6_A([0-9\.]+)\.grp',
       fwImageFileReplace: '$1',
+      elxflashName: 'elxflash.bat',
       changeDesc: '\\s*(Emulex 16GB Fibre Channel Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
@@ -1214,6 +1218,7 @@ module.exports = {
       appDevIdCfgName: 'Lancer G5 FW',
       fwImageFileSearch: 'lancer_A([0-9\.]+)\.grp',
       fwImageFileReplace: '$1',
+      elxflashName: 'elxflash.sh',
       changeDesc: '\\s*(Emulex 16GB Fibre Channel Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
@@ -1252,6 +1257,7 @@ module.exports = {
       appDevIdCfgName: 'Lancer G5 FW',
       fwImageFileSearch: 'lancer_A([0-9\.]+)\.grp',
       fwImageFileReplace: '$1',
+      elxflashName: 'elxflash.bat',
       changeDesc: '\\s*(Emulex 16GB Fibre Channel Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
@@ -1283,6 +1289,7 @@ module.exports = {
         flex: 'UU',
         bladecenter: 'UU'
       },
+      elxflashName: 'elxflash.sh',
       changeDesc: '\\s*(Emulex 8Gb Fibre Channel Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
@@ -1349,6 +1356,7 @@ module.exports = {
         flex: 'UU',
         bladecenter: 'UU'
       },
+      elxflashName: 'elxflash.bat',
       changeDesc: '\\s*(Emulex 8Gb Fibre Channel Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+[xa][0-9]+)\\s*',
@@ -1370,6 +1378,7 @@ module.exports = {
       appDevIdCfgName: 'Skyhawk FW',
       fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
       fwImageFileReplace: '$1',
+      elxflashName: 'elxflash.sh',
       changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
@@ -1408,6 +1417,7 @@ module.exports = {
       appDevIdCfgName: 'Skyhawk FW',
       fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
       fwImageFileReplace: '$1',
+      elxflashName: 'elxflash.bat',
       changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',

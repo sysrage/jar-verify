@@ -1,16 +1,22 @@
 #!/bin/bash
 
-for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do (
+if [[ ${AUTOJAR_CFGDIR} != "" ]]; then
+  JAR_CFGDIR=${AUTOJAR_CFGDIR}
+else
+  JAR_CFGDIR="${HOME}/jar-verify/"
+fi
+
+for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
+  JAR_NODEBIN="${HOME}/.nvm/v4.2.4/bin/node"
+  JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
   source "${BLDCONFIG}"
 
   JAR_BUILDDIR="/elx/local/ftpse/scm_builds/be2/Palau_${JAR_RELEASENUM}"
-  JAR_WORKDIR="${HOME}/Downloads/SUPs/jars/${JAR_RELEASENAME}"
-  JAR_NODEBIN="${HOME}/.nvm/v4.2.4/bin/node"
-  JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
+  JAR_WORKDIR="${HOME}/Downloads/SUPs/${JAR_BUNAME}/jars/${JAR_RELEASENAME}"
 
   # Create workdir if it doesn't already exist
   if [ ! -d "${JAR_WORKDIR}" ]; then
-    mkdir ${JAR_WORKDIR};
+    mkdir -p ${JAR_WORKDIR};
   fi
 
   # Determine the last build which was verified
@@ -56,7 +62,7 @@ for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do (
 
           if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" ]; then
             # Lenovo package exists - unzip JAR files
-            unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" *Red/*.jar *Red/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" >> jar-verify-results-${JAR_BUILDNUM}.txt
+            unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" *${JAR_RELTYPE}/*.jar *${JAR_RELTYPE}/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" >> jar-verify-results-${JAR_BUILDNUM}.txt
 
             # Move JARs to base directory and delete extras
             find "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/" -name '*.jar' -exec mv {} "${JAR_WORKDIR}/${JAR_BUILDNUM}/" \;
@@ -123,7 +129,7 @@ for BLDCONFIG in ${HOME}/jar-verify/auto-verify-cfg-*.cfg; do (
     JAR_OCSABUILDVER=$(ls -la $i | cut -d '>' -f 2 | cut -d ' ' -f 2)
 
     # Create symlink to OCSA location
-    ln -s $i/JARs/Red/ ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}
+    ln -s $i/JARs/${JAR_RELTYPE}/ ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}
 
     # Run jar-verify against new build and save results
     ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_OCSABUILDNUM} -s > jar-verify-results-${JAR_OCSABUILDNUM}.txt
