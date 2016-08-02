@@ -16,7 +16,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
 
   # Create workdir if it doesn't already exist
   if [ ! -d "${JAR_WORKDIR}" ]; then
-    mkdir -p ${JAR_WORKDIR};
+    mkdir -p ${JAR_WORKDIR}
   fi
 
   # Determine the last build which was verified
