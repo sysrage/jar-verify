@@ -385,6 +385,8 @@ module.exports = {
     {name: 'elx_VanguardDL_FC',         value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E28210DF', type: 'fc'},
     {name: 'elx_Chameleon1P_FC',        value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E20310DF', type: 'fc'},
     {name: 'elx_Chameleon2P_FC',        value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E20410DF', type: 'fc'},
+    {name: 'elx_Horton_FC',             value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E28810DF', type: 'fc'},
+    {name: 'elx_HortonDL_FC',           value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E28910DF', type: 'fc'},
 
     // Lancer G6
     {name: 'elx_Croydon1P_FC',          value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33310DF', type: 'fc'},
