@@ -11,7 +11,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
   source "${BLDCONFIG}"
 
-  JAR_BUILDDIR="/elx/local/ftpse/scm_builds/be2/Palau_${JAR_RELEASENUM}"
+  JAR_BUILDDIR="${JAR_PREBUILDDIR}/Palau_${JAR_RELEASENUM}"
   JAR_WORKDIR="${HOME}/Downloads/SUPs/${JAR_BUNAME}/jars/${JAR_RELEASENAME}"
 
   # Create workdir if it doesn't already exist
