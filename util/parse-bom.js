@@ -438,13 +438,8 @@ adapterList.forEach(function(adapter) {
               }
               if (cASIC.type === 'cna' || cASIC.type === 'fcoe') {
                 if (appDID.type === 'fcoe') {
-                  if (os.type === 'windows') {
-                    if (! appDIDList['dd'][os.ddName]['cna']) appDIDList['dd'][os.ddName]['cna'] = [];
-                    if (appDIDList['dd'][os.ddName]['cna'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['cna'].push(appDID.name);
-                  } else {
-                    if (! appDIDList['dd'][os.ddName]['fc']) appDIDList['dd'][os.ddName]['fc'] = [];
-                    if (appDIDList['dd'][os.ddName]['fc'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['fc'].push(appDID.name);
-                  }
+                  if (! appDIDList['dd'][os.ddName]['cna']) appDIDList['dd'][os.ddName]['cna'] = [];
+                  if (appDIDList['dd'][os.ddName]['cna'].indexOf(appDID.name) < 0) appDIDList['dd'][os.ddName]['cna'].push(appDID.name);
                 }
               }
             }
