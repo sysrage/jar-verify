@@ -2643,7 +2643,6 @@ for (var bomOS in workingBOM.appDIDList['fw']) {
     }
   }
 }
-console.dir(workingBOM.appDIDList['dd']);
 for (var bomOS in workingBOM.appDIDList['dd']) {
   for (var bomProto in workingBOM.appDIDList['dd'][bomOS]) {
     for (var pkg in config.pkgTypes) {
