@@ -15,28 +15,13 @@ module.exports = {
   // Regular Expression to match vendor string (matches elx or elx-lnvgy)
   vendor: 'elx(?:\-lnvgy)?',
 
+  // Determine if kits should be combined or separate based on ECD/CCX split
+  combinedKit: false,
+
   // Definition of all available ASIC types
   // If two entries contain the same 'name' data (e.g. Lancer and Lancer G6), the more precise
   // entry (i.e. Lancer G6) must be listed first.
   asicTypes: [
-    {
-      name: 'BE',
-      type: 'cna',
-      agentlessCfgNames: {
-        13: 'BE_AG-BOARDS'
-      },
-      fwCfgNames: {
-        rack: 'oc11',
-        flex: 'oc11',
-        bladecenter: 'oc11'
-      },
-      fwMatrixNames: {
-        rack: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
-        flex: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
-        bladecenter: ['OCe11100-FCoE', 'OCe11100-iSCSI', 'OCe11100-NIC'],
-      },
-      workaroundName: 'oc11-'
-    },
     {
       name: 'Lancer G6',
       type: 'fc',
@@ -96,25 +81,7 @@ module.exports = {
         bladecenter: ['LPe1205'],
       },
       workaroundName: 'ud'
-    },
-    {
-      name: 'Skyhawk',
-      type: 'cna',
-      agentlessCfgNames: {
-        13: 'SKY_AG-BOARDS'
-      },
-      fwCfgNames: {
-        rack: 'oc14',
-        flex: 'oc14',
-        bladecenter: 'oc14'
-      },
-      fwMatrixNames: {
-        rack: ['OCe14100-FCoE', 'OCe14100-iSCSI', 'OCe14100-NIC'],
-        flex: ['OCe14100-FCoE', 'OCe14100-iSCSI', 'OCe14100-NIC'],
-        bladecenter: [],
-      },
-      workaroundName: 'oc14-'
-    },
+    }
   ],
 
   // Definition of all Operating System mappings
@@ -296,89 +263,10 @@ module.exports = {
 
   // List of valid Applicable Device ID names
   appDIDNames: [
-    // 4Gb FC
-    {name: 'elx_Zeppelin_1p_2p_FC',     value: 'PCI\VEN_10DF&DEV_FE00&SUBSYS_FE0010DF', type: 'fc'},
-
     // Saturn
     {name: 'elx_Tetra_FC',              value: 'PCI\VEN_10DF&DEV_F100&SUBSYS_F12410DF', type: 'fc'},
     {name: 'elx_Rhea_FC',               value: 'PCI\VEN_10DF&DEV_F100&SUBSYS_F13010DF', type: 'fc'},
     {name: 'elx_Heritage_1p_2p_FC',     value: 'PCI\VEN_10DF&DEV_F100&SUBSYS_F10010DF', type: 'fc'},
-
-    // BE2 NIC
-    {name: 'elx_Mirage1_N',             value: 'PCI\VEN_19A2&DEV_0700&SUBSYS_E62810DF', type: 'nic'},
-    {name: 'elx_Endeavor1_N',           value: 'PCI\VEN_19A2&DEV_0700&SUBSYS_E62910DF', type: 'nic'},
-    {name: 'elx_Eraptor1_N',            value: 'PCI\VEN_19A2&DEV_0700&SUBSYS_E63010DF', type: 'nic'},
-    {name: 'elx_Eraptor1Adv_N',         value: 'PCI\VEN_19A2&DEV_0700&SUBSYS_E65010DF', type: 'nic'},
-
-    // BE2 iSCSI
-    {name: 'elx_Mirage1_I',             value: 'PCI\VEN_19A2&DEV_0702&SUBSYS_E62810DF', type: 'iscsi'},
-    {name: 'elx_Endeavor1_I',           value: 'PCI\VEN_19A2&DEV_0702&SUBSYS_E62910DF', type: 'iscsi'},
-    {name: 'elx_Eraptor1_I',            value: 'PCI\VEN_19A2&DEV_0702&SUBSYS_E63010DF', type: 'iscsi'},
-    {name: 'elx_Eraptor1Adv_I',         value: 'PCI\VEN_19A2&DEV_0702&SUBSYS_E65010DF', type: 'iscsi'},
-
-    // BE2 FCoE
-    {name: 'elx_Mirage1_F',             value: 'PCI\VEN_19A2&DEV_0704&SUBSYS_E62810DF', type: 'fcoe'},
-    {name: 'elx_Endeavor1_F',           value: 'PCI\VEN_19A2&DEV_0704&SUBSYS_E62910DF', type: 'fcoe'},
-    {name: 'elx_Eraptor1_F',            value: 'PCI\VEN_19A2&DEV_0704&SUBSYS_E63010DF', type: 'fcoe'},
-    {name: 'elx_Eraptor1Adv_F',         value: 'PCI\VEN_19A2&DEV_0704&SUBSYS_E65010DF', type: 'fcoe'},
-
-    // BE3 NIC
-    {name: 'elx_Turnberry',             value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E70E10DF', type: 'nic'},
-    {name: 'elx_Endeavor2_N',           value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E72810DF', type: 'nic'},
-    {name: 'elx_Mirage2_N',             value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E72910DF', type: 'nic'},
-    {name: 'elx_Endeavor3_N',           value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E72A10DF', type: 'nic'},
-    {name: 'elx_Eraptor2_N',            value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E73010DF', type: 'nic'},
-    {name: 'elx_Wildcatx_N',            value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E73110DF', type: 'nic'},
-    {name: 'elx_Robalo_N',              value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E73510DF', type: 'nic'},
-    {name: 'elx_Eraptor2Adv_N',         value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E75010DF', type: 'nic'},
-    {name: 'elx_Endeavor2Adv_N',        value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E70810DF', type: 'nic'},
-    {name: 'elx_Blacktip_N',            value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E70B10DF', type: 'nic'},
-    {name: 'elx_Blacktip_Red_N',        value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E75810DF', type: 'nic'},
-    {name: 'elx_Congo_N',               value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E70F10DF', type: 'nic'},
-    {name: 'elx_USI_ES_N',              value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E71B10DF', type: 'nic'},
-    {name: 'elx_RobaloAdv_N',           value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E71510DF', type: 'nic'},
-    {name: 'elx_Reno_N',                value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E70C10DF', type: 'nic'},
-    {name: 'elx_Tigershark_N',          value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E70A10DF', type: 'nic'},
-    {name: 'elx_Penguin_N',             value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E71710DF', type: 'nic'},
-    {name: 'elx_Eagle_N',               value: 'PCI\VEN_19A2&DEV_0710&SUBSYS_E71910DF', type: 'nic'},
-
-    // BE3 iSCSI
-    {name: 'elx_Endeavor2_I',           value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E72810DF', type: 'iscsi'},
-    {name: 'elx_Mirage2_I',             value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E72910DF', type: 'iscsi'},
-    {name: 'elx_Endeavor3_I',           value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E72A10DF', type: 'iscsi'},
-    {name: 'elx_Eraptor2_I',            value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E73010DF', type: 'iscsi'},
-    {name: 'elx_Wildcatx_I',            value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E73110DF', type: 'iscsi'},
-    {name: 'elx_Robalo_I',              value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E73510DF', type: 'iscsi'},
-    {name: 'elx_Eraptor2Adv_I',         value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E75010DF', type: 'iscsi'},
-    {name: 'elx_Endeavor2Adv_I',        value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E70810DF', type: 'iscsi'},
-    {name: 'elx_Blacktip_I',            value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E70B10DF', type: 'iscsi'},
-    {name: 'elx_Blacktip_Red_I',        value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E75810DF', type: 'iscsi'},
-    {name: 'elx_Congo_I',               value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E70F10DF', type: 'iscsi'},
-    {name: 'elx_USI_ES_I',              value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E71B10DF', type: 'iscsi'},
-    {name: 'elx_RobaloAdv_I',           value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E71510DF', type: 'iscsi'},
-    {name: 'elx_Reno_I',                value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E70C10DF', type: 'iscsi'},
-    {name: 'elx_Tigershark_I',          value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E70A10DF', type: 'iscsi'},
-    {name: 'elx_Penguin_I',             value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E71710DF', type: 'iscsi'},
-    {name: 'elx_Eagle_I',               value: 'PCI\VEN_19A2&DEV_0712&SUBSYS_E71910DF', type: 'iscsi'},
-
-    // BE3 FCoE
-    {name: 'elx_Endeavor2_F',           value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E72810DF', type: 'fcoe'},
-    {name: 'elx_Mirage2_F',             value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E72910DF', type: 'fcoe'},
-    {name: 'elx_Endeavor3_F',           value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E72A10DF', type: 'fcoe'},
-    {name: 'elx_Eraptor2_F',            value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E73010DF', type: 'fcoe'},
-    {name: 'elx_Wildcatx_F',            value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E73110DF', type: 'fcoe'},
-    {name: 'elx_Robalo_F',              value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E73510DF', type: 'fcoe'},
-    {name: 'elx_Eraptor2Adv_F',         value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E75010DF', type: 'fcoe'},
-    {name: 'elx_Endeavor2Adv_F',        value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E70810DF', type: 'fcoe'},
-    {name: 'elx_Blacktip_F',            value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E70B10DF', type: 'fcoe'},
-    {name: 'elx_Blacktip_Red_F',        value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E75810DF', type: 'fcoe'},
-    {name: 'elx_Congo_F',               value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E70F10DF', type: 'fcoe'},
-    {name: 'elx_USI_ES_F',              value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E71B10DF', type: 'fcoe'},
-    {name: 'elx_RobaloAdv_F',           value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E71510DF', type: 'fcoe'},
-    {name: 'elx_Reno_F',                value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E70C10DF', type: 'fcoe'},
-    {name: 'elx_Tigershark_F',          value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E70A10DF', type: 'fcoe'},
-    {name: 'elx_Penguin_F',             value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E71710DF', type: 'fcoe'},
-    {name: 'elx_Eagle_F',               value: 'PCI\VEN_19A2&DEV_0714&SUBSYS_E71910DF', type: 'fcoe'},
 
     // Lancer G5
     {name: 'elx_Vanguard_FC',           value: 'PCI\VEN_10DF&DEV_E200&SUBSYS_E20210DF', type: 'fc'},
@@ -394,60 +282,6 @@ module.exports = {
     {name: 'elx_Sutton1P_FC',           value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33110DF', type: 'fc'},
     {name: 'elx_Sutton2P_FC',           value: 'PCI\VEN_10DF&DEV_E300&SUBSYS_E33010DF', type: 'fc'},
 
-    // Skyhawk NIC
-    {name: 'elx_Silver_N',              value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81010DF', type: 'nic'},
-    {name: 'elx_Silver_P2_N',           value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81F10DF', type: 'nic'},
-    {name: 'elx_Silver_Plus_P2_N',      value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E87410DF', type: 'nic'},
-    {name: 'elx_Skyeagle_N',            value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81110DF', type: 'nic'},
-    {name: 'elx_Newport_N',             value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81210DF', type: 'nic'},
-    {name: 'elx_Braddock_N',            value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81310DF', type: 'nic'},
-    {name: 'elx_Skybird_N',             value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81510DF', type: 'nic'},
-    {name: 'elx_Skybird_P2_N',          value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81B10DF', type: 'nic'},
-    {name: 'elx_Skybird_Plus_P2_N',     value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E87210DF', type: 'nic'},
-    {name: 'elx_Skybird_P2_4p_N',       value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81A10DF', type: 'nic'},
-    {name: 'elx_Skybird_Plus_P2_4p_N',  value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E87310DF', type: 'nic'},
-    {name: 'elx_Gold_N',                value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81610DF', type: 'nic'},
-    {name: 'elx_Gold_Lite_N',           value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81710DF', type: 'nic'},
-    {name: 'elx_Gold_Plus_N',           value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81810DF', type: 'nic'},
-    {name: 'elx_Gold_Plus_P2_N',        value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81E10DF', type: 'nic'},
-    {name: 'elx_Gold_P2_N',             value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E81C10DF', type: 'nic'},
-    {name: 'elx_Brighton_N',            value: 'PCI\VEN_10DF&DEV_0720&SUBSYS_E87110DF', type: 'nic'},
-
-    // Skyhawk iSCSI
-    {name: 'elx_Silver_I',              value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81010DF', type: 'iscsi'},
-    {name: 'elx_Silver_P2_I',           value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81F10DF', type: 'iscsi'},
-    {name: 'elx_Silver_Plus_P2_I',      value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E87410DF', type: 'iscsi'},
-    {name: 'elx_Skyeagle_I',            value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81110DF', type: 'iscsi'},
-    {name: 'elx_Newport_I',             value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81210DF', type: 'iscsi'},
-    {name: 'elx_Braddock_I',            value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81310DF', type: 'iscsi'},
-    {name: 'elx_Skybird_I',             value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81510DF', type: 'iscsi'},
-    {name: 'elx_Skybird_P2_I',          value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81B10DF', type: 'iscsi'},
-    {name: 'elx_Skybird_Plus_P2_I',     value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E87210DF', type: 'iscsi'},
-    {name: 'elx_Skybird_P2_4p_I',       value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81A10DF', type: 'iscsi'},
-    {name: 'elx_Skybird_Plus_P2_4p_I',  value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E87310DF', type: 'iscsi'},
-    {name: 'elx_Gold_I',                value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81610DF', type: 'iscsi'},
-    {name: 'elx_Gold_Lite_I',           value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81710DF', type: 'iscsi'},
-    {name: 'elx_Gold_Plus_I',           value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81810DF', type: 'iscsi'},
-    {name: 'elx_Gold_Plus_P2_I',        value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81E10DF', type: 'iscsi'},
-    {name: 'elx_Gold_P2_I',             value: 'PCI\VEN_10DF&DEV_0722&SUBSYS_E81C10DF', type: 'iscsi'},
-
-    // Skyhawk FCoE
-    {name: 'elx_Silver_F',              value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81010DF', type: 'fcoe'},
-    {name: 'elx_Silver_P2_F',           value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81F10DF', type: 'fcoe'},
-    {name: 'elx_Silver_Plus_P2_F',      value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E87410DF', type: 'fcoe'},
-    {name: 'elx_Skyeagle_F',            value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81110DF', type: 'fcoe'},
-    {name: 'elx_Newport_F',             value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81210DF', type: 'fcoe'},
-    {name: 'elx_Braddock_F',            value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81310DF', type: 'fcoe'},
-    {name: 'elx_Skybird_F',             value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81510DF', type: 'fcoe'},
-    {name: 'elx_Skybird_P2_F',          value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81B10DF', type: 'fcoe'},
-    {name: 'elx_Skybird_Plus_P2_F',     value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E87210DF', type: 'fcoe'},
-    {name: 'elx_Skybird_P2_4p_F',       value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81A10DF', type: 'fcoe'},
-    {name: 'elx_Skybird_Plus_P2_4p_F',  value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E87310DF', type: 'fcoe'},
-    {name: 'elx_Gold_F',                value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81610DF', type: 'fcoe'},
-    {name: 'elx_Gold_Lite_F',           value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81710DF', type: 'fcoe'},
-    {name: 'elx_Gold_Plus_F',           value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81810DF', type: 'fcoe'},
-    {name: 'elx_Gold_Plus_P2_F',        value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81E10DF', type: 'fcoe'},
-    {name: 'elx_Gold_P2_F',             value: 'PCI\VEN_10DF&DEV_0724&SUBSYS_E81C10DF', type: 'fcoe'},
   ],
 
   // Package types and their expected FixIDs
@@ -593,13 +427,13 @@ module.exports = {
       changeSupportReplace: '$1'
     },
     ddRHEL5FC: {
-      name: 'RHEL 5.x FC/FCoE Driver',
+      name: 'RHEL 5.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel5',
       type: 'dd',
       os: 'rhel5',
       osType: 'linux',
       proto: 'fc',
-      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
+      inputDesc: 'Emulex FC (lpfc) Device Driver for RHEL5 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
       appDevIdCfgName: 'Linux FC/FCoE DD',
@@ -615,7 +449,7 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDesc: '\\s*(Emulex FC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
       changeVerReplace: '$1',
@@ -683,13 +517,13 @@ module.exports = {
       changeSupportReplace: '$1'
     },
     ddRHEL6FC: {
-      name: 'RHEL 6.x FC/FCoE Driver',
+      name: 'RHEL 6.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel6',
       type: 'dd',
       os: 'rhel6',
       osType: 'linux',
       proto: 'fc',
-      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
+      inputDesc: 'Emulex FC (lpfc) Device Driver for RHEL6 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
       appDevIdCfgName: 'Linux FC/FCoE DD',
@@ -705,7 +539,7 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDesc: '\\s*(Emulex FC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
       changeVerReplace: '$1',
@@ -773,13 +607,13 @@ module.exports = {
       changeSupportReplace: '$1'
     },
     ddRHEL7FC: {
-      name: 'RHEL 7.x FC/FCoE Driver',
+      name: 'RHEL 7.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_rhel7',
       type: 'dd',
       os: 'rhel7',
       osType: 'linux',
       proto: 'fc',
-      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
+      inputDesc: 'Emulex FC (lpfc) Device Driver for RHEL7 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
       appDevIdCfgName: 'Linux FC/FCoE DD',
@@ -795,7 +629,7 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDesc: '\\s*(Emulex FC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
       changeVerReplace: '$1',
@@ -867,13 +701,13 @@ module.exports = {
       changeSupportReplace: '$1'
     },
     ddSLES10FC: {
-      name: 'SLES 10.x FC/FCoE Driver',
+      name: 'SLES 10.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles10',
       type: 'dd',
       os: 'sles10',
       osType: 'linux',
       proto: 'fc',
-      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
+      inputDesc: 'Emulex FC (lpfc) Device Driver for SLES10 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
       appDevIdCfgName: 'Linux FC/FCoE DD',
@@ -891,7 +725,7 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDesc: '\\s*(Emulex FC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
       changeVerReplace: '$1',
@@ -963,13 +797,13 @@ module.exports = {
       changeSupportReplace: '$1'
     },
     ddSLES11FC: {
-      name: 'SLES 11.x FC/FCoE Driver',
+      name: 'SLES 11.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles11',
       type: 'dd',
       os: 'sles11',
       osType: 'linux',
       proto: 'fc',
-      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
+      inputDesc: 'Emulex FC (lpfc) Device Driver for SLES11 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
       appDevIdCfgName: 'Linux FC/FCoE DD',
@@ -987,7 +821,7 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDesc: '\\s*(Emulex FC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
       changeVerReplace: '$1',
@@ -1059,13 +893,13 @@ module.exports = {
       changeSupportReplace: '$1'
     },
     ddSLES12FC: {
-      name: 'SLES 12.x FC/FCoE Driver',
+      name: 'SLES 12.x FC Driver',
       regex: '^elx(?:\-lnvgy)?\_dd_fc_([^_]+)_sles12',
       type: 'dd',
       os: 'sles12',
       osType: 'linux',
       proto: 'fc',
-      inputDesc: 'Emulex FC/FCoE (lpfc) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
+      inputDesc: 'Emulex FC (lpfc) Device Driver for SLES12 - ##VERSION## - Release ##RELEASE##',
       ddFileName: ['lpfc.ko'],
       ddVerFormat: '0:##VERSION##',
       appDevIdCfgName: 'Linux FC/FCoE DD',
@@ -1083,68 +917,9 @@ module.exports = {
       dudImageFileVersion: '$1',
       dudImageFileSP: '$2',
       dudImageFileArch: '$3',
-      changeDesc: '\\s*(Emulex FC/FCoE Device Driver for Linux)\\s*',
+      changeDesc: '\\s*(Emulex FC Device Driver for Linux)\\s*',
       changeDescReplace: '$1',
       changeVer: 'Device Driver Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1',
-      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
-      changeSupportReplace: '$1'
-    },
-    fwBELinux: {
-      name: 'Linux BE Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_linux',
-      type: 'fw',
-      os: 'linux',
-      osType: 'linux',
-      asic: 'BE',
-      preVersion: 'oc11-',
-      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'BE FW',
-      fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1',
-      elxflashName: 'elxflash.sh',
-      changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
-      changeDescReplace: '$1',
-      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1',
-      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
-      changeSupportReplace: '$1'
-    },
-    fwBEVMware: {
-      name: 'VMware BE Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_vmware',
-      type: 'fw',
-      os: 'vmware',
-      osType: 'vmware',
-      asic: 'BE',
-      preVersion: 'oc11-',
-      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'BE FW',
-      fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1',
-      changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
-      changeDescReplace: '$1',
-      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1',
-      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
-      changeSupportReplace: '$1'
-    },
-    fwBEWindows: {
-      name: 'Windows BE Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc11\-[0-9\.]+\-[0-9]+)_windows',
-      type: 'fw',
-      os: 'windows',
-      osType: 'windows',
-      asic: 'BE',
-      preVersion: 'oc11-',
-      inputDesc: 'Emulex OCe11xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'BE FW',
-      fwImageFileSearch: 'oc11-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1',
-      elxflashName: 'elxflash.bat',
-      changeDesc: '\\s*(Emulex OCe11xxx UCNA Firmware Package)\\s*',
-      changeDescReplace: '$1',
-      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
       changeVerReplace: '$1',
       changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
       changeSupportReplace: '$1'
@@ -1367,66 +1142,7 @@ module.exports = {
       changeBootVerReplace: '$1',
       changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
       changeSupportReplace: '$1'
-    },
-    fwSkyhawkLinux: {
-      name: 'Linux Skyhawk Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_linux',
-      type: 'fw',
-      os: 'linux',
-      osType: 'linux',
-      asic: 'Skyhawk',
-      preVersion: 'oc14-',
-      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Linux - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Skyhawk FW',
-      fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1',
-      elxflashName: 'elxflash.sh',
-      changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
-      changeDescReplace: '$1',
-      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1',
-      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
-      changeSupportReplace: '$1'
-    },
-    fwSkyhawkVMware: {
-      name: 'VMware Skyhawk Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_vmware',
-      type: 'fw',
-      os: 'vmware',
-      osType: 'vmware',
-      asic: 'Skyhawk',
-      preVersion: 'oc14-',
-      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for VMware - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Skyhawk FW',
-      fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1',
-      changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
-      changeDescReplace: '$1',
-      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1',
-      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
-      changeSupportReplace: '$1'
-    },
-    fwSkyhawkWindows: {
-      name: 'Windows Skyhawk Firmware',
-      regex: '^elx(?:\-lnvgy)?\_fw_cna_([A-Za-z0-9]+\-oc14\-[0-9\.]+\-[0-9]+)_windows',
-      type: 'fw',
-      os: 'windows',
-      osType: 'windows',
-      asic: 'Skyhawk',
-      preVersion: 'oc14-',
-      inputDesc: 'Emulex OCe14xxx UCNA Firmware Update for Windows - ##VERSION## - Release ##RELEASE##',
-      appDevIdCfgName: 'Skyhawk FW',
-      fwImageFileSearch: 'oc14-([0-9\.]+)\.ufi',
-      fwImageFileReplace: '$1',
-      elxflashName: 'elxflash.bat',
-      changeDesc: '\\s*(Emulex OCe14xxx UCNA Firmware Package)\\s*',
-      changeDescReplace: '$1',
-      changeVer: 'Firmware Version:\\s*([0-9\.]+)\\s*',
-      changeVerReplace: '$1',
-      changeSupport: 'Supported On:\\s*([^\s]+)\\s*',
-      changeSupportReplace: '$1'
-    },
+    }
   },
 
   // Classification mapping
