@@ -71,7 +71,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
             unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" *${JAR_RELTYPE}/*.jar *${JAR_RELTYPE}/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/ 2>&1" >> jar-verify-results-${JAR_BUILDNUM}.txt
 
             # Move JARs to base directory and delete extras
-            if [ -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/"]; then
+            if [ -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/" ]; then
               find "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/" -name '*.jar' -exec mv {} "${JAR_WORKDIR}/${JAR_BUILDNUM}/" \;
               find "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/" -name 'triggerfile' -exec mv {} "${JAR_WORKDIR}/${JAR_BUILDNUM}/" \;
               rm -rf "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/"
@@ -89,7 +89,8 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
             fi
 
             # E-mail jar-verify results
-            if [ ! $(grep 'No JAR files found in' jar-verify-results-${JAR_BUILDNUM}.txt) ]; then
+
+            if [ ! $(grep 'No JAR files found in' "jar-verify-results-${JAR_BUILDNUM}.txt") ]; then
               mail -s "[${JAR_BUNAME}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" -- -f "${JAR_EMAILFROM}" < jar-verify-results-${JAR_BUILDNUM}.txt
             fi
 
