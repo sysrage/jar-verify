@@ -20,31 +20,37 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   fi
 
   # Determine the last build which was verified
-  JAR_LASTBUILDDIR=$(ls -td ${JAR_WORKDIR}/${JAR_RELEASENUM}.* | head -1)
-  JAR_LASTBUILDNUM=${JAR_LASTBUILDDIR#${JAR_WORKDIR}/}
-  JAR_LASTBUILDSRC="${JAR_BUILDDIR}/${JAR_LASTBUILDNUM}"
-  JAR_LASTOCSABUILDLINK=$(ls -tdF ${JAR_WORKDIR}/* | grep '@' | head -1 | cut -d '@' -f 1)
-  JAR_LASTOCSABUILD=${JAR_LASTOCSABUILDLINK#${JAR_WORKDIR}/}
-  if [[ ${JAR_OCSADIR3} != "" ]]; then
-    JAR_OCSADIR=${JAR_OCSADIR3}
-    JAR_LASTOCSABUILDSRC="${JAR_OCSADIR3}/Build${JAR_LASTOCSABUILD}"
-    if [[ ! -d ${JAR_LASTOCSABUILDSRC} ]]; then
+  JAR_LASTBUILDDIR=$(ls -td ${JAR_WORKDIR}/${JAR_RELEASENUM}.* 2>/dev/null | head -1)
+  if [[ ${JAR_LASTBUILDDIR} ]]; then
+    JAR_LASTBUILDNUM=${JAR_LASTBUILDDIR#${JAR_WORKDIR}/}
+    JAR_LASTBUILDSRC="${JAR_BUILDDIR}/${JAR_LASTBUILDNUM}"
+  fi
+
+  # Determine the last OCSA staged build which was verified
+  JAR_LASTOCSABUILDLINK=$(ls -tdF ${JAR_WORKDIR}/* 2>/dev/null | grep '@' | head -1 | cut -d '@' -f 1)
+  if [[ ${JAR_LASTOCSABUILDLINK} ]]; then
+    JAR_LASTOCSABUILD=${JAR_LASTOCSABUILDLINK#${JAR_WORKDIR}/}
+    if [[ ${JAR_OCSADIR3} ]]; then
+      JAR_OCSADIR=${JAR_OCSADIR3}
+      JAR_LASTOCSABUILDSRC="${JAR_OCSADIR3}/Build${JAR_LASTOCSABUILD}"
+      if [[ ! -d ${JAR_LASTOCSABUILDSRC} ]]; then
+        JAR_LASTOCSABUILDSRC="${JAR_OCSADIR2}/Build${JAR_LASTOCSABUILD}"
+      fi
+    elif [[ ${JAR_OCSADIR2} ]]; then
+      JAR_OCSADIR=${JAR_OCSADIR2}
       JAR_LASTOCSABUILDSRC="${JAR_OCSADIR2}/Build${JAR_LASTOCSABUILD}"
-    fi
-  elif [[ ${JAR_OCSADIR2} != "" ]]; then
-    JAR_OCSADIR=${JAR_OCSADIR2}
-    JAR_LASTOCSABUILDSRC="${JAR_OCSADIR2}/Build${JAR_LASTOCSABUILD}"
-    if [[ ! -d ${JAR_LASTOCSABUILDSRC} ]]; then
+      if [[ ! -d ${JAR_LASTOCSABUILDSRC} ]]; then
+        JAR_LASTOCSABUILDSRC="${JAR_OCSADIR1}/Build${JAR_LASTOCSABUILD}"
+      fi
+    else
+      JAR_OCSADIR=${JAR_OCSADIR1}
       JAR_LASTOCSABUILDSRC="${JAR_OCSADIR1}/Build${JAR_LASTOCSABUILD}"
     fi
-  else
-    JAR_OCSADIR=${JAR_OCSADIR1}
-    JAR_LASTOCSABUILDSRC="${JAR_OCSADIR1}/Build${JAR_LASTOCSABUILD}"
   fi
 
   # Generate list of new internally staged SCM builds
   if [[ ! ${JAR_LASTBUILDDIR} ]]; then
-    JAR_NEWBUILDS=$(ls -td ${JAR_BUILDDIR}/* | head -1)
+    JAR_NEWBUILDS=$(ls -td ${JAR_BUILDDIR}/* 2>/dev/null | head -1)
   else
     JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print)
   fi
@@ -118,7 +124,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
 
   # Generate list of new officially staged builds
   if [[ ! ${JAR_LASTOCSABUILD} ]]; then
-    JAR_NEWOCSABUILDS=$(ls -tdF ${JAR_OCSADIR}/* | grep '@' | head -1 | cut -d '@' -f 1)
+    JAR_NEWOCSABUILDS=$(ls -tdF ${JAR_OCSADIR}/* 2>/dev/null | grep '@' | head -1 | cut -d '@' -f 1)
   else
     JAR_NEWOCSABUILDS=$(find ${JAR_OCSADIR}/* -maxdepth 0 -name 'Build*' -newer ${JAR_LASTOCSABUILDSRC} -print)
   fi
@@ -126,7 +132,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   # Handle officially staged builds
   for i in ${JAR_NEWOCSABUILDS}; do
     JAR_OCSABUILDNUM=${i#${JAR_OCSADIR}/Build}
-    JAR_OCSABUILDVER=$(ls -la $i | cut -d '>' -f 2 | cut -d ' ' -f 2)
+    JAR_OCSABUILDVER=$(ls -la $i 2>/dev/null | cut -d '>' -f 2 | cut -d ' ' -f 2)
 
     # Create symlink to OCSA location
     ln -s $i/JARs/${JAR_RELTYPE}/ ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}
