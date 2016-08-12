@@ -90,7 +90,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
 
             # E-mail jar-verify results
             JAR_NOJARS=$(grep 'No JAR files found in' jar-verify-results-${JAR_BUILDNUM}.txt)
-            if [ ! ${JAR_NOJARS} ]; then
+            if [[ ! ${JAR_NOJARS} ]]; then
               mail -s "[${JAR_BUNAME}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" -- -f "${JAR_EMAILFROM}" < jar-verify-results-${JAR_BUILDNUM}.txt
             fi
 
