@@ -63,17 +63,22 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   # Handle internally staged SCM builds
   for i in ${JAR_NEWBUILDS}; do
     JAR_BUILDNUM=${i#${JAR_BUILDDIR}/}
+    if [[ ${JAR_BUNAME} == "ECD" ]]; then
+      JAR_EXT_ZIP="Palau_${JAR_BUILDNUM}_Lenovo_Package.zip"
+    else
+      JAR_EXT_ZIP="Palau_${JAR_BUILDNUM}_Lenovo_CNA_Package.zip"
+    fi
     if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/ReleaseNotes-${JAR_BUILDNUM}.html" ]; then
       # Build is complete
-      if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" ] || [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/Internal/Palau_${JAR_BUILDNUM}_LNVOSUPS_FW_Internal.zip" ] || [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/Internal/Palau_${JAR_BUILDNUM}_LNVOSUPS_LNX_KIT_Internal.zip" ] || [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/Internal/Palau_${JAR_BUILDNUM}_LNVOSUPS_WIN_Internal.zip" ]; then
+      if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" ] || [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/Internal/Palau_${JAR_BUILDNUM}_LNVOSUPS_FW_Internal.zip" ] || [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/Internal/Palau_${JAR_BUILDNUM}_LNVOSUPS_LNX_KIT_Internal.zip" ] || [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/Internal/Palau_${JAR_BUILDNUM}_LNVOSUPS_WIN_Internal.zip" ]; then
         # Some JAR file packages exist
         if [ ! -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" ]; then
           # Ignore build if dir already exists - otherwise create directory
           mkdir "${JAR_WORKDIR}/${JAR_BUILDNUM}/"
 
-          if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" ]; then
+          if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" ]; then
             # Lenovo package exists - unzip JAR files
-            unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/Palau_${JAR_BUILDNUM}_Lenovo_Package.zip" *${JAR_RELTYPE}/*.jar *${JAR_RELTYPE}/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" >> jar-verify-results-${JAR_BUILDNUM}.txt 2>&1
+            unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" *${JAR_RELTYPE}/*.jar *${JAR_RELTYPE}/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" >> jar-verify-results-${JAR_BUILDNUM}.txt 2>&1
 
             # Move JARs to base directory and delete extras
             if [ -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/" ]; then
