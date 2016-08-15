@@ -54,11 +54,9 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
     JAR_NEWBUILDS=$(ls -td ${JAR_BUILDDIR}/* ${JAR_BUILDFILTER} 2>/dev/null | head -1)
   else
     if [[ "${JAR_BUILDFILTER}" == "" ]]; then
-      echo "no filter"
       JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print)
     else
-      echo "filter"
-      JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print | grep ${JAR_BUILDFILTER})
+      JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -name ${JAR_BUILDFILTER} -print)
     fi
   fi
 
