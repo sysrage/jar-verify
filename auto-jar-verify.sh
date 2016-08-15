@@ -53,7 +53,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   if [[ ! ${JAR_LASTBUILDDIR} ]]; then
     JAR_NEWBUILDS=$(ls -td ${JAR_BUILDDIR}/* ${JAR_BUILDFILTER} 2>/dev/null | head -1)
   else
-    JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print ${JAR_BUILDFILTER})
+    JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print ${JAR_BUILDFILTER:+'| grep $JAR_BUILDFILTER'})
   fi
 
   # Handle internally staged SCM builds
