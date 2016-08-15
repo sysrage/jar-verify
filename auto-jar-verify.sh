@@ -9,6 +9,7 @@ fi
 for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   JAR_NODEBIN="${HOME}/.nvm/v4.2.4/bin/node"
   JAR_VERIFYBIN="${HOME}/jar-verify/util/jar-verify.js"
+  JAR_BUILDFILTER=""
   source "${BLDCONFIG}"
 
   JAR_BUILDDIR="${JAR_PREBUILDDIR}/Palau_${JAR_RELEASENUM}"
@@ -50,9 +51,9 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
 
   # Generate list of new internally staged SCM builds
   if [[ ! ${JAR_LASTBUILDDIR} ]]; then
-    JAR_NEWBUILDS=$(ls -td ${JAR_BUILDDIR}/* 2>/dev/null | head -1)
+    JAR_NEWBUILDS=$(ls -td ${JAR_BUILDDIR}/* ${JAR_BUILDFILTER} 2>/dev/null | head -1)
   else
-    JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print)
+    JAR_NEWBUILDS=$(find ${JAR_BUILDDIR}/* -maxdepth 0 -newer ${JAR_LASTBUILDSRC} -print ${JAR_BUILDFILTER})
   fi
 
   # Handle internally staged SCM builds
