@@ -49,6 +49,16 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
     fi
   fi
 
+  if [[ ! ${JAR_OCSADIR} ]]; then
+    if [[ ${JAR_OCSADIR3} ]]; then
+      JAR_OCSADIR=${JAR_OCSADIR3}
+    elif [[ ${JAR_OCSADIR2} ]]; then
+      JAR_OCSADIR=${JAR_OCSADIR2}
+    else
+      JAR_OCSADIR=${JAR_OCSADIR1}
+    fi
+  fi
+
   # Generate list of new internally staged SCM builds
   if [[ ! ${JAR_LASTBUILDDIR} ]]; then
     JAR_NEWBUILDS=$(ls -td ${JAR_BUILDDIR}/* | grep -E ${JAR_BUILDFILTER} 2>/dev/null | head -1)
