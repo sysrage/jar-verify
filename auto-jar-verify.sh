@@ -13,7 +13,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   source "${BLDCONFIG}"
 
   JAR_BUILDDIR="${JAR_PREBUILDDIR}/Palau_${JAR_RELEASENUM}"
-  JAR_WORKDIR="${HOME}/Downloads/SUPs/${JAR_BUNAME}/jars/${JAR_RELEASENAME}"
+  JAR_WORKDIR="${HOME}/Downloads/SUPs/${JAR_BUNAME}/${JAR_RELTYPE}/jars/${JAR_RELEASENAME}"
 
   # Create workdir if it doesn't already exist
   if [ ! -d "${JAR_WORKDIR}" ]; then
