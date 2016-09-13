@@ -111,7 +111,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
             # E-mail jar-verify results
             JAR_NOJARS=$(grep 'No JAR files found in' jar-verify-results-${JAR_BUILDNUM}.txt)
             if [[ ! ${JAR_NOJARS} ]]; then
-              mail -s "[${JAR_BUNAME}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" ${JAR_EMAILEXTRAS} < jar-verify-results-${JAR_BUILDNUM}.txt
+              mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" ${JAR_EMAILEXTRAS} < jar-verify-results-${JAR_BUILDNUM}.txt
             fi
 
             # Delete jar-verify results
@@ -172,7 +172,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
     fi
 
     # E-mail jar-verify results
-    mail -s "[${JAR_BUNAME}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" ${JAR_EMAILEXTRAS} < jar-verify-results-${JAR_OCSABUILDNUM}.txt
+    mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" ${JAR_EMAILEXTRAS} < jar-verify-results-${JAR_OCSABUILDNUM}.txt
 
     # Delete jar-verify results
     rm -f jar-verify-results-${JAR_OCSABUILDNUM}.txt
