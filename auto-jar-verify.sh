@@ -142,8 +142,8 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
     fi
   done
 
-  # Delete builds older than 30 days
-  find ${JAR_WORKDIR}/${JAR_RELEASENUM}.* -maxdepth 0 -mtime +30 -exec rm -rf {} \; >/dev/null 2>&1
+  # Delete builds older than 14 days
+  find ${JAR_WORKDIR}/${JAR_RELEASENUM}.* -maxdepth 0 -mtime +14 -exec rm -rf {} \; >/dev/null 2>&1
 
   # Generate list of new officially staged builds
   if [[ ! ${JAR_LASTOCSABUILD} ]]; then
