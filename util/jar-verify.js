@@ -9,6 +9,7 @@
  *  -r | --release  - (Required) Specifies the release name to verify.
  *  -s | --save     - Save the specified release/build as a delivered build.
  *  -u | --unsave   - Unsave (remove) the specified release/build as a delivered build.
+ *  -j | --jardir   - Specify directory where JAR files can be found.
  *  -d | --debug    - Display and log additional debug messages.
  *
  * Note: The BOM file XLS must have already been parsed with parse-bom.js
@@ -2441,6 +2442,7 @@ var helpText = "Usage: node jar-verify.js <parameters> \n" +
   " -r | --release  - (Required) Specifies the release name to verify.\n" +
   " -s | --save     - Save the specified release/build as a delivered build.\n" +
   " -u | --unsave   - Unsave (remove) the specified release/build as a delivered build.\n" +
+  " -j | --jardir   - Specify directory where JAR files can be found.\n" +
   " -d | --debug    - Display and log additional debug messages.\n";
 
 var runParams = getParams();
@@ -2454,6 +2456,12 @@ if (paramNames.length < 1 || paramNames.indexOf('h') > -1 || paramNames.indexOf(
 
 // Enable debug logging if specified
 if (paramNames.indexOf('d') > -1 || paramNames.indexOf('debug') > -1) logger.logLevel = 'DEBUG';
+
+// Set JAR directory if specified
+if (runParams['j'] || runParams['jardir']) {
+  if (runParams['j']) config.jarDir = runParams['j'];
+  if (runParams['jardir']) config.jarDir = runParams['jardir'];
+}
 
 // Verify specified build number is valid
 if (runParams['b'] || runParams['build']) {

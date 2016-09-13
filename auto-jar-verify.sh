@@ -15,6 +15,10 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   JAR_BUILDDIR="${JAR_PREBUILDDIR}/Palau_${JAR_RELEASENUM}"
   JAR_WORKDIR="${HOME}/Downloads/SUPs/${JAR_BUNAME}/${JAR_RELTYPE}/jars/${JAR_RELEASENAME}"
 
+  if [[ ${JAR_JARDIR} != "" ]]; then
+    JAR_EXTRAS="-j ${JAR_JARDIR}"
+  fi
+
   # Create workdir if it doesn't already exist
   if [ ! -d "${JAR_WORKDIR}" ]; then
     mkdir -p ${JAR_WORKDIR}
@@ -98,7 +102,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
             fi
 
             # Run jar-verify against new build
-            ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_BUILDNUM} >> jar-verify-results-${JAR_BUILDNUM}.txt
+            ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_BUILDNUM} ${JAR_EXTRAS} >> jar-verify-results-${JAR_BUILDNUM}.txt
 
             # Determine if results are pass or fail
             JAR_ERRORCOUNT=$(grep 'Finished all activity with' jar-verify-results-${JAR_BUILDNUM}.txt | cut -d ' ' -f 6)
@@ -161,7 +165,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
     ln -s $i/JARs/${JAR_RELTYPE}/ ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}
 
     # Run jar-verify against new build and save results
-    ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_OCSABUILDNUM} -s > jar-verify-results-${JAR_OCSABUILDNUM}.txt
+    ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_OCSABUILDNUM} -s ${JAR_EXTRAS} > jar-verify-results-${JAR_OCSABUILDNUM}.txt
 
     # Determine if results are pass or fail
     JAR_ERRORCOUNT=$(grep 'Finished all activity with' jar-verify-results-${JAR_OCSABUILDNUM}.txt | cut -d ' ' -f 6)
