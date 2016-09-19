@@ -77,6 +77,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   # Handle internally staged SCM builds
   for i in ${JAR_NEWBUILDS}; do
     JAR_BUILDNUM=${i#${JAR_BUILDDIR}/}
+    JAR_LOGFILE="/tmp/jar-verify-results-${JAR_BUILDNUM}.txt"
     if [[ ${JAR_BUNAME} == "ECD" ]]; then
       JAR_EXT_ZIP="Palau_${JAR_BUILDNUM}_Lenovo_Package.zip"
     else
@@ -92,7 +93,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
 
           if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" ]; then
             # Lenovo package exists - unzip JAR files
-            unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" *${JAR_RELTYPE}/*.jar *${JAR_RELTYPE}/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" >> jar-verify-results-${JAR_BUILDNUM}.txt 2>&1
+            unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" *${JAR_RELTYPE}/*.jar *${JAR_RELTYPE}/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" >> ${JAR_LOGFILE} 2>&1
 
             # Move JARs to base directory and delete extras
             if [ -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/" ]; then
@@ -102,10 +103,10 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
             fi
 
             # Run jar-verify against new build
-            ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_BUILDNUM} ${JAR_EXTRAS} >> jar-verify-results-${JAR_BUILDNUM}.txt
+            ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_BUILDNUM} ${JAR_EXTRAS} >> ${JAR_LOGFILE}
 
             # Determine if results are pass or fail
-            JAR_ERRORCOUNT=$(grep 'Finished all activity with' jar-verify-results-${JAR_BUILDNUM}.txt | cut -d ' ' -f 6)
+            JAR_ERRORCOUNT=$(grep 'Finished all activity with' ${JAR_LOGFILE} | cut -d ' ' -f 6)
             if [[ ${JAR_ERRORCOUNT} == "0" ]]; then
               JAR_RESULTS="PASS"
             else
@@ -113,13 +114,13 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
             fi
 
             # E-mail jar-verify results
-            JAR_NOJARS=$(grep 'No JAR files found in' jar-verify-results-${JAR_BUILDNUM}.txt)
+            JAR_NOJARS=$(grep 'No JAR files found in' ${JAR_LOGFILE})
             if [[ ! ${JAR_NOJARS} ]]; then
-              mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" ${JAR_EMAILEXTRAS} < jar-verify-results-${JAR_BUILDNUM}.txt
+              mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" ${JAR_EMAILEXTRAS} < ${JAR_LOGFILE}
             fi
 
             # Delete jar-verify results
-            rm -f jar-verify-results-${JAR_BUILDNUM}.txt
+            rm -f ${JAR_LOGFILE}
           else
             # Unzip firmware JARs from internal package if it exists
             if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/Internal/Palau_${JAR_BUILDNUM}_LNVOSUPS_FW_Internal.zip" ]; then
@@ -160,15 +161,16 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
   for i in ${JAR_NEWOCSABUILDS}; do
     JAR_OCSABUILDNUM=${i#${JAR_OCSADIR}/Build}
     JAR_OCSABUILDVER=$(ls -la $i 2>/dev/null | cut -d '>' -f 2 | cut -d ' ' -f 2)
+    JAR_LOGFILE="/tmp/jar-verify-results-${JAR_OCSABUILDNUM}.txt"
 
     # Create symlink to OCSA location
     ln -s $i/JARs/${JAR_RELTYPE}/ ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}
 
     # Run jar-verify against new build and save results
-    ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_OCSABUILDNUM} -s ${JAR_EXTRAS} > jar-verify-results-${JAR_OCSABUILDNUM}.txt
+    ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_OCSABUILDNUM} -s ${JAR_EXTRAS} > ${JAR_LOGFILE}
 
     # Determine if results are pass or fail
-    JAR_ERRORCOUNT=$(grep 'Finished all activity with' jar-verify-results-${JAR_OCSABUILDNUM}.txt | cut -d ' ' -f 6)
+    JAR_ERRORCOUNT=$(grep 'Finished all activity with' ${JAR_LOGFILE} | cut -d ' ' -f 6)
     if [[ ${JAR_ERRORCOUNT} == "0" ]]; then
       JAR_RESULTS="PASS"
     else
@@ -176,9 +178,9 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
     fi
 
     # E-mail jar-verify results
-    mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" ${JAR_EMAILEXTRAS} < jar-verify-results-${JAR_OCSABUILDNUM}.txt
+    mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" ${JAR_EMAILEXTRAS} < ${JAR_LOGFILE}
 
     # Delete jar-verify results
-    rm -f jar-verify-results-${JAR_OCSABUILDNUM}.txt
+    rm -f ${JAR_LOGFILE}
   done
 ) done
