@@ -107,7 +107,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
               ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_BUILDNUM} ${JAR_EXTRAS} >> ${JAR_LOGFILE}
             fi
 
-            if [ -f ${JAR_LOGFILE} ]; then
+            if [ -f ${JAR_LOGFILE && $(cat ${JAR_LOGFILE}) != "" } ]; then
               # Determine if results are pass or fail
               JAR_ERRORCOUNT=$(grep 'Finished all activity with' ${JAR_LOGFILE} | cut -d ' ' -f 6)
               if [[ ${JAR_ERRORCOUNT} == "0" ]]; then
