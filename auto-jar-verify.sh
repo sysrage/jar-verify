@@ -103,24 +103,28 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
             fi
 
             # Run jar-verify against new build
-            ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_BUILDNUM} ${JAR_EXTRAS} >> ${JAR_LOGFILE}
-
-            # Determine if results are pass or fail
-            JAR_ERRORCOUNT=$(grep 'Finished all activity with' ${JAR_LOGFILE} | cut -d ' ' -f 6)
-            if [[ ${JAR_ERRORCOUNT} == "0" ]]; then
-              JAR_RESULTS="PASS"
-            else
-              JAR_RESULTS="FAIL"
+            if [ "$(ls -A ${JAR_WORKDIR}/${JAR_BUILDNUM}/ 2> /dev/null)" != "" ]; then
+              ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_BUILDNUM} ${JAR_EXTRAS} >> ${JAR_LOGFILE}
             fi
 
-            # E-mail jar-verify results
-            JAR_NOJARS=$(grep 'No JAR files found in' ${JAR_LOGFILE})
-            if [[ ! ${JAR_NOJARS} ]]; then
-              mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" ${JAR_EMAILEXTRAS} < ${JAR_LOGFILE}
-            fi
+            if [ -f ${JAR_LOGFILE} ]; then
+              # Determine if results are pass or fail
+              JAR_ERRORCOUNT=$(grep 'Finished all activity with' ${JAR_LOGFILE} | cut -d ' ' -f 6)
+              if [[ ${JAR_ERRORCOUNT} == "0" ]]; then
+                JAR_RESULTS="PASS"
+              else
+                JAR_RESULTS="FAIL"
+              fi
 
-            # Delete jar-verify results
-            rm -f ${JAR_LOGFILE}
+              # E-mail jar-verify results
+              JAR_NOJARS=$(grep 'No JAR files found in' ${JAR_LOGFILE})
+              if [[ ! ${JAR_NOJARS} ]]; then
+                mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_BUILDNUM} -- ${JAR_RESULTS}" "${JAR_EMAILTO}" ${JAR_EMAILEXTRAS} < ${JAR_LOGFILE}
+              fi
+
+              # Delete jar-verify results
+              rm -f ${JAR_LOGFILE}
+            fi
           else
             # Unzip firmware JARs from internal package if it exists
             if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/Internal/Palau_${JAR_BUILDNUM}_LNVOSUPS_FW_Internal.zip" ]; then
@@ -167,20 +171,24 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
     ln -s $i/JARs/${JAR_RELTYPE}/ ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}
 
     # Run jar-verify against new build and save results
-    ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_OCSABUILDNUM} -s ${JAR_EXTRAS} > ${JAR_LOGFILE}
-
-    # Determine if results are pass or fail
-    JAR_ERRORCOUNT=$(grep 'Finished all activity with' ${JAR_LOGFILE} | cut -d ' ' -f 6)
-    if [[ ${JAR_ERRORCOUNT} == "0" ]]; then
-      JAR_RESULTS="PASS"
-    else
-      JAR_RESULTS="FAIL"
+    if [ "$(ls -A ${JAR_WORKDIR}/${JAR_OCSABUILDNUM}/ 2> /dev/null)" != "" ]; then
+      ${JAR_NODEBIN} ${JAR_VERIFYBIN} -r ${JAR_RELEASENAME} -b ${JAR_OCSABUILDNUM} -s ${JAR_EXTRAS} > ${JAR_LOGFILE}
     fi
 
-    # E-mail jar-verify results
-    mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" ${JAR_EMAILEXTRAS} < ${JAR_LOGFILE}
+    if [ -f ${JAR_LOGFILE} ]; then
+      # Determine if results are pass or fail
+      JAR_ERRORCOUNT=$(grep 'Finished all activity with' ${JAR_LOGFILE} | cut -d ' ' -f 6)
+      if [[ ${JAR_ERRORCOUNT} == "0" ]]; then
+        JAR_RESULTS="PASS"
+      else
+        JAR_RESULTS="FAIL"
+      fi
 
-    # Delete jar-verify results
-    rm -f ${JAR_LOGFILE}
+      # E-mail jar-verify results
+      mail -s "[${JAR_BUNAME}/${JAR_RELTYPE}] JAR Verification Results For ${JAR_RELEASENAME} Build ${JAR_OCSABUILDNUM} (${JAR_OCSABUILDVER}) -- ${JAR_RESULTS}" "${JAR_OCSAEMAILTO}" ${JAR_EMAILEXTRAS} < ${JAR_LOGFILE}
+
+      # Delete jar-verify results
+      rm -f ${JAR_LOGFILE}
+    fi
   done
 ) done
