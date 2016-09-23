@@ -93,7 +93,7 @@ for BLDCONFIG in ${JAR_CFGDIR}/auto-verify-cfg-*.cfg; do (
 
           if [ -f "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" ]; then
             # Lenovo package exists - unzip JAR files
-            unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" *${JAR_RELTYPE}/*.jar *${JAR_RELTYPE}/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" | grep -v "caution: filename not matched" >> ${JAR_LOGFILE} 2>&1
+            unzip -qq "${JAR_BUILDDIR}/${JAR_BUILDNUM}/packages/External/${JAR_EXT_ZIP}" *${JAR_RELTYPE}/*.jar *${JAR_RELTYPE}/triggerfile -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/" 2>&1 | grep -v 'caution: filename not matched' >> ${JAR_LOGFILE}
 
             # Move JARs to base directory and delete extras
             if [ -d "${JAR_WORKDIR}/${JAR_BUILDNUM}/${JAR_BUILDNUM}/" ]; then
