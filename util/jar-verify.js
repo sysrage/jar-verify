@@ -190,7 +190,7 @@ function getJarContent(jarType) {
                 inputFileChecksum = inputFileHash.digest('hex');
               });
               // Parse XML data
-              var parser = new xml2object(['ibmUpdateData'], readStream);
+              var parser = new xml2object(['lnvgyUpdateData'], readStream);
               parser.on('object', function(name, obj) {
                   inputFile = obj;
               });
@@ -299,13 +299,13 @@ function getJarContent(jarType) {
           }
         });
         zipfile.on("close", function() {
-          if (! inputFileName) {
+          if (! inputFileName || ! intputFile) {
             reject({jarType: jarType, code: 'NOINPUTFILE'});
-          } else if (! changeFileName) {
+          } else if (! changeFileName || ! changeFile) {
             reject({jarType: jarType, code: 'NOCHANGEFILE'});
-          } else if (! readmeFileName) {
+          } else if (! readmeFileName || ! readmeFile) {
             reject({jarType: jarType, code: 'NOREADMEFILE'});
-          } else if (! xmlFileName) {
+          } else if (! xmlFileName || ! xmlFile) {
             reject({jarType: jarType, code: 'NOXMLFILE'});
           } else if (! binFileName) {
             reject({jarType: jarType, code: 'NOBINFILE'});
@@ -1160,28 +1160,6 @@ function verifyPayloadFile(jarContent) {
               payloadHashFiles.push({
                 file: payloadExtract + 'install.sh',
                 name: 'install.sh'
-              });
-            }
-
-            // Validate presence of ibm-driver-tool.pl and verify it's not 0 bytes
-            try {
-              var ddToolStats = fs.statSync(payloadExtract + 'tools/ibm-driver-tool.pl');
-            } catch (err) {
-              if (err.code === 'ENOENT') {
-                logger.log('ERROR', "The file ibm-driver-tool.pl does not exist in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-              } else if (err.code === 'EACCES') {
-                logger.log('ERROR', "Permission denied trying to open ibm-driver-tool.pl in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-              } else {
-                logger.log('ERROR', "Unexpected error opening ibm-driver-tool.pl in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
-              }
-            }
-            if (ddToolStats && ddToolStats.size < 1) {
-              logger.log('ERROR', "The ibm-driver-tool.pl file is 0 bytes in the tools directory of the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            } else {
-              // Save checksum of ibm-driver-tool.pl
-              payloadHashFiles.push({
-                file: payloadExtract + 'tools/ibm-driver-tool.pl',
-                name: 'ibm-driver-tool.pl'
               });
             }
 
