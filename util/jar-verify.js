@@ -2351,10 +2351,12 @@ function verifyPayloadFile(jarContent) {
                       // Verify all expected device IDs are included in XML
                       pldmList.forEach(function(listDevice) {
                         var foundDevice = false;
-                        for (var i = 0; i < xmlData.image.device_descriptor.length; i++) {
-                          if (xmlData.image.device_descriptor[i].classification === listDevice.class && xmlData.image.device_descriptor[i].image_id === listDevice.id && xmlData.image.device_descriptor[i].device_specifier === listDevice.device && xmlData.image.device_descriptor[i].vendor_specifier === listDevice.vendor) {
-                            foundDevice = true;
-                            break;
+                        if (xmlData.image && xmlData.image.device_descriptor) {
+                          for (var i = 0; i < xmlData.image.device_descriptor.length; i++) {
+                            if (xmlData.image.device_descriptor[i].classification === listDevice.class && xmlData.image.device_descriptor[i].image_id === listDevice.id && xmlData.image.device_descriptor[i].device_specifier === listDevice.device && xmlData.image.device_descriptor[i].vendor_specifier === listDevice.vendor) {
+                              foundDevice = true;
+                              break;
+                            }
                           }
                         }
                         if (! foundDevice) logger.log('ERROR', "Expected device descriptor (" + listDevice.id + " " + listDevice.device + " " + listDevice.vendor + ") missing from PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
