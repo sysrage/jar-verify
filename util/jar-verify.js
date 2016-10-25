@@ -2363,16 +2363,18 @@ function verifyPayloadFile(jarContent) {
                       });
 
                       // Verify all device IDs in XML were expected
-                      xmlData.image.device_descriptor.forEach(function(xmlDevice) {
-                        var expectedDevice = false;
-                        for (var i = 0; i < pldmList.length; i++) {
-                          if (pldmList[i].class === xmlDevice.classification && pldmList[i].id === xmlDevice.image_id && pldmList[i].device === xmlDevice.device_specifier && pldmList[i].vendor === xmlDevice.vendor_specifier) {
-                            expectedDevice = true;
-                            break;
+                      if (xmlData.image && xmlData.image.device_descriptor) {
+                        xmlData.image.device_descriptor.forEach(function(xmlDevice) {
+                          var expectedDevice = false;
+                          for (var i = 0; i < pldmList.length; i++) {
+                            if (pldmList[i].class === xmlDevice.classification && pldmList[i].id === xmlDevice.image_id && pldmList[i].device === xmlDevice.device_specifier && pldmList[i].vendor === xmlDevice.vendor_specifier) {
+                              expectedDevice = true;
+                              break;
+                            }
                           }
-                        }
-                        if (! expectedDevice) logger.log('ERROR', "Unexpected device descriptor (" + xmlDevice.image_id + " " + xmlDevice.device_specifier + " " + xmlDevice.vendor_specifier + ") in PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-                      });
+                          if (! expectedDevice) logger.log('ERROR', "Unexpected device descriptor (" + xmlDevice.image_id + " " + xmlDevice.device_specifier + " " + xmlDevice.vendor_specifier + ") in PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                        });
+                      }
                     });
                     parser.on('end', function() {
                         fulfill();
