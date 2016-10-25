@@ -2331,7 +2331,7 @@ function verifyPayloadFile(jarContent) {
                       }
 
                       // Verify version in XML matches package version
-                      if (xmlData.image.file.version !== fwPkgVersion) {
+                      if (! xmlData.image || ! xmlData.image.file || ! xmlData.image.file.version || xmlData.image.file.version !== fwPkgVersion) {
                         logger.log('ERROR', "Firmware version in PLDM XML data does not match the expected version for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       }
 
