@@ -301,7 +301,7 @@ if (! workingBOM.osList) {
       }
     });
 
-    // TODO: Workaround until FC and FCoE drivers are split.
+    // Workaround since cfg files use the same entry for both FC and FCoE
     baseMTMsLinuxCNA.forEach(function(mtm) {
       if (baseMTMsLinuxFC.indexOf(mtm) < 0) baseMTMsLinuxFC.push(mtm);
     });
