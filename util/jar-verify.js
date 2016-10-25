@@ -299,7 +299,7 @@ function getJarContent(jarType) {
           }
         });
         zipfile.on("close", function() {
-          if (! inputFileName || ! intputFile) {
+          if (! inputFileName || ! inputFile) {
             reject({jarType: jarType, code: 'NOINPUTFILE'});
           } else if (! changeFileName || ! changeFile) {
             reject({jarType: jarType, code: 'NOCHANGEFILE'});
