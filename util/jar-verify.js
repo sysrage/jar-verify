@@ -1175,14 +1175,14 @@ function verifyPayloadFile(jarContent) {
             if (config.pkgTypes[jarContent.jarType].os.search('rhel') > -1) {
               // Validate content of RHEL drivers
               try {
-                var rpmDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/');
+                var rpmDirFiles = fs.readdirSync(payloadExtract + '/RPMS/');
               } catch (err) {
                 if (err.code === 'ENOENT') {
-                  logger.log('ERROR', "The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  logger.log('ERROR', "The driver RPM directory (/RPMS/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (err.code === 'EACCES') {
-                  logger.log('ERROR', "Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  logger.log('ERROR', "Permission denied trying to open driver RPM directory (/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
-                  logger.log('ERROR', "Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
+                  logger.log('ERROR', "Unexpected error opening driver RPM directory (/RPMS/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                 }
               }
               if (rpmDirFiles && rpmDirFiles.length < 1) {
@@ -1197,14 +1197,14 @@ function verifyPayloadFile(jarContent) {
                     });
                   } else {
                     try {
-                      var kernelDirFiles = fs.readdirSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + "/");
+                      var kernelDirFiles = fs.readdirSync(payloadExtract + '/RPMS/' + kernel + "/");
                     } catch (err) {
                       if (err.code === 'ENOENT') {
-                        logger.log('ERROR', "The driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                        logger.log('ERROR', "The driver RPM directory (/RPMS/" + kernel + "/) does not exist in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       } else if (err.code === 'EACCES') {
-                        logger.log('ERROR', "Permission denied trying to open driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                        logger.log('ERROR', "Permission denied trying to open driver RPM directory (/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       } else {
-                        logger.log('ERROR', "Unexpected error opening driver RPM directory (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
+                        logger.log('ERROR', "Unexpected error opening driver RPM directory (/RPMS/" + kernel + "/) in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.\n" + err);
                       }
                     }
                     if (kernelDirFiles && kernelDirFiles.length < 1) {
@@ -1233,13 +1233,13 @@ function verifyPayloadFile(jarContent) {
                           } else {
                             matchingFiles.push(ddFound);
                             // Verify RPM is not 0 bytes
-                            var ddFileStats = fs.statSync(payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + "/" + ddFound);
+                            var ddFileStats = fs.statSync(payloadExtract + '/RPMS/' + kernel + "/" + ddFound);
                             if (ddFileStats.size < 1) {
                               logger.log('ERROR', "Driver RPM (" + ddFound + ") is 0 bytes in the " + config.pkgTypes[jarContent.jarType].name + " package.");
                             } else {
                               // Save checksum of driver RPM
                               payloadHashFiles.push({
-                                file: payloadExtract + config.pkgTypes[jarContent.jarType].os + '/RPMS/' + kernel + '/' + ddFound,
+                                file: payloadExtract + '/RPMS/' + kernel + '/' + ddFound,
                                 name: ddFound
                               });
                             }
@@ -1249,7 +1249,7 @@ function verifyPayloadFile(jarContent) {
                       // Display error for any unexpected driver RPMs
                       kernelDirFiles.forEach(function(ddFile) {
                         if (matchingFiles.indexOf(ddFile) < 0) {
-                          logger.log('ERROR', "Unexpected driver RPM (" + config.pkgTypes[jarContent.jarType].os + "/RPMS/" + kernel + "/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                          logger.log('ERROR', "Unexpected driver RPM (/RPMS/" + kernel + "/" + ddFile + ") found in the payload binary for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                         }
                       });
                     }
