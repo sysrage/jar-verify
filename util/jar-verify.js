@@ -829,6 +829,8 @@ function verifyInputXML(jarContent) {
                 logger.log('ERROR', "Unexpected 'pldmFileName' entry in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 if (pldmImageVersion !== jarVersion) {
+                  console.log('pldmImageVersion: ' + pldmImageVersion);
+                  console.log('jarVersion: ' + jarVersion);
                   logger.log('ERROR', "Package version not found in parameter 'pldmFileName' from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
               }
