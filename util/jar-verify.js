@@ -814,11 +814,9 @@ function verifyInputXML(jarContent) {
           }
         } else {
           // Package supports PLDM FW updates -- Verify pldmStdFirmware section
-          // *** START REWORK BELOW ***
           if (! jarContent.inputFile.pldmStdFirmware) {
             logger.log('ERROR', "Section 'pldmStdFirmware' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else {
-            console.dir(jarContent.inputFile.pldmStdFirmware);
             // Verify pldmFileName
             if (! jarContent.inputFile.pldmStdFirmware.pldmFileName) {
               logger.log('ERROR', "Parameter 'pldmFileName' missing from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
@@ -828,152 +826,22 @@ function verifyInputXML(jarContent) {
               if (pldmImageName.search(RegExp(config.pkgTypes[jarContent.jarType].pldmImageFileSearch)) < 0) {
                 logger.log('ERROR', "Unexpected 'pldmFileName' entry in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                console.log('pldmImageVersion: ' + pldmImageVersion);
-                console.log('jarVersion: ' + jarVersion);
                 if (pldmImageVersion !== jarVersion) {
                   logger.log('ERROR', "Package version not found in parameter 'pldmFileName' from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
               }
             }
-            // // Verify deviceDescriptor entries
-            // if (! jarContent.inputFile.pldmStdFirmware.deviceDescriptor) {
-            //   logger.log('ERROR', "Parameter 'deviceDescriptor' missing from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            // } else {
-            //   var inputDeviceDesc = jarContent.inputFile.pldmStdFirmware.deviceDescriptor;
-            //   if (! Array.isArray(inputDeviceDesc)) var jarDeviceDescList = [inputDeviceDesc];
-            //   else var jarDeviceDescList = inputDeviceDesc;
-            //   var bomAdapterList = [];
-            //   var bomDeviceCount = 0;
-            //   workingBOM.adapterList.forEach(function(adapter) {
-            //     if (adapter.asic === config.pkgTypes[jarContent.jarType].asic && Object.keys(adapter.pldm).length > 0) {
-            //       var isUnique = true;
-            //       adapter.agent.forEach(function(agent) {
-            //         var agentExists = false;
-            //         bomAdapterList.forEach(function(bomAdapter) {
-            //           bomAdapter.agent.forEach(function(bomAdapterAgent) {
-            //             if (agent.id === bomAdapterAgent.id && agent.type === bomAdapterAgent.type) agentExists = true;
-            //           });
-            //         });
-            //         if (agentExists) isUnique = false;
-            //       });
-            //       if (isUnique) {
-            //         bomAdapterList.push(adapter);
-            //         bomDeviceCount += adapter.agent.length;
-            //       }
-            //     }
-            //   });
 
-            //   // Verify there are no duplicate entries
-            //   var uniqueDevices = [];
-            //   jarDeviceDescList.forEach(function(deviceEntry) {
-            //     if (uniqueDevices.indexOf(deviceEntry) > -1) {
-            //       logger.log('ERROR', "Duplicate 'deviceDescriptor' entries in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //     } else {
-            //       uniqueDevices.push(deviceEntry);
-            //     }
-            //   });
+            // Verify buildId
+            if (! jarContent.inputFile.pldmStdFirmware.buildId) {
+              logger.log('ERROR', "Parameter 'buildId' missing from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            } else {
+              if (jarContent.inputFile.pldmStdFirmware.buildId !== jarVersion) {
+                logger.log('ERROR', "Package version not found in parameter 'buildId' from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              }
+            }
 
-            //   // Verify the number of entries matches supported adapters in BOM
-            //   if (uniqueDevices.length !== bomDeviceCount) {
-            //     logger.log('ERROR', "Incorrect number of 'deviceDescriptor' entries in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //   }
-
-            //   uniqueDevices.forEach(function(devDescEntry) {
-            //     // Verify vendorSpecifier, deviceSpecifier, imageId, and classification are defined
-            //     if (! devDescEntry.vendorSpecifier) {
-            //       logger.log('ERROR', "Missing 'deviceDescriptor.vendorSpecifier' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //     } else if (! devDescEntry.deviceSpecifier) {
-            //       logger.log('ERROR', "Missing 'deviceDescriptor.deviceSpecifier' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //     } else if (! devDescEntry.imageId) {
-            //       logger.log('ERROR', "Missing 'deviceDescriptor.imageId' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //     } else if (! devDescEntry.classification) {
-            //       logger.log('ERROR', "Missing 'deviceDescriptor.classification' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //     } else {
-            //       // Verify full entry matches an expected adapter from the BOM
-            //       var matchingEntry = false;
-            //       bomAdapterList.forEach(function(adapter) {
-            //         if (devDescEntry.vendorSpecifier.toUpperCase() === '0X' + adapter.pldm.vendor.toUpperCase() && devDescEntry.deviceSpecifier.toUpperCase() === '0X' + adapter.pldm.device.toUpperCase()) {
-            //           var matchingAgent = false;
-            //           adapter.agent.forEach(function(agent) {
-            //             if (devDescEntry.imageId === '00' + agent.id && devDescEntry.classification === agent.type) matchingEntry = true;
-            //           });
-            //         }
-            //       });
-            //       if (! matchingEntry) {
-            //         logger.log('ERROR', "Unexpected 'deviceDescriptor' entry in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //       }
-            //     }
-            //   });
-
-            //   // Verify file entries -- Only performed if deviceDescriptor entries are found
-            //   if (! jarContent.inputFile.pldmStdFirmware.file) {
-            //     logger.log('ERROR', "Parameter 'file' missing from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //   } else {
-            //     var inputPLDMFile = jarContent.inputFile.pldmStdFirmware.file;
-            //     if (! Array.isArray(inputPLDMFile)) var jarFileList = [inputPLDMFile];
-            //     else var jarFileList = inputPLDMFile;
-
-            //     // Verify there are no duplicate entries
-            //     var uniqueFiles = [];
-            //     jarFileList.forEach(function(fileEntry) {
-            //       if (uniqueFiles.indexOf(fileEntry) > -1) {
-            //         logger.log('ERROR', "Duplicate 'file' entries in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //       } else {
-            //         uniqueFiles.push(fileEntry);
-            //       }
-            //     });
-
-            //     // Verify the number of entries matches number of Agentless types for matching adapters in BOM
-            //     var uniqueTypes = [];
-            //     bomAdapterList.forEach(function(adapter) {
-            //       adapter.agent.forEach(function(agent) {
-            //         if (uniqueTypes.indexOf(agent.type) < 0) uniqueTypes.push(agent.type);
-            //       });
-            //     });
-            //     if (uniqueFiles.length !== uniqueTypes.length) {
-            //       logger.log('ERROR', "Incorrect number of 'file' entries in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //     }
-
-            //     var fileCount = 1;
-            //     uniqueFiles.forEach(function(fileEntry) {
-            //       // Verify name, source, version, and offset are defined
-            //       if (! fileEntry.name) {
-            //         logger.log('ERROR', "Missing 'file.name' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //       } else if (! fileEntry.source) {
-            //         logger.log('ERROR', "Missing 'file.source' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //       } else if (! fileEntry.version) {
-            //         logger.log('ERROR', "Missing 'file.version' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //       } else if (! fileEntry.offset) {
-            //         logger.log('ERROR', "Missing 'file.offset' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //       } else {
-            //         // Verify file.name
-            //         if (fileEntry.name !== fileCount.toString()) {
-            //           logger.log('ERROR', "Unexpected value (" + fileEntry.name + ") for 'file.name' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //         }
-            //         fileCount++;
-
-            //         // Verify file.source
-            //         var typeIndex = uniqueTypes.indexOf(fileEntry.source);
-            //         if (typeIndex < 0) {
-            //           logger.log('ERROR', "Invalid value (" + fileEntry.source + ") for 'file.source' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //         } else {
-            //           // There should only be one entry per classification type
-            //           uniqueTypes.slice(typeIndex, 1);
-            //         }
-
-            //         // Verify file.version
-            //         if (fileEntry.version !== jarVersion) {
-            //           logger.log('ERROR', "Invalid value (" + fileEntry.version + ") for 'file.version' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //         }
-
-            //         // Verify file.offset
-            //         if (fileEntry.offset !== '0') {
-            //           logger.log('ERROR', "Invalid value (" + fileEntry.offset + ") for 'file.offset' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-            //         }
-            //       }
-            //     });
-            //   }
-            // }
+            // **TODO: Further PLDM verification
           }
         }
       }
