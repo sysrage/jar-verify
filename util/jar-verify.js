@@ -1238,17 +1238,10 @@ function verifyPayloadFile(jarContent) {
                             } else {
                               var ddType = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileType);
                               var ddTypeIndex = ddFileTypes.indexOf(ddType);
-                              console.log('**ddType**');
-                              console.dir(ddType);
-                              console.log('**ddFileTypes**');
-                              console.dir(ddFileTypes);
-                              console.log('**ddTypeIndex**');
-                              console.dir(ddTypeIndex);
                               console.log('ddVersion: ' + ddVersion + ' = ddPkgVersion: ' + ddPkgVersion);
                               console.log('ddSP: ' + ddSP + ' = pkgOS[i].subVersion: ' + pkgOS[i].subVersion);
-                              console.log('ddArch:' + ddArch + '= osArch: ' + osArch);
+                              console.log('ddArch: ' + ddArch + ' = osArch: ' + osArch);
                               if (ddTypeIndex > -1 && ddVersion === ddPkgVersion && ddSP === pkgOS[i].subVersion && ddArch === osArch) {
-                                console.log('found');
                                 ddFound.push(ddFile);
                                 ddFileTypes.splice(ddTypeIndex, 1);
                               }
