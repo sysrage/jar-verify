@@ -1388,6 +1388,7 @@ function verifyPayloadFile(jarContent) {
             //     });
             //   }
             // }
+            }
 
             // Validate content of SRPM directory
             try {
