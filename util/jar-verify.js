@@ -825,7 +825,7 @@ function verifyInputXML(jarContent) {
             } else {
               var pldmImageName = jarContent.inputFile.pldmStdFirmware.pldmFileName;
               var pldmImageVersion = pldmImageName.replace(RegExp(config.pkgTypes[jarContent.jarType].pldmImageFileSearch), config.pkgTypes[jarContent.jarType].pldmImageFileReplace);
-              if (! pldmImageVersion) {
+              if (pldmImageName.search(RegExp(config.pkgTypes[jarContent.jarType].pldmImageFileSearch)) < 0) {
                 logger.log('ERROR', "Unexpected 'pldmFileName' entry in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
                 console.log('pldmImageVersion: ' + pldmImageVersion);
