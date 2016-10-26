@@ -503,6 +503,7 @@ function verifyInputXML(jarContent) {
                     if (bomDriverFileEntries['10'].indexOf(v2) < 0) bomDriverFileEntries['10'].push(v2);
                   });
                   if (bomDriverFileEntries['10'].indexOf(agent.id) < 0) bomDriverFileEntries['10'].push(agent.id);
+                  if (bomDriverFileEntries['6'].indexOf(agent.id) < 0) bomDriverFileEntries['6'].push(agent.id);
                 }
                 // TODO: End workaround
               });
