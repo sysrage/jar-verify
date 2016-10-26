@@ -1238,7 +1238,11 @@ function verifyPayloadFile(jarContent) {
                             } else {
                               var ddType = ddFile.replace(RegExp(config.pkgTypes[jarContent.jarType].ddImageFileSearch), config.pkgTypes[jarContent.jarType].ddImageFileType);
                               var ddTypeIndex = ddFileTypes.indexOf(ddType);
+                              console.log('**ddType**');
                               console.dir(ddType);
+                              console.log('**ddFileTypes**');
+                              console.dir(ddFileTypes);
+                              console.log('**ddTypeIndex**');
                               console.dir(ddTypeIndex);
                               if (ddTypeIndex > -1 && ddVersion === ddPkgVersion && ddSP === pkgOS[i].subVersion && ddArch === osArch) {
                                 ddFound.push(ddFile);
