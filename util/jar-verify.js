@@ -1172,7 +1172,7 @@ function verifyPayloadFile(jarContent) {
               if (ddKernels.indexOf(os.kernel) < 0) ddKernels.push(os.kernel);
               if (ddArches.indexOf(os.arch) < 0) ddArches.push(os.arch);
             });
-            if (config.pkgTypes[jarContent.jarType].os.search('rhel') > -1) {
+            if (config.pkgTypes[jarContent.jarType].os.search('rhel') > -1 || config.pkgTypes[jarContent.jarType].os.search('sles') > -1) {
               // Validate content of RHEL drivers
               try {
                 var rpmDirFiles = fs.readdirSync(payloadExtract + '/RPMS/');
