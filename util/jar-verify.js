@@ -499,8 +499,10 @@ function verifyInputXML(jarContent) {
                 // TODO: Workaround for Lenovo's broken classification types
                 if (agent.type === '13') {
                   if (! bomDriverFileEntries['10']) bomDriverFileEntries['10'] = [];
+                  if (! bomDriverFileEntries['6']) bomDriverFileEntries['6'] = [];
                   adapter.v2.forEach(function(v2) {
                     if (bomDriverFileEntries['10'].indexOf(v2) < 0) bomDriverFileEntries['10'].push(v2);
+                    if (bomDriverFileEntries['6'].indexOf(v2) < 0) bomDriverFileEntries['6'].push(v2);
                   });
                   if (bomDriverFileEntries['10'].indexOf(agent.id) < 0) bomDriverFileEntries['10'].push(agent.id);
                   if (bomDriverFileEntries['6'].indexOf(agent.id) < 0) bomDriverFileEntries['6'].push(agent.id);
@@ -796,8 +798,8 @@ function verifyInputXML(jarContent) {
 
       if (config.pkgTypes[jarContent.jarType].type !== 'fw') {
         // Verify driver package does *not* contain PLDM FW update data
-        if (jarContent.inputFile.pldmFirmware) {
-          logger.log('ERROR', "Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+        if (jarContent.inputFile.pldmStdFirmware) {
+          logger.log('ERROR', "Section 'pldmStdFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
         }
       } else {
         // Verify firmware package supports PLDM FW updates
@@ -807,28 +809,30 @@ function verifyInputXML(jarContent) {
         });
         if (! pkgSupportsPLDM) {
           // Verify package does *not* contain PLDM FW update data
-          if (jarContent.inputFile.pldmFirmware) {
-            logger.log('ERROR', "Section 'pldmFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+          if (jarContent.inputFile.pldmStdFirmware) {
+            logger.log('ERROR', "Section 'pldmStdFirmware' incorrectly included in input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           }
         } else {
-          // Package supports PLDM FW updates -- Verify pldmFirmware section
-          if (! jarContent.inputFile.pldmFirmware) {
-            logger.log('ERROR', "Section 'pldmFirmware' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+          // Package supports PLDM FW updates -- Verify pldmStdFirmware section
+          // *** START REWORK BELOW ***
+          if (! jarContent.inputFile.pldmStdFirmware) {
+            logger.log('ERROR', "Section 'pldmStdFirmware' missing from input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
           } else {
+            console.dir(jarContent.inputFile.pldmStdFirmware);
             // Verify pldmFileName
-            if (! jarContent.inputFile.pldmFirmware.pldmFileName) {
-              logger.log('ERROR', "Parameter 'pldmFileName' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            if (! jarContent.inputFile.pldmStdFirmware.pldmFileName) {
+              logger.log('ERROR', "Parameter 'pldmFileName' missing from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
-              if (jarContent.inputFile.pldmFirmware.pldmFileName.indexOf(jarVersion) < 0) {
-                logger.log('WARN', "Package version not found in parameter 'pldmFileName' from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              if (jarContent.inputFile.pldmStdFirmware.pldmFileName.indexOf(jarVersion) < 0) {
+                logger.log('WARN', "Package version not found in parameter 'pldmFileName' from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               }
             }
 
             // Verify deviceDescriptor entries
-            if (! jarContent.inputFile.pldmFirmware.deviceDescriptor) {
-              logger.log('ERROR', "Parameter 'deviceDescriptor' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+            if (! jarContent.inputFile.pldmStdFirmware.deviceDescriptor) {
+              logger.log('ERROR', "Parameter 'deviceDescriptor' missing from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
             } else {
-              var inputDeviceDesc = jarContent.inputFile.pldmFirmware.deviceDescriptor;
+              var inputDeviceDesc = jarContent.inputFile.pldmStdFirmware.deviceDescriptor;
               if (! Array.isArray(inputDeviceDesc)) var jarDeviceDescList = [inputDeviceDesc];
               else var jarDeviceDescList = inputDeviceDesc;
               var bomAdapterList = [];
@@ -856,7 +860,7 @@ function verifyInputXML(jarContent) {
               var uniqueDevices = [];
               jarDeviceDescList.forEach(function(deviceEntry) {
                 if (uniqueDevices.indexOf(deviceEntry) > -1) {
-                  logger.log('ERROR', "Duplicate 'deviceDescriptor' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  logger.log('ERROR', "Duplicate 'deviceDescriptor' entries in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   uniqueDevices.push(deviceEntry);
                 }
@@ -864,19 +868,19 @@ function verifyInputXML(jarContent) {
 
               // Verify the number of entries matches supported adapters in BOM
               if (uniqueDevices.length !== bomDeviceCount) {
-                logger.log('ERROR', "Incorrect number of 'deviceDescriptor' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                logger.log('ERROR', "Incorrect number of 'deviceDescriptor' entries in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               }
 
               uniqueDevices.forEach(function(devDescEntry) {
                 // Verify vendorSpecifier, deviceSpecifier, imageId, and classification are defined
                 if (! devDescEntry.vendorSpecifier) {
-                  logger.log('ERROR', "Missing 'deviceDescriptor.vendorSpecifier' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  logger.log('ERROR', "Missing 'deviceDescriptor.vendorSpecifier' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (! devDescEntry.deviceSpecifier) {
-                  logger.log('ERROR', "Missing 'deviceDescriptor.deviceSpecifier' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  logger.log('ERROR', "Missing 'deviceDescriptor.deviceSpecifier' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (! devDescEntry.imageId) {
-                  logger.log('ERROR', "Missing 'deviceDescriptor.imageId' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  logger.log('ERROR', "Missing 'deviceDescriptor.imageId' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else if (! devDescEntry.classification) {
-                  logger.log('ERROR', "Missing 'deviceDescriptor.classification' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  logger.log('ERROR', "Missing 'deviceDescriptor.classification' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 } else {
                   // Verify full entry matches an expected adapter from the BOM
                   var matchingEntry = false;
@@ -889,16 +893,16 @@ function verifyInputXML(jarContent) {
                     }
                   });
                   if (! matchingEntry) {
-                    logger.log('ERROR', "Unexpected 'deviceDescriptor' entry in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    logger.log('ERROR', "Unexpected 'deviceDescriptor' entry in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   }
                 }
               });
 
               // Verify file entries -- Only performed if deviceDescriptor entries are found
-              if (! jarContent.inputFile.pldmFirmware.file) {
-                logger.log('ERROR', "Parameter 'file' missing from 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+              if (! jarContent.inputFile.pldmStdFirmware.file) {
+                logger.log('ERROR', "Parameter 'file' missing from 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
               } else {
-                var inputPLDMFile = jarContent.inputFile.pldmFirmware.file;
+                var inputPLDMFile = jarContent.inputFile.pldmStdFirmware.file;
                 if (! Array.isArray(inputPLDMFile)) var jarFileList = [inputPLDMFile];
                 else var jarFileList = inputPLDMFile;
 
@@ -906,7 +910,7 @@ function verifyInputXML(jarContent) {
                 var uniqueFiles = [];
                 jarFileList.forEach(function(fileEntry) {
                   if (uniqueFiles.indexOf(fileEntry) > -1) {
-                    logger.log('ERROR', "Duplicate 'file' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    logger.log('ERROR', "Duplicate 'file' entries in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else {
                     uniqueFiles.push(fileEntry);
                   }
@@ -920,31 +924,31 @@ function verifyInputXML(jarContent) {
                   });
                 });
                 if (uniqueFiles.length !== uniqueTypes.length) {
-                  logger.log('ERROR', "Incorrect number of 'file' entries in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                  logger.log('ERROR', "Incorrect number of 'file' entries in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                 }
 
                 var fileCount = 1;
                 uniqueFiles.forEach(function(fileEntry) {
                   // Verify name, source, version, and offset are defined
                   if (! fileEntry.name) {
-                    logger.log('ERROR', "Missing 'file.name' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    logger.log('ERROR', "Missing 'file.name' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else if (! fileEntry.source) {
-                    logger.log('ERROR', "Missing 'file.source' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    logger.log('ERROR', "Missing 'file.source' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else if (! fileEntry.version) {
-                    logger.log('ERROR', "Missing 'file.version' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    logger.log('ERROR', "Missing 'file.version' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else if (! fileEntry.offset) {
-                    logger.log('ERROR', "Missing 'file.offset' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                    logger.log('ERROR', "Missing 'file.offset' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                   } else {
                     // Verify file.name
                     if (fileEntry.name !== fileCount.toString()) {
-                      logger.log('ERROR', "Unexpected value (" + fileEntry.name + ") for 'file.name' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      logger.log('ERROR', "Unexpected value (" + fileEntry.name + ") for 'file.name' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                     fileCount++;
 
                     // Verify file.source
                     var typeIndex = uniqueTypes.indexOf(fileEntry.source);
                     if (typeIndex < 0) {
-                      logger.log('ERROR', "Invalid value (" + fileEntry.source + ") for 'file.source' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      logger.log('ERROR', "Invalid value (" + fileEntry.source + ") for 'file.source' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     } else {
                       // There should only be one entry per classification type
                       uniqueTypes.slice(typeIndex, 1);
@@ -952,12 +956,12 @@ function verifyInputXML(jarContent) {
 
                     // Verify file.version
                     if (fileEntry.version !== jarVersion) {
-                      logger.log('ERROR', "Invalid value (" + fileEntry.version + ") for 'file.version' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      logger.log('ERROR', "Invalid value (" + fileEntry.version + ") for 'file.version' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
 
                     // Verify file.offset
                     if (fileEntry.offset !== '0') {
-                      logger.log('ERROR', "Invalid value (" + fileEntry.offset + ") for 'file.offset' in 'pldmFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      logger.log('ERROR', "Invalid value (" + fileEntry.offset + ") for 'file.offset' in 'pldmStdFirmware' section of input XML file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                     }
                   }
                 });
