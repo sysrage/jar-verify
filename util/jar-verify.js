@@ -2145,6 +2145,7 @@ function verifyPayloadFile(jarContent) {
                       // Verify firmware image checksum matches checksum from image in payload
                       // **TODO: Save checksum and possibly compare
                       var pldmImageChecksum = crypto.createHash('md5').update(binRawData).digest("hex");
+                      console.dir(xmlData);
                       console.log(jarContent.jarType + ' pldmImageChecksum: ' + pldmImageChecksum);
                       // if (pldmImageChecksum !== payloadImageChecksum) {
                       //   logger.log('ERROR', "Checksum of firmware image in PLDM data does not match the firmware image included in the payload file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
