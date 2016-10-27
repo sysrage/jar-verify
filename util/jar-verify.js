@@ -2143,46 +2143,21 @@ function verifyPayloadFile(jarContent) {
                       }
 
                       // Verify firmware image checksum matches checksum from image in payload
+                      // **TODO: Save checksum and possibly compare
                       var pldmImageChecksum = crypto.createHash('md5').update(binRawData).digest("hex");
-                      var binFileContentKeys = Object.keys(jarData[jarContent.jarType].binFileContent);
-                      for (var i = 0; i < binFileContentKeys.length; i++) {
-                        if (binFileContentKeys[i].search('firmware/') > -1) {
-                          var payloadImageChecksum = jarData[jarContent.jarType].binFileContent[binFileContentKeys[i]];
-                          break;
-                        }
-                      }
-                      console.log('pldmImageChecksum: ' + pldmImageChecksum);
+                      console.log(jarContent.jarType + ' pldmImageChecksum: ' + pldmImageChecksum);
                       // if (pldmImageChecksum !== payloadImageChecksum) {
                       //   logger.log('ERROR', "Checksum of firmware image in PLDM data does not match the firmware image included in the payload file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       // }
 
-                      // Verify all expected device IDs are included in XML
-                      // pldmList.forEach(function(listDevice) {
-                      //   var foundDevice = false;
-                      //   if (xmlData.image && xmlData.image.device_descriptor) {
-                      //     for (var i = 0; i < xmlData.image.device_descriptor.length; i++) {
-                      //       if (xmlData.image.device_descriptor[i].classification === listDevice.class && xmlData.image.device_descriptor[i].image_id === listDevice.id && xmlData.image.device_descriptor[i].device_specifier === listDevice.device && xmlData.image.device_descriptor[i].vendor_specifier === listDevice.vendor) {
-                      //         foundDevice = true;
-                      //         break;
-                      //       }
-                      //     }
+                      // var binFileContentKeys = Object.keys(jarData[jarContent.jarType].binFileContent);
+                      // for (var i = 0; i < binFileContentKeys.length; i++) {
+                      //   if (binFileContentKeys[i].search('firmware/') > -1) {
+                      //     var payloadImageChecksum = jarData[jarContent.jarType].binFileContent[binFileContentKeys[i]];
+                      //     break;
                       //   }
-                      //   if (! foundDevice) logger.log('ERROR', "Expected device descriptor (" + listDevice.id + " " + listDevice.device + " " + listDevice.vendor + ") missing from PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-                      // });
-
-                      // Verify all device IDs in XML were expected
-                      // if (xmlData.image && xmlData.image.device_descriptor) {
-                      //   xmlData.image.device_descriptor.forEach(function(xmlDevice) {
-                      //     var expectedDevice = false;
-                      //     for (var i = 0; i < pldmList.length; i++) {
-                      //       if (pldmList[i].class === xmlDevice.classification && pldmList[i].id === xmlDevice.image_id && pldmList[i].device === xmlDevice.device_specifier && pldmList[i].vendor === xmlDevice.vendor_specifier) {
-                      //         expectedDevice = true;
-                      //         break;
-                      //       }
-                      //     }
-                      //     if (! expectedDevice) logger.log('ERROR', "Unexpected device descriptor (" + xmlDevice.image_id + " " + xmlDevice.device_specifier + " " + xmlDevice.vendor_specifier + ") in PLDM XML data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-                      //   });
                       // }
+
                     });
                     parser.on('end', function() {
                         fulfill();
