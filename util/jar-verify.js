@@ -2142,22 +2142,14 @@ function verifyPayloadFile(jarContent) {
                         logger.log('ERROR', "Firmware version in 'image_version' parameter of PLDM XML data does not match the expected version for the " + config.pkgTypes[jarContent.jarType].name + " package.");
                       }
 
-                      // Verify firmware image checksum matches checksum from image in payload
-                      // **TODO: Save checksum and possibly compare
+                      // Verify firmware image checksum matches checksum from XML
                       var pldmImageChecksum = crypto.createHash('md5').update(binRawData).digest("hex");
-                      console.dir(xmlData);
-                      console.log(jarContent.jarType + ' pldmImageChecksum: ' + pldmImageChecksum);
-                      // if (pldmImageChecksum !== payloadImageChecksum) {
-                      //   logger.log('ERROR', "Checksum of firmware image in PLDM data does not match the firmware image included in the payload file for the " + config.pkgTypes[jarContent.jarType].name + " package.");
-                      // }
-
-                      // var binFileContentKeys = Object.keys(jarData[jarContent.jarType].binFileContent);
-                      // for (var i = 0; i < binFileContentKeys.length; i++) {
-                      //   if (binFileContentKeys[i].search('firmware/') > -1) {
-                      //     var payloadImageChecksum = jarData[jarContent.jarType].binFileContent[binFileContentKeys[i]];
-                      //     break;
-                      //   }
-                      // }
+                      if (! xmlData.image || ! xmlData.image.md5 || pldmImageChecksum.toUpperCase() !== xmlData.image.md5.toUpperCase() ) {
+                        logger.log('ERROR', "Checksum in 'md5' parameter of PLDM XML data does not match the firmware image in PLDM data for the " + config.pkgTypes[jarContent.jarType].name + " package.");
+                      }
+                      // **TODO: Save checksum and possibly compare
+                      // console.dir(xmlData);
+                      // console.log(jarContent.jarType + ' pldmImageChecksum: ' + pldmImageChecksum);
 
                     });
                     parser.on('end', function() {
