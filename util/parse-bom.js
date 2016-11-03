@@ -68,7 +68,7 @@ function validateOS(osName, cell) {
       if (osName.match(re)) {
         var osSubVersion = osName.match(re)[1];
       } else {
-        if (osMapType === 'windows') {
+        if (osMapType === 'windows' || osMapType === 'vmware') {
           var osSubVersion = '0';
         }
       }
