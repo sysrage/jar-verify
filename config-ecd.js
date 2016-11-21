@@ -1059,7 +1059,7 @@ module.exports = {
       appDevIdCfgName: 'Saturn FW',
       fwImageFileSearch: '(u[df])([0-9])([0-9][0-9])([xa])([0-9]+)\.all',
       fwImageFileReplace: '$2.$3$4$5',
-      bootImageFileSearch: 'UU([0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
+      bootImageFileSearch: 'UU([0-9]?[0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
       bootImageFileReplace: '$1.$2$3$4',
       fwImageFileNames: {
         rack: 'ud',
@@ -1093,7 +1093,7 @@ module.exports = {
       appDevIdCfgName: 'Saturn FW',
       fwImageFileSearch: '(u[df])([0-9])([0-9][0-9])([xa])([0-9]+)\.all',
       fwImageFileReplace: '$2.$3$4$5',
-      bootImageFileSearch: 'UU([0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
+      bootImageFileSearch: 'UU([0-9]?[0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
       bootImageFileReplace: '$1.$2$3$4',
       fwImageFileNames: {
         rack: 'ud',
@@ -1126,7 +1126,7 @@ module.exports = {
       appDevIdCfgName: 'Saturn FW',
       fwImageFileSearch: '(u[df])([0-9])([0-9][0-9])([xa])([0-9]+)\.all',
       fwImageFileReplace: '$2.$3$4$5',
-      bootImageFileSearch: 'UU([0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
+      bootImageFileSearch: 'UU([0-9]?[0-9])([0-9][0-9])([xa])([0-9]+)\.prg',
       bootImageFileReplace: '$1.$2$3$4',
       fwImageFileNames: {
         rack: 'ud',

@@ -500,13 +500,10 @@ function verifyInputXML(jarContent) {
                 // TODO: Workaround for Lenovo's broken classification types
                 if (agent.type === '13') {
                   if (! bomDriverFileEntries['10']) bomDriverFileEntries['10'] = [];
-                  if (! bomDriverFileEntries['6']) bomDriverFileEntries['6'] = [];
                   adapter.v2.forEach(function(v2) {
                     if (bomDriverFileEntries['10'].indexOf(v2) < 0) bomDriverFileEntries['10'].push(v2);
-                    if (bomDriverFileEntries['6'].indexOf(v2) < 0) bomDriverFileEntries['6'].push(v2);
                   });
                   if (bomDriverFileEntries['10'].indexOf(agent.id) < 0) bomDriverFileEntries['10'].push(agent.id);
-                  if (bomDriverFileEntries['6'].indexOf(agent.id) < 0) bomDriverFileEntries['6'].push(agent.id);
                 }
                 // TODO: End workaround
               });
